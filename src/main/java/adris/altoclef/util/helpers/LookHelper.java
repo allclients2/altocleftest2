@@ -1,6 +1,7 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.BaritoneAPI;
 import baritone.api.utils.IPlayerContext;
@@ -89,6 +90,8 @@ public interface LookHelper {
      * @return An Optional containing the Rotation if reach is possible, or an empty Optional otherwise.
      */
     static Optional<Rotation> getReach(BlockPos target) {
+        // Log the target position
+        Debug.logInternal("Target: " + target);
 
         // Delegate to the overloaded method with a null entity
         return getReach(target, null);

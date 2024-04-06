@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
@@ -22,7 +23,6 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
-import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -45,7 +45,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             Blocks.BIG_DRIPLEAF_STEM,
             Blocks.SMALL_DRIPLEAF,
             Blocks.TALL_GRASS,
-            Blocks.GRASS_BLOCK,
+            Blocks.GRASS,
             Blocks.SWEET_BERRY_BUSH
     };
     private Task _unstuckTask = null;
@@ -56,15 +56,20 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     /**
-     * Generates the surrounding BlockPos based on the given position.
+     * Generates an array of BlockPos objects representing the sides of a given BlockPos.
      *
-     * @param pos The center BlockPos
-     * @return An array of surrounding BlockPos
+     * @param pos The BlockPos object to generate the sides for.
+     * @return An array of BlockPos objects representing the sides of the given BlockPos.
      */
     private static BlockPos[] generateSides(BlockPos pos) {
         int x = pos.getX();
         int y = pos.getY();
         int z = pos.getZ();
+
+        // Log the values of x, y, and z for debugging
+        Debug.logInternal("x = " + x);
+        Debug.logInternal("y = " + y);
+        Debug.logInternal("z = " + z);
 
         return new BlockPos[]{
                 new BlockPos(x + 1, y, z),
@@ -79,11 +84,11 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     /**
-     * Checks if the block at the specified position is annoying.
+     * Checks if a block is annoying.
      *
-     * @param mod the AltoClef instance
-     * @param pos the position to check
-     * @return true if the block is annoying, false otherwise
+     * @param mod The AltoClef mod instance.
+     * @param pos The position of the block.
+     * @return true if the block is annoying, false otherwise.
      */
     private boolean isAnnoying(AltoClef mod, BlockPos pos) {
         for (Block annoyingBlock : annoyingBlocks) {
@@ -93,80 +98,96 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                     || mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock
                     || mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
             if (isAnnoying) {
+                Debug.logInternal("Block at position " + pos + " is annoying.");
                 return true;
             }
         }
+        Debug.logInternal("Block at position " + pos + " is not annoying.");
         return false;
     }
 
     /**
-     * Finds the position where the player is stuck in a block.
+     * Returns the position of the block where the player is stuck.
+     * If there are no annoying block positions, returns null.
      *
-     * @param mod the mod instance
-     * @return the position where the player is stuck, or null if not stuck
+     * @param mod The instance of the AltoClef mod.
+     * @return The BlockPos of the stuck block, or null if none found.
      */
     private BlockPos stuckInBlock(AltoClef mod) {
-        // Check if player is stuck in their current position
-        if (isAnnoying(mod, mod.getPlayer().getBlockPos())) {
-            return mod.getPlayer().getBlockPos();
+        BlockPos playerPos = mod.getPlayer().getBlockPos();
+        BlockPos[] toCheck = generateSides(playerPos);
+        BlockPos[] toCheckHigh = generateSides(playerPos.up());
+
+        // Check if player position is annoying
+        if (isAnnoying(mod, playerPos)) {
+            Debug.logInternal("Player position is annoying: " + playerPos);
+            return playerPos;
         }
 
-        // Check if player is stuck when moving up
-        if (isAnnoying(mod, mod.getPlayer().getBlockPos().up())) {
-            return mod.getPlayer().getBlockPos().up();
+        // Check if player position (up) is annoying
+        if (isAnnoying(mod, playerPos.up())) {
+            Debug.logInternal("Player position (up) is annoying: " + playerPos.up());
+            return playerPos.up();
         }
 
-        // Check for stuck positions in the sides of the player's current position
-        for (BlockPos check : generateSides(mod.getPlayer().getBlockPos())) {
+        // Check each side block position
+        for (BlockPos check : toCheck) {
             if (isAnnoying(mod, check)) {
+                Debug.logInternal("Block position is annoying: " + check);
                 return check;
             }
         }
 
-        // Check for stuck positions in the sides of the player's position when moving up
-        for (BlockPos check : generateSides(mod.getPlayer().getBlockPos().up())) {
+        // Check each high block position
+        for (BlockPos check : toCheckHigh) {
             if (isAnnoying(mod, check)) {
+                Debug.logInternal("Block position (up) is annoying: " + check);
                 return check;
             }
         }
 
-        return null; // Player is not stuck
+        Debug.logInternal("No annoying block positions found.");
+        return null;
     }
 
     /**
-     * Gets a task to unstick a fence.
+     * Retrieves a task to get the fence unstuck.
      *
-     * @return the task to unstick the fence, or null if an exception is caught
+     * @return The task to get the fence unstuck.
      */
     private Task getFenceUnstuckTask() {
-        try {
-            // Create a safe random shimmy task
-            Task task = createSafeRandomShimmyTask();
+        // Log the start of the function
+        Debug.logInternal("Entering getFenceUnstuckTask");
 
-            // Return the task
-            return task;
-        } catch (Exception e) {
-            e.printStackTrace();
-            // Handle the exception or rethrow it as needed
-            return null;
-        }
+        // Create a safe random shimmy task
+        Task task = createSafeRandomShimmyTask();
+
+        // Log the end of the function
+        Debug.logInternal("Exiting getFenceUnstuckTask");
+
+        // Return the task
+        return task;
     }
 
     /**
-     * Creates and returns a new instance of SafeRandomShimmyTask.
+     * Creates a new instance of SafeRandomShimmyTask.
      *
-     * @return a new SafeRandomShimmyTask instance
+     * @return The created SafeRandomShimmyTask.
      */
     private Task createSafeRandomShimmyTask() {
-        return new SafeRandomShimmyTask();
+        Task task = new SafeRandomShimmyTask();
+        Debug.logInternal("Created SafeRandomShimmyTask: " + task);
+        return task;
     }
 
     /**
-     * This method is called when the AltoClef mod starts.
-     * It cancels any ongoing pathing behavior, resets move checker and stuck check,
-     * and handles the item stack in the cursor slot.
-     * If the cursor stack is not empty, it calls handleNonEmptyCursorStack,
-     * otherwise, it closes the screen.
+     * This method is called when the mod starts.
+     * It cancels any ongoing pathing behavior, resets move checker and stuck check.
+     * If the cursor stack is not empty, it tries to move it to a suitable slot in the player inventory.
+     * If the item can be thrown away, it drops it in an undefined slot or the garbage slot.
+     * If the cursor stack is empty, it closes the screen.
+     *
+     * @param mod The AltoClef mod instance.
      */
     @Override
     protected void onStart(AltoClef mod) {
@@ -179,39 +200,50 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
         // Get the item stack in the cursor slot.
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        Debug.logInternal("Cursor stack: " + cursorStack);
 
-        // If the cursor stack is not empty, handle it.
+        // If the cursor stack is not empty, try to move it to a suitable slot in the player inventory.
         if (!cursorStack.isEmpty()) {
-            handleNonEmptyCursorStack(mod, cursorStack);
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+            Debug.logInternal("Move to slot: " + moveTo);
+
+            // If there is a slot where the item can fit, click on that slot to move the item.
+            moveTo.ifPresent(slot -> {
+                mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP);
+                Debug.logInternal("Clicked slot: " + slot);
+            });
+
+            // If the item can be thrown away, click on an undefined slot to drop the item.
+            if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
+                mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+                Debug.logInternal("Clicked undefined slot");
+            }
+
+            // Get the garbage slot and click on it to move the item.
+            Optional<Slot> garbage = StorageHelper.getGarbageSlot(mod);
+            Debug.logInternal("Garbage slot: " + garbage);
+
+            garbage.ifPresent(slot -> {
+                mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP);
+                Debug.logInternal("Clicked slot: " + slot);
+            });
+
+            // Click on an undefined slot to drop the item.
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            Debug.logInternal("Clicked undefined slot");
         } else {
             // If the cursor stack is empty, close the screen.
             StorageHelper.closeScreen();
+            Debug.logInternal("Closed screen");
         }
     }
 
     /**
-     * Handles the non-empty cursor stack by performing various actions.
-     * @param mod the AltoClef mod
-     * @param cursorStack the cursor stack
+     * This method is called periodically to perform various tasks.
+     *
+     * @param mod The instance of the mod.
+     * @return The next task to be executed.
      */
-    private void handleNonEmptyCursorStack(AltoClef mod, ItemStack cursorStack) {
-        // Get the slot that can fit the cursor stack in the player inventory and click it to pick up the item.
-        mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false)
-                .ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
-
-        // If the cursor stack can be thrown away, click an undefined slot to pick up the item.
-        if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
-            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-        }
-
-        // Get the garbage slot and click it to pick up the item.
-        StorageHelper.getGarbageSlot(mod)
-                .ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
-
-        // Click an undefined slot to pick up the item.
-        mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-    }
-
     @Override
     protected Task onTick(AltoClef mod) {
         // Check if there is white wool at the specified position
@@ -221,6 +253,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             for (Entity entity : entities) {
                 // Check if the entity is a PillagerEntity and is within a distance of 144 blocks from the position
                 if (entity instanceof PillagerEntity && _pos.isWithinDistance(entity.getPos(), 144)) {
+                    Debug.logMessage("Blacklisting pillager wool.");
                     // Request the block at the position to be marked as unreachable
                     mod.getBlockTracker().requestBlockUnreachable(_pos, 0);
                 }
@@ -331,11 +364,11 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     }
 
     /**
-     * This method is called when the task is interrupted.
-     * It cancels Baritone pathing and releases input controls if in game.
+     * This method is called when the task is interrupted or stopped.
+     * It cancels Baritone pathing and releases certain input controls.
      *
-     * @param mod The AltoClef mod instance
-     * @param interruptTask The interrupting task
+     * @param mod           The AltoClef mod instance.
+     * @param interruptTask The task that interrupted the current task.
      */
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
@@ -352,49 +385,66 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         mod.getInputControls().release(Input.SNEAK);
         mod.getInputControls().release(Input.MOVE_BACK);
         mod.getInputControls().release(Input.MOVE_FORWARD);
+
+        // Logging statements for debugging
+        Debug.logInternal("onStop method called");
+        Debug.logInternal("Baritone pathing cancelled");
+        if (!AltoClef.inGame()) {
+            Debug.logInternal("Not in game");
+        }
+        Debug.logInternal("Left click input force state set to false");
+        Debug.logInternal("Released sneak input control");
+        Debug.logInternal("Released move back input control");
+        Debug.logInternal("Released move forward input control");
     }
 
     /**
-     * Check if the specified position is finished.
+     * Checks if the block at the given position is air.
      *
-     * @param mod The AltoClef instance
-     * @return True if the block at the specified position is air, false otherwise.
+     * @param mod The AltoClef mod instance
+     * @return true if the block is air, false otherwise
      */
     @Override
     public boolean isFinished(AltoClef mod) {
-        // Check if the world or position is null
-        if (mod.getWorld() == null || _pos == null) {
-            return false;
-        }
-        // Get the block state at the specified position and check if it's air
         BlockState blockState = mod.getWorld().getBlockState(_pos);
-        return blockState.isAir();
+        boolean isAir = blockState.isAir();
+        Debug.logInternal("Block at position " + _pos + " is air: " + isAir);
+        return isAir;
     }
 
     /**
-     * Overrides the isEqual method to compare with another Task object.
+     * Checks if this task is equal to another task.
      *
-     * @param other The other Task object to compare with.
-     * @return true if the other object is a DestroyBlockTask and has the same position, false otherwise.
+     * @param other The other task to compare against.
+     * @return True if the tasks are equal, false otherwise.
      */
     @Override
     protected boolean isEqual(Task other) {
+        boolean isSame = false;
+
+        // Check if the other task is an instance of DestroyBlockTask
         if (other instanceof DestroyBlockTask destroyBlockTask) {
-            return Objects.equals(destroyBlockTask._pos, _pos);
+
+            // Check if the positions of the tasks are equal
+            if (destroyBlockTask._pos.equals(_pos)) {
+                isSame = true;
+            }
         }
-        return false;
+
+        // Log the result of the equality check
+        Debug.logInternal("isEqual result: " + isSame);
+
+        // Return the result of the equality check
+        return isSame;
     }
 
     /**
-     * Returns a debug string describing the block destruction action.
-     * If the position is known, it includes the position in the string, otherwise it indicates an unknown position.
+     * Generates a debug string representing the block destruction position.
+     *
+     * @return The debug string.
      */
     @Override
     protected String toDebugString() {
-        if (_pos != null) {
-            return "Destroy block at " + _pos.toShortString();
-        } else {
-            return "Destroy block at unknown position";
-        }
+        return "Destroy block at " + _pos.toShortString();
     }
 }
