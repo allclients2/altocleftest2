@@ -39,10 +39,10 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     @Override
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
-        if (isFallingOhNo(mod)) {
+        if (isFalling(mod)) {
             _tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
-            _lastMLG = (MLGBucketTask) _mainTask;
+            _lastMLG = (MLGBucketTask) mainTask;
             return 100;
         } else if (!_tryCollectWaterTimer.elapsed()) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
@@ -128,7 +128,7 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
         return _doingChorusFruit;
     }
 
-    public boolean isFallingOhNo(AltoClef mod) {
+    public boolean isFalling(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
         }

@@ -180,7 +180,7 @@ public interface WorldHelper {
     }
 
     static BlockPos getADesertTemple(AltoClef mod) {
-        List<BlockPos> stonePressurePlates = mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE);
+        List<BlockPos> stonePressurePlates = mod.getBlockScanner().getKnownLocations(Blocks.STONE_PRESSURE_PLATE);
         if (!stonePressurePlates.isEmpty()) {
             for (BlockPos pos : stonePressurePlates) {
                 if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
@@ -268,7 +268,7 @@ public interface WorldHelper {
                 }
             }
         }
-        return !mod.getBlockTracker().unreachable(pos);
+        return !mod.getBlockScanner().isUnreachable(pos);
     }
 
     static boolean isOcean(RegistryEntry<Biome> b) {
@@ -284,7 +284,7 @@ public interface WorldHelper {
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {
-        return mod.getBlockTracker().blockIsValid(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
+        return mod.getBlockScanner().isBlockAtPosition(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
         //return state.isAir() || isAir(state.getBlock());
     }
 
@@ -403,15 +403,27 @@ public interface WorldHelper {
     }
 
     static boolean canSleep() {
-        int time = 0;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world != null) {
             // You can sleep during thunderstorms
             if (world.isThundering() && world.isRaining())
                 return true;
-            time = (int) (world.getTimeOfDay() % 24000);
+
+            int time = getTimeOfDay();
+            // https://minecraft.fandom.com/wiki/Daylight_cycle
+            return 12542 <= time && time <= 23992;
         }
-        // https://minecraft.fandom.com/wiki/Daylight_cycle
-        return 12542 <= time && time <= 23992;
+
+        return false;
     }
+
+    static int getTimeOfDay() {
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world != null) {
+            // You can sleep during thunderstorms
+            return (int) (world.getTimeOfDay() % 24000);
+        }
+        return 0;
+    }
+
 }

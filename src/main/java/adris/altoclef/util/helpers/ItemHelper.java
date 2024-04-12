@@ -39,7 +39,7 @@ public class ItemHelper {
     public static final Item[] DIRTS = new Item[]{Items.DIRT, Items.DIRT_PATH, Items.COARSE_DIRT, Items.ROOTED_DIRT};
     public static final Item[] PLANKS = new Item[]{Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS,
             Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS,
-            Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS, Items.CHERRY_PLANKS};
+            Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS};
     public static final Item[] LEAVES = new Item[]{Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES,
             Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES, Items.MANGROVE_LEAVES, Items.CHERRY_LEAVES};
     public static final Item[] WOOD = new Item[]{Items.ACACIA_WOOD, Items.BIRCH_WOOD, Items.CRIMSON_HYPHAE,
@@ -243,7 +243,7 @@ public class ItemHelper {
             put(type, new WoodItems(prefix, planks, log, strippedLog, strippedWood, wood, sign, hangingSign, door, button, stairs, slab, fence, fenceGate, boat, sapling, leaves, pressurePlate, trapdoor));
         }
     };
-    private static final HashMap<Item, Item> _cookableFoodMap = new HashMap<>() {
+    public static final HashMap<Item, Item> _cookableFoodMap = new HashMap<>() {
         {
             put(Items.PORKCHOP, Items.COOKED_PORKCHOP);
             put(Items.BEEF, Items.COOKED_BEEF);
@@ -256,6 +256,7 @@ public class ItemHelper {
         }
     };
     public static final Item[] RAW_FOODS = _cookableFoodMap.keySet().toArray(Item[]::new);
+    public static final Item[] COOKED_FOODS = _cookableFoodMap.values().toArray(Item[]::new);
     private static Map<Item, Integer> _fuelTimeMap = null;
 
     public static String stripItemName(Item item) {
@@ -279,6 +280,7 @@ public class ItemHelper {
     /* Logs:
         ACACIA
         BIRCH
+        CHERRY
         CRIMSON
         DARK_OAK
         OAK

@@ -43,8 +43,7 @@ public class CarveThenCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(_targetBlocks);
-        mod.getBlockTracker().trackBlock(_toCarveBlocks);
+
     }
 
     @Override
@@ -58,7 +57,7 @@ public class CarveThenCollectTask extends ResourceTask {
         //      Place carved items down
 
         // If our target block is placed, break it!
-        if (mod.getBlockTracker().anyFound(_targetBlocks)) {
+        if (mod.getBlockScanner().anyFound(_targetBlocks)) {
             setDebugState("Breaking carved/target block");
             return new DoToClosestBlockTask(DestroyBlockTask::new, _targetBlocks);
         }
@@ -68,7 +67,7 @@ public class CarveThenCollectTask extends ResourceTask {
             return TaskCatalogue.getItemTask(_carveWith);
         }
         // If our carve block is spotted, carve it.
-        if (mod.getBlockTracker().anyFound(_toCarveBlocks)) {
+        if (mod.getBlockScanner().anyFound(_toCarveBlocks)) {
             setDebugState("Carving block");
             return new DoToClosestBlockTask(blockPos -> new InteractWithBlockTask(_carveWith, blockPos, false), _toCarveBlocks);
         }
@@ -86,8 +85,7 @@ public class CarveThenCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_targetBlocks);
-        mod.getBlockTracker().stopTracking(_toCarveBlocks);
+
     }
 
     @Override

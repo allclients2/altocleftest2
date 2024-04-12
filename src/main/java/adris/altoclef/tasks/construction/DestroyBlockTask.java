@@ -255,7 +255,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                 if (entity instanceof PillagerEntity && _pos.isWithinDistance(entity.getPos(), 144)) {
                     Debug.logMessage("Blacklisting pillager wool.");
                     // Request the block at the position to be marked as unreachable
-                    mod.getBlockTracker().requestBlockUnreachable(_pos, 0);
+                    mod.getBlockScanner().requestBlockUnreachable(_pos, 0);
                 }
             }
         }
@@ -308,7 +308,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         if (!_moveChecker.check(mod)) {
             _moveChecker.reset();
             // Request the block at the position to be marked as unreachable
-            mod.getBlockTracker().requestBlockUnreachable(_pos);
+            mod.getBlockScanner().requestBlockUnreachable(_pos);
         }
 
         // Check if the block above the position is not solid, the player is above the position,
@@ -338,8 +338,10 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         } else {
             setDebugState("Getting to block...");
             if (isMining && mod.getPlayer().isTouchingWater()) {
+                setDebugState("We are in water... holding break button");
                 isMining = false;
-                mod.getBlockTracker().requestBlockUnreachable(_pos);
+                mod.getBlockScanner().requestBlockUnreachable(_pos);
+                mod.getInputControls().hold(Input.CLICK_LEFT);
             } else {
                 isMining = false;
             }

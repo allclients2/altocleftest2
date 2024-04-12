@@ -66,7 +66,8 @@ public class MoveItemToSlotTask extends Task {
                     }
                 }
                 if (toPlace.isEmpty()) {
-                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    Debug.logWarning("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    this.stop(mod);
                     return null;
                 }
                 mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);

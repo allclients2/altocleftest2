@@ -53,7 +53,6 @@ public class RavageRuinedPortalsTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.CHEST);
     }
 
     @Override
@@ -71,7 +70,6 @@ public class RavageRuinedPortalsTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        mod.getBlockTracker().stopTracking(Blocks.CHEST);
         mod.getBehaviour().pop();
     }
 
@@ -107,6 +105,6 @@ public class RavageRuinedPortalsTask extends Task {
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             return Optional.empty();
         }
-        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
+        return mod.getBlockScanner().getNearestBlock(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 }

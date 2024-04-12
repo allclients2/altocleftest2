@@ -10,7 +10,6 @@ import adris.altoclef.util.time.Stopwatch;
 
 // A task chain that runs a user defined task at the same priority.
 // This basically replaces our old Task Runner.
-@SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
 
     private final Stopwatch _taskStopwatch = new Stopwatch();
@@ -38,7 +37,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (minutes != 0) {
             result += (minutes % 60) + " minutes ";
         }
-        if (!result.equals("")) {
+        if (!result.isEmpty()) {
             result += "and ";
         }
         result += String.format("%.3f", (seconds % 60));
@@ -49,13 +48,13 @@ public class UserTaskChain extends SingleTaskChain {
     protected void onTick(AltoClef mod) {
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return;
+        if (!AltoClef.inGame()) return;
 
         super.onTick(mod);
     }
 
     public void cancel(AltoClef mod) {
-        if (_mainTask != null && _mainTask.isActive()) {
+        if (mainTask != null && mainTask.isActive()) {
             stop(mod);
             onTaskFinish(mod);
         }
@@ -100,14 +99,13 @@ public class UserTaskChain extends SingleTaskChain {
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
         double seconds = _taskStopwatch.time();
-        Task oldTask = _mainTask;
-        _mainTask = null;
+        Task oldTask = mainTask;
+        mainTask = null;
         if (_currentOnFinish != null) {
-            //noinspection unchecked
             _currentOnFinish.run();
         }
         // our `onFinish` might have triggered more tasks.
-        boolean actuallyDone = _mainTask == null;
+        boolean actuallyDone = mainTask == null;
         if (actuallyDone) {
             if (!_runningIdleTask) {
                 Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));

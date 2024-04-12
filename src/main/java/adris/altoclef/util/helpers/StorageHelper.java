@@ -14,7 +14,9 @@ import adris.altoclef.util.slots.CursorSlot;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import baritone.utils.ToolSet;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.GameMenuScreen;
@@ -136,6 +138,8 @@ public class StorageHelper {
         //      PREFER (Always use silk touch if we have)
         //      AVOID  (Don't use silk touch if we can)
         //  }
+        Block block = state.getBlock();
+
         Slot bestToolSlot = null;
         double highestSpeed = Double.NEGATIVE_INFINITY;
         if (Slot.getCurrentScreenSlots() != null) {
@@ -145,6 +149,8 @@ public class StorageHelper {
                 ItemStack stack = getItemStackInSlot(slot);
                 if (stack.getItem() instanceof ToolItem) {
                     if (stack.getItem().isSuitableFor(state)) {
+                        if (shouldSaveStack(mod, block,stack)) continue;
+
                         double speed = ToolSet.calculateSpeedVsBlock(stack, state);
                         if (speed > highestSpeed) {
                             highestSpeed = speed;
@@ -162,6 +168,26 @@ public class StorageHelper {
             }
         }
         return Optional.ofNullable(bestToolSlot);
+    }
+
+    // if the iron pickaxes durability is low, we do not have diamond pickaxe and are not mining diamonds, do not use it
+    public static boolean shouldSaveStack(AltoClef mod,Block block, ItemStack stack) {
+        if (!stack.getItem().equals(Items.IRON_PICKAXE) || mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) return false;
+
+        boolean diamondRelatedBlock = block.equals(Blocks.DIAMOND_BLOCK) || block.equals(Blocks.DIAMOND_ORE) || block.equals(Blocks.DEEPSLATE_DIAMOND_ORE);
+
+        // if the durability is really low, mine only diamond related stuff
+        if (stack.getDamage()+8 > stack.getMaxDamage()) {
+            return diamondRelatedBlock;
+        }
+
+        // if the durability gets low, mine only things we have to
+        if (stack.getDamage()+30 > stack.getMaxDamage()) {
+            return !MiningRequirement.getMinimumRequirementForBlock(block).equals(MiningRequirement.IRON);
+        }
+
+
+        return false;
     }
 
     // Gets a slot with an item we can throw away
@@ -367,6 +393,10 @@ public class StorageHelper {
 
     public static boolean isFurnaceOpen() {
         return isScreenOpenInner(screen -> screen instanceof FurnaceScreenHandler);
+    }
+
+    public static boolean isChestOpen() {
+        return isScreenOpenInner(screen -> screen instanceof GenericContainerScreenHandler);
     }
 
     public static boolean isSmokerOpen() {

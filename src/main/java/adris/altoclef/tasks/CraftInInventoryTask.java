@@ -47,7 +47,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected void onResourceStart(AltoClef mod) {
         _fullCheckFailed = false;
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
-        if (!cursorStack.isEmpty()) {
+        if (!cursorStack.isEmpty() && !StorageHelper.isBigCraftingOpen()) {
             Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
             moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
             if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
@@ -112,6 +112,12 @@ public class CraftInInventoryTask extends ResourceTask {
                 }
             }
         }
+    }
+
+    // TODO check if this doesnt break something... but generally this shouldnt pickup items
+    @Override
+    protected double getPickupRange(AltoClef mod) {
+        return 0;
     }
 
     @Override

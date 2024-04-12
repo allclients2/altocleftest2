@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
  * For crafting table/inventory recipe book crafting, we need to figure out identifiers given a recipe.
  */
 public class JankCraftingRecipeMapping {
-    private static final HashMap<Item, List<RecipeEntry<?>>> _recipeMapping = new HashMap<>();
+    private static final HashMap<Item, List<RecipeEntry<?>>> recipeMapping = new HashMap<>();
 
     /**
      * Reloads the recipe mapping.
@@ -33,7 +33,7 @@ public class JankCraftingRecipeMapping {
                 for (RecipeEntry<?> recipe : recipes.values()) {
                     assert world != null;
                     Item output = recipe.value().getResult(world.getRegistryManager()).getItem();
-                    _recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);
+                    recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);
                 }
             }
         }
@@ -49,9 +49,9 @@ public class JankCraftingRecipeMapping {
     public static Optional<RecipeEntry<?>> getMinecraftMappedRecipe(CraftingRecipe recipe, Item output) {
         reloadRecipeMapping();
         // Check if the output item is present in the recipe mapping
-        if (_recipeMapping.containsKey(output)) {
+        if (recipeMapping.containsKey(output)) {
             // Iterate through all the recipes mapped to the output item
-            for (RecipeEntry<?> checkRecipe : _recipeMapping.get(output)) {
+            for (RecipeEntry<?> checkRecipe : recipeMapping.get(output)) {
                 // Create a list of item targets to satisfy
                 List<ItemTarget> toSatisfy = Arrays.stream(recipe.getSlots())
                         .filter(itemTarget -> itemTarget != null && !itemTarget.isEmpty())

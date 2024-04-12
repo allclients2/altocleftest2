@@ -79,9 +79,9 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
     protected Task onTick(AltoClef mod) {
         Optional<Entity> enderMen = mod.getEntityTracker().getClosestEntity(EndermanEntity.class);
         if (enderMen.isPresent() && (enderMen.get() instanceof EndermanEntity endermanEntity) &&
-                endermanEntity.isAngry()) {
+                endermanEntity.getTarget()==mod.getPlayer()) {
             setDebugState("Killing angry endermen");
-            Predicate<Entity> angry = entity -> endermanEntity.isAngry();
+            Predicate<Entity> angry = entity -> endermanEntity.getTarget()==mod.getPlayer();
             return new KillEntitiesTask(angry, enderMen.get().getClass());
         }
         if (_throwPearlTask != null && _throwPearlTask.isActive() && !_throwPearlTask.isFinished(mod)) {
@@ -212,7 +212,7 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
     }
 
     private boolean isFireballDangerous(AltoClef mod, Optional<Entity> fireball) {
-        if (!fireball.isPresent())
+        if (fireball.isEmpty())
             return false;
 
         boolean fireballTooClose = fireball.get().isInRange(mod.getPlayer(), DRAGON_FIREBALL_TOO_CLOSE_RANGE);

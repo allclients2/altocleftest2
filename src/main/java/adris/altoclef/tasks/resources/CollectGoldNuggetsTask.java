@@ -14,11 +14,11 @@ import net.minecraft.item.Items;
 
 public class CollectGoldNuggetsTask extends ResourceTask {
 
-    private final int _count;
+    private final int count;
 
     public CollectGoldNuggetsTask(int count) {
         super(Items.GOLD_NUGGET, count);
-        _count = count;
+        this.count = count;
     }
 
     @Override
@@ -37,17 +37,17 @@ public class CollectGoldNuggetsTask extends ResourceTask {
             case OVERWORLD -> {
                 setDebugState("Getting gold ingots to convert to nuggets");
                 int potentialNuggies = mod.getItemStorage().getItemCount(Items.GOLD_NUGGET) + mod.getItemStorage().getItemCount(Items.GOLD_INGOT) * 9;
-                if (potentialNuggies >= _count && mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
+                if (potentialNuggies >= count && mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
                     // Craft gold ingots to nuggets
-                    return new CraftInInventoryTask(new RecipeTarget(Items.GOLD_NUGGET, _count, CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9)));
+                    return new CraftInInventoryTask(new RecipeTarget(Items.GOLD_NUGGET, count, CraftingRecipe.newShapedRecipe("golden_nuggets", new ItemTarget[]{new ItemTarget(Items.GOLD_INGOT, 1), null, null, null}, 9)));
                 }
                 // Get gold ingots
-                int nuggiesStillNeeded = _count - potentialNuggies;
+                int nuggiesStillNeeded = count - potentialNuggies;
                 return TaskCatalogue.getItemTask(Items.GOLD_INGOT, (int) Math.ceil((double) nuggiesStillNeeded / 9.0));
             }
             case NETHER -> {
                 setDebugState("Mining nuggies");
-                return new MineAndCollectTask(Items.GOLD_NUGGET, _count, new Block[]{Blocks.NETHER_GOLD_ORE, Blocks.GILDED_BLACKSTONE}, MiningRequirement.WOOD);
+                return new MineAndCollectTask(Items.GOLD_NUGGET, count, new Block[]{Blocks.NETHER_GOLD_ORE, Blocks.GILDED_BLACKSTONE}, MiningRequirement.WOOD);
             }
             case END -> {
                 setDebugState("Going to overworld");
@@ -71,6 +71,6 @@ public class CollectGoldNuggetsTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " nuggets";
+        return "Collecting " + count + " nuggets";
     }
 }

@@ -257,7 +257,7 @@ public class BotBehaviour {
         return _states.peek();
     }
 
-    class State {
+    private class State {
         /// Baritone Params
         public double followOffsetDistance;
         public List<Item> protectedItems = new ArrayList<>();

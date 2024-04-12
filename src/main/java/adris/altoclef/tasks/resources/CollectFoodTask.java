@@ -10,14 +10,14 @@ import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.container.SmeltInSmokerTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
-import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
+import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
-import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.slots.SmokerSlot;
 import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.*;
@@ -42,21 +42,16 @@ import java.util.function.Predicate;
 
 public class CollectFoodTask extends Task {
 
-    // Actually screw fish baritone does NOT play nice underwater.
-    // Fish kinda suck to harvest so heavily penalize them.
-    private static final double FISH_PENALTY = 0 * 0.03;
 
     // Represents order of preferred mobs to least preferred
-    private static final CookableFoodTarget[] COOKABLE_FOODS = new CookableFoodTarget[]{
+    public static final CookableFoodTarget[] COOKABLE_FOODS = new CookableFoodTarget[]{
             new CookableFoodTarget("beef", CowEntity.class),
             new CookableFoodTarget("porkchop", PigEntity.class),
-            new CookableFoodTargetFish("salmon", SalmonEntity.class),
             new CookableFoodTarget("chicken", ChickenEntity.class),
-            new CookableFoodTargetFish("cod", CodEntity.class),
             new CookableFoodTarget("mutton", SheepEntity.class)
     };
 
-    private static final Item[] ITEMS_TO_PICK_UP = new Item[]{
+    public static final Item[] ITEMS_TO_PICK_UP = new Item[]{
             Items.ENCHANTED_GOLDEN_APPLE,
             Items.GOLDEN_APPLE,
             Items.GOLDEN_CARROT,
@@ -64,18 +59,18 @@ public class CollectFoodTask extends Task {
             Items.BAKED_POTATO
     };
 
-    private static final CropTarget[] CROPS = new CropTarget[]{
+    public static final CropTarget[] CROPS = new CropTarget[]{
             new CropTarget(Items.WHEAT, Blocks.WHEAT),
             new CropTarget(Items.CARROT, Blocks.CARROTS)
     };
 
-    private final double _unitsNeeded;
-    private final TimerGame _checkNewOptionsTimer = new TimerGame(10);
-    private SmeltInSmokerTask _smeltTask = null;
-    private Task _currentResourceTask = null;
+    private final double unitsNeeded;
+    private final TimerGame checkNewOptionsTimer = new TimerGame(10);
+    private final SmeltInSmokerTask smeltTask = null;
+    private Task currentResourceTask = null;
 
     public CollectFoodTask(double unitsNeeded) {
-        _unitsNeeded = unitsNeeded;
+        this.unitsNeeded = unitsNeeded;
     }
 
     private static double getFoodPotential(ItemStack food) {
@@ -88,6 +83,17 @@ public class CollectFoodTask extends Task {
                 return count * cookable.getCooked().getFoodComponent().getHunger();
             }
         }
+
+        //bread logic
+        assert Items.BREAD.getFoodComponent() != null;
+
+        if (food.getItem().equals(Items.HAY_BLOCK)) {
+            return 3*Items.BREAD.getFoodComponent().getHunger()*count;
+        }
+        if (food.getItem().equals(Items.WHEAT)) {
+            return (double) (Items.BREAD.getFoodComponent().getHunger() * count) /3;
+        }
+
         // We're just an ordinary item.
         if (food.getItem().isFood()) {
             assert food.getItem().getFoodComponent() != null;
@@ -98,7 +104,7 @@ public class CollectFoodTask extends Task {
 
     // Gets the units of food if we were to convert all of our raw resources to food.
     @SuppressWarnings("RedundantCast")
-    private static double calculateFoodPotential(AltoClef mod) {
+    public static double calculateFoodPotential(AltoClef mod) {
         double potentialFood = 0;
         for (ItemStack food : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
             potentialFood += getFoodPotential(food);
@@ -119,9 +125,6 @@ public class CollectFoodTask extends Task {
         mod.getBehaviour().push();
         // Protect ALL food
         mod.getBehaviour().addProtectedItems(ITEMS_TO_PICK_UP);
-        for (CropTarget crop : CROPS) {
-            mod.getBlockTracker().trackBlock(crop.cropBlock);
-        }
 
         // Allow us to consume food.
         /*
@@ -131,61 +134,40 @@ public class CollectFoodTask extends Task {
         }
          */
         mod.getBehaviour().addProtectedItems(Items.HAY_BLOCK, Items.SWEET_BERRIES);
-
-        mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
-        mod.getBlockTracker().trackBlock(Blocks.SWEET_BERRY_BUSH);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (mod.getEntityTracker().entityFound(ChickenEntity.class)) {
-            Optional<Entity> chickens = mod.getEntityTracker().getClosestEntity(ChickenEntity.class);
-            if (chickens.isPresent()) {
-                Iterable<Entity> entities = mod.getWorld().getEntities();
-                for (Entity entity : entities) {
-                    if (entity instanceof HostileEntity || entity instanceof SlimeEntity) {
-                        if (chickens.get().hasPassenger(entity)) {
-                            if (mod.getEntityTracker().isEntityReachable(entity)) {
-                                Debug.logMessage("Blacklisting chicken jockey.");
-                                mod.getEntityTracker().requestEntityUnreachable(chickens.get());
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        List<BlockPos> haysPos = mod.getBlockTracker().getKnownLocations(Blocks.HAY_BLOCK);
+        blackListChickenJockeys(mod);
+
+        List<BlockPos> haysPos = mod.getBlockScanner().getKnownLocations(Blocks.HAY_BLOCK);
         for (BlockPos HaysPos : haysPos) {
             BlockPos haysUpPos = HaysPos.up();
             if (mod.getWorld().getBlockState(haysUpPos).getBlock() == Blocks.CARVED_PUMPKIN) {
                 Debug.logMessage("Blacklisting pillage hay bales.");
-                mod.getBlockTracker().requestBlockUnreachable(HaysPos, 0);
+                mod.getBlockScanner().requestBlockUnreachable(HaysPos, 0);
             }
         }
         // If we were previously smelting, keep on smelting.
-        if (_smeltTask != null && _smeltTask.isActive() && !_smeltTask.isFinished(mod)) {
+        if (smeltTask != null && smeltTask.isActive() && !smeltTask.isFinished(mod)) {
             // TODO: If we don't have cooking materials, cancel.
             setDebugState("Cooking...");
-            if (MarvionBeatMinecraftTask.getConfig().renderDistanceManipulation) {
-                MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
-            }
-            return _smeltTask;
+            return smeltTask;
         }
 
-        if (_checkNewOptionsTimer.elapsed()) {
+        if (checkNewOptionsTimer.elapsed()) {
             // Try a new resource task
-            _checkNewOptionsTimer.reset();
-            _currentResourceTask = null;
+            checkNewOptionsTimer.reset();
+            currentResourceTask = null;
         }
 
-        if (_currentResourceTask != null && _currentResourceTask.isActive() && !_currentResourceTask.isFinished(mod) && !_currentResourceTask.thisOrChildAreTimedOut()) {
-            return _currentResourceTask;
+        if (currentResourceTask != null && currentResourceTask.isActive() && !currentResourceTask.isFinished(mod) && !currentResourceTask.thisOrChildAreTimedOut()) {
+            return currentResourceTask;
         }
 
         // Calculate potential
         double potentialFood = calculateFoodPotential(mod);
-        if (potentialFood >= _unitsNeeded) {
+        if (potentialFood >= unitsNeeded) {
             // Convert our raw foods
             // PLAN:
             // - If we have hay/wheat, make it into bread
@@ -197,35 +179,35 @@ public class CollectFoodTask extends Task {
                 Item[] w = new Item[]{Items.WHEAT};
                 Item[] o = null;
                 // jank
-                _currentResourceTask = new CraftInTableTask(new RecipeTarget(Items.BREAD, 99999999, CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1)), false, false);
-                return _currentResourceTask;
+                currentResourceTask = new CraftInTableTask(new RecipeTarget(Items.BREAD, 99999999, CraftingRecipe.newShapedRecipe("bread", new Item[][]{w, w, w, o, o, o, o, o, o}, 1)), false, false);
+                return currentResourceTask;
             }
             if (mod.getItemStorage().getItemCount(Items.HAY_BLOCK) >= 1) {
                 setDebugState("Crafting Wheat");
                 Item[] o = null;
-                _currentResourceTask = new CraftInInventoryTask(new RecipeTarget(Items.WHEAT, 99999999, CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9)), false, false);
-                return _currentResourceTask;
+                currentResourceTask = new CraftInInventoryTask(new RecipeTarget(Items.WHEAT, 99999999, CraftingRecipe.newShapedRecipe("wheat", new Item[][]{new Item[]{Items.HAY_BLOCK}, o, o, o}, 9)), false, false);
+                return currentResourceTask;
             }
             // Convert raw foods -> cooked foods
 
-            for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            /*for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
-                    _smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
-                    _smeltTask.ignoreMaterials();
-                    return _smeltTask;
+                    smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+                    smeltTask.ignoreMaterials();
+                    return smeltTask;
                 }
-            }
+            }*/
         } else {
             // Pick up food items from ground
             for (Item item : ITEMS_TO_PICK_UP) {
                 Task t = this.pickupTaskOrNull(mod, item);
                 if (t != null) {
                     setDebugState("Picking up Food: " + item.getTranslationKey());
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Pick up raw/cooked foods on ground
@@ -234,16 +216,16 @@ public class CollectFoodTask extends Task {
                 if (t == null) t = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
                 if (t != null) {
                     setDebugState("Picking up Cookable food");
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Hay blocks
             Task hayTaskBlock = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK, 300);
             if (hayTaskBlock != null) {
                 setDebugState("Collecting Hay");
-                _currentResourceTask = hayTaskBlock;
-                return _currentResourceTask;
+                currentResourceTask = hayTaskBlock;
+                return currentResourceTask;
             }
             // Crops
             for (CropTarget target : CROPS) {
@@ -269,23 +251,25 @@ public class CollectFoodTask extends Task {
                 }), 96);
                 if (t != null) {
                     setDebugState("Harvesting " + target.cropItem.getTranslationKey());
-                    _currentResourceTask = t;
-                    return _currentResourceTask;
+                    currentResourceTask = t;
+                    return currentResourceTask;
                 }
             }
             // Cooked foods
             double bestScore = 0;
             Entity bestEntity = null;
             Item bestRawFood = null;
+            Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
+
             for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
-                Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), cookable.mobToKill);
+                Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),notBaby ,cookable.mobToKill);
                 if (nearest.isEmpty()) continue; // ?? This crashed once?
                 int hungerPerformance = cookable.getCookedUnits();
                 double sqDistance = nearest.get().squaredDistanceTo(mod.getPlayer());
                 double score = (double) 100 * hungerPerformance / (sqDistance);
                 if (cookable.isFish()) {
-                    score *= FISH_PENALTY;
+                    score = 0;
                 }
                 if (score > bestScore) {
                     bestScore = score;
@@ -295,17 +279,16 @@ public class CollectFoodTask extends Task {
             }
             if (bestEntity != null) {
                 setDebugState("Killing " + bestEntity.getType().getTranslationKey());
-                Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
-                _currentResourceTask = killTaskOrNull(bestEntity, notBaby, bestRawFood);
-                return _currentResourceTask;
+                currentResourceTask = killTaskOrNull(bestEntity, notBaby, bestRawFood);
+                return currentResourceTask;
             }
 
             // Sweet berries (separate from crops because they should have a lower priority than everything else cause they suck)
             Task berryPickup = pickupBlockTaskOrNull(mod, Blocks.SWEET_BERRY_BUSH, Items.SWEET_BERRIES, 96);
             if (berryPickup != null) {
                 setDebugState("Getting sweet berries (no better foods are present)");
-                _currentResourceTask = berryPickup;
-                return _currentResourceTask;
+                currentResourceTask = berryPickup;
+                return currentResourceTask;
             }
         }
 
@@ -314,32 +297,46 @@ public class CollectFoodTask extends Task {
         return new TimeoutWanderTask();
     }
 
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBehaviour().pop();
-        mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
-        mod.getBlockTracker().stopTracking(Blocks.SWEET_BERRY_BUSH);
-        for (CropTarget crop : CROPS) {
-            mod.getBlockTracker().stopTracking(crop.cropBlock);
+    static void blackListChickenJockeys(AltoClef mod) {
+        if (mod.getEntityTracker().entityFound(ChickenEntity.class)) {
+            Optional<Entity> chickens = mod.getEntityTracker().getClosestEntity(ChickenEntity.class);
+            if (chickens.isPresent()) {
+                Iterable<Entity> entities = mod.getWorld().getEntities();
+                for (Entity entity : entities) {
+                    if (entity instanceof HostileEntity || entity instanceof SlimeEntity) {
+                        if (chickens.get().hasPassenger(entity)) {
+                            if (mod.getEntityTracker().isEntityReachable(entity)) {
+                                Debug.logMessage("Blacklisting chicken jockey.");
+                                mod.getEntityTracker().requestEntityUnreachable(chickens.get());
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
     @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getBehaviour().pop();
+    }
+
+    @Override
     public boolean isFinished(AltoClef mod) {
-        return StorageHelper.calculateInventoryFoodScore(mod) >= _unitsNeeded;
+        return StorageHelper.calculateInventoryFoodScore(mod) >= unitsNeeded;
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof CollectFoodTask task) {
-            return task._unitsNeeded == _unitsNeeded;
+            return task.unitsNeeded == unitsNeeded;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Collect " + _unitsNeeded + " units of food.";
+        return "Collect " + unitsNeeded + " units of food.";
     }
 
     /**
@@ -351,7 +348,7 @@ public class CollectFoodTask extends Task {
             if (!WorldHelper.canBreak(mod, blockPos)) return false;
             return accept.test(blockPos);
         };
-        Optional<BlockPos> nearestBlock = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
+        Optional<BlockPos> nearestBlock = mod.getBlockScanner().getNearestBlock(mod.getPlayer().getPos(), acceptPlus, blockToCheck);
 
         if (nearestBlock.isPresent() && !nearestBlock.get().isWithinDistance(mod.getPlayer().getPos(), maxRange)) {
             nearestBlock = Optional.empty();
@@ -361,15 +358,14 @@ public class CollectFoodTask extends Task {
         if (mod.getEntityTracker().itemDropped(itemToGrab)) {
             nearestDrop = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), itemToGrab);
         }
-        boolean spotted = nearestBlock.isPresent() || nearestDrop.isPresent();
-        // Collect hay until we have enough.
-        if (spotted) {
-            if (nearestDrop.isPresent()) {
-                return new PickupDroppedItemTask(itemToGrab, Integer.MAX_VALUE);
-            } else {
-                return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
-            }
+
+        if (nearestDrop.isPresent()) {
+            return pickupTaskOrNull(mod,itemToGrab);
         }
+        if (nearestBlock.isPresent()) {
+            return new DoToClosestBlockTask(DestroyBlockTask::new, acceptPlus, blockToCheck);
+        }
+
         return null;
     }
 
@@ -392,9 +388,33 @@ public class CollectFoodTask extends Task {
         }
         if (nearestDrop.isPresent()) {
             if (nearestDrop.get().isInRange(mod.getPlayer(), maxRange)) {
+                if (mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(nearestDrop.get().getStack(), false).isEmpty()) {
+                    Optional<Slot> slot = StorageHelper.getGarbageSlot(mod);
+
+                    // tf am I supposed to do if its empty
+                    if (slot.isPresent()) {
+                        ItemStack stack = StorageHelper.getItemStackInSlot(slot.get());
+                        if (stack.getItem().isFood()) {
+                            // calculate priority, if the item laying on the ground has lower priority than the one we are gonna throw out because of it
+                            // dont pick it up, otherwise we would get stuck in an infinite loop
+                            int inventoryCost = stack.getItem().getFoodComponent().getHunger() * stack.getCount();
+
+                            double hunger = 0;
+                            if (itemToGrab.isFood()) {
+                                hunger = itemToGrab.getFoodComponent().getHunger();
+                            } else if (itemToGrab.equals(Items.WHEAT)) {
+                                hunger += Items.BREAD.getFoodComponent().getHunger()/3d;
+                            } else {
+                                mod.log("unknown food item: "+itemToGrab);
+                            }
+                            int groundCost = (int) (hunger * nearestDrop.get().getStack().getCount());
+
+                            if (inventoryCost > groundCost) return null;
+                        }
+                    }
+                }
                 return new PickupDroppedItemTask(new ItemTarget(itemToGrab), true);
             }
-            //return new GetToBlockTask(nearestDrop.getBlockPos(), false);
         }
         return null;
     }
@@ -404,7 +424,7 @@ public class CollectFoodTask extends Task {
     }
 
     @SuppressWarnings("rawtypes")
-    private static class CookableFoodTarget {
+    public static class CookableFoodTarget {
         public String rawFood;
         public String cookedFood;
         public Class mobToKill;
@@ -419,7 +439,7 @@ public class CollectFoodTask extends Task {
             this(rawFood, "cooked_" + rawFood, mobToKill);
         }
 
-        private Item getRaw() {
+        public Item getRaw() {
             return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0];
         }
 
@@ -450,7 +470,7 @@ public class CollectFoodTask extends Task {
         }
     }
 
-    private static class CropTarget {
+    public static class CropTarget {
         public Item cropItem;
         public Block cropBlock;
 

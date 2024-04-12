@@ -16,11 +16,11 @@ import java.util.Optional;
 
 public class CollectIronIngotTask extends ResourceTask {
 
-    private final int _count;
+    private final int count;
 
     public CollectIronIngotTask(int count) {
         super(Items.IRON_INGOT, count);
-        _count = count;
+        this.count = count;
     }
 
     @Override
@@ -31,43 +31,41 @@ public class CollectIronIngotTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.FURNACE, Blocks.BLAST_FURNACE);
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (mod.getModSettings().shouldUseBlastFurnace()) {
             if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) ||
-                    mod.getBlockTracker().anyFound(Blocks.BLAST_FURNACE) ||
+                    mod.getBlockScanner().anyFound(Blocks.BLAST_FURNACE) ||
                     mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) {
-                return new SmeltInBlastFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, _count), new ItemTarget(Items.RAW_IRON, _count)));
+                return new SmeltInBlastFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
             }
-            if (_count < 5) {
-                return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, _count), new ItemTarget(Items.RAW_IRON, _count)));
+            if (count < 5) {
+                return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
             }
-            Optional<BlockPos> furnacePos = mod.getBlockTracker().getNearestTracking(Blocks.FURNACE);
+            Optional<BlockPos> furnacePos = mod.getBlockScanner().getNearestBlock(Blocks.FURNACE);
             furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
             if (mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 5) {
                 return TaskCatalogue.getItemTask(Items.BLAST_FURNACE, 1);
             }
             return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, 5), new ItemTarget(Items.RAW_IRON, 5)));
         }
-        return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, _count), new ItemTarget(Items.RAW_IRON, _count)));
+        return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
-        mod.getBlockTracker().stopTracking(Blocks.FURNACE, Blocks.BLAST_FURNACE);
     }
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
-        return other instanceof CollectIronIngotTask && ((CollectIronIngotTask) other)._count == _count;
+        return other instanceof CollectIronIngotTask same && same.count == count;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " iron.";
+        return "Collecting " + count + " iron.";
     }
 }

@@ -15,7 +15,7 @@ public class StatusCommand extends Command {
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
         List<Task> tasks = mod.getUserTaskChain().getTasks();
-        if (tasks.size() == 0) {
+        if (tasks.isEmpty()) {
             mod.log("No tasks currently running.");
         } else {
             mod.log("CURRENT TASK: " + tasks.get(0).toString());

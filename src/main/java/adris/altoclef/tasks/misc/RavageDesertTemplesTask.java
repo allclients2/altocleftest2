@@ -47,7 +47,6 @@ public class RavageDesertTemplesTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.STONE_PRESSURE_PLATE);
     }
 
     @Override
@@ -76,7 +75,6 @@ public class RavageDesertTemplesTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        mod.getBlockTracker().stopTracking(Blocks.STONE_PRESSURE_PLATE);
         mod.getBehaviour().pop();
     }
 

@@ -3,6 +3,7 @@ package adris.altoclef.tasks.movement;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
+import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
@@ -11,7 +12,7 @@ import net.minecraft.util.math.BlockPos;
 
 public class GoToStrongholdPortalTask extends Task {
 
-    private final LocateStrongholdCoordinatesTask _locateCoordsTask;
+    private LocateStrongholdCoordinatesTask _locateCoordsTask;
     private final int _targetEyes;
     private final int MINIMUM_EYES = 12;
     private BlockPos _strongholdCoordinates;
@@ -24,7 +25,7 @@ public class GoToStrongholdPortalTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.END_PORTAL_FRAME);
+
     }
 
     @Override
@@ -35,6 +36,9 @@ public class GoToStrongholdPortalTask extends Task {
             If there search it
          */
         if (_strongholdCoordinates == null) {
+            // in case any screen is open, prevents from getting stuck
+            StorageHelper.closeScreen();
+
             _strongholdCoordinates = _locateCoordsTask.getStrongholdCoordinates().orElse(null);
             if (_strongholdCoordinates == null) {
                 if (mod.getItemStorage().getItemCount(Items.ENDER_EYE) < MINIMUM_EYES && mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
@@ -45,9 +49,17 @@ public class GoToStrongholdPortalTask extends Task {
                 return _locateCoordsTask;
             }
         }
+
+        if (mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(_strongholdCoordinates)) < 10 && !mod.getBlockScanner().anyFound(Blocks.END_PORTAL_FRAME)) {
+            mod.log("Something went wrong whilst triangulating the stronghold... either the action got disrupted or the second eye went to a different stronghold");
+            mod.log("We will try to triangulate again now...");
+            _strongholdCoordinates = null;
+            _locateCoordsTask = new LocateStrongholdCoordinatesTask(_targetEyes);
+            return null;
+        }
         // Search stone brick chunks, but while we're wandering, go to the nether
         setDebugState("Searching for Stronghold...");
-        return new SearchChunkForBlockTask(Blocks.STONE_BRICKS) {
+        /*return new SearchChunkForBlockTask(Blocks.STONE_BRICKS) {
             @Override
             protected Task onTick(AltoClef mod) {
                 if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
@@ -60,12 +72,13 @@ public class GoToStrongholdPortalTask extends Task {
             protected Task getWanderTask(AltoClef mod) {
                 return new FastTravelTask(_strongholdCoordinates, 300, true);
             }
-        };
+        };*/
+        return new FastTravelTask(_strongholdCoordinates, 300, true);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.END_PORTAL_FRAME);
+
     }
 
     @Override

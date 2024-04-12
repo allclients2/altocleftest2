@@ -26,28 +26,28 @@ import java.util.Optional;
  * The interaction is abstract.
  */
 public abstract class AbstractDoToEntityTask extends Task implements ITaskRequiresGrounded {
-    protected final MovementProgressChecker _progress = new MovementProgressChecker();
-    private final double _maintainDistance;
-    private final double _combatGuardLowerRange;
-    private final double _combatGuardLowerFieldRadius;
+    protected final MovementProgressChecker progress = new MovementProgressChecker();
+    private final double maintainDistance;
+    private final double combatGuardLowerRange;
+    private final double combatGuardLowerFieldRadius;
 
-    public AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
-        _maintainDistance = maintainDistance;
-        _combatGuardLowerRange = combatGuardLowerRange;
-        _combatGuardLowerFieldRadius = combatGuardLowerFieldRadius;
+    protected AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+        this.maintainDistance = maintainDistance;
+        this.combatGuardLowerRange = combatGuardLowerRange;
+        this.combatGuardLowerFieldRadius = combatGuardLowerFieldRadius;
     }
 
-    public AbstractDoToEntityTask(double maintainDistance) {
+    protected AbstractDoToEntityTask(double maintainDistance) {
         this(maintainDistance, 0, Double.POSITIVE_INFINITY);
     }
 
-    public AbstractDoToEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+    protected AbstractDoToEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         this(-1, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
-        _progress.reset();
+        progress.reset();
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
         if (!cursorStack.isEmpty()) {
             Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
@@ -67,7 +67,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     @Override
     protected Task onTick(AltoClef mod) {
         if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
-            _progress.reset();
+            progress.reset();
         }
 
         Optional<Entity> checkEntity = getEntityTarget(mod);
@@ -90,37 +90,34 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
 
             double sqDist = entity.squaredDistanceTo(mod.getPlayer());
 
-            if (sqDist < _combatGuardLowerRange * _combatGuardLowerRange) {
-                mod.getMobDefenseChain().setForceFieldRange(_combatGuardLowerFieldRadius);
+            if (sqDist < combatGuardLowerRange * combatGuardLowerRange) {
+                mod.getMobDefenseChain().setForceFieldRange(combatGuardLowerFieldRadius);
             } else {
                 mod.getMobDefenseChain().resetForceField();
             }
 
             // If we don't specify a maintain distance, default to within 1 block of our reach.
-            double maintainDistance = _maintainDistance >= 0 ? _maintainDistance : playerReach - 1;
+            double maintainDistance = this.maintainDistance >= 0 ? this.maintainDistance : playerReach - 1;
 
             boolean tooClose = sqDist < maintainDistance * maintainDistance;
 
             // Step away if we're too close
-            if (tooClose) {
-                //setDebugState("Maintaining distance");
-                if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
-                }
+            if (tooClose && !mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalRunAway(maintainDistance, entity.getBlockPos()));
             }
 
             if (mod.getControllerExtras().inRange(entity) && result != null &&
                     result.getType() == HitResult.Type.ENTITY && !mod.getFoodChain().needsToEat() &&
-                    !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
+                    !mod.getMLGBucketChain().isFalling(mod) && mod.getMLGBucketChain().doneMLG() &&
                     !mod.getMLGBucketChain().isChorusFruiting() &&
                     mod.getClientBaritone().getPathingBehavior().isSafeToCancel() &&
                     mod.getPlayer().isOnGround()) {
-                _progress.reset();
+                progress.reset();
                 return onEntityInteract(mod, entity);
             } else if (!tooClose) {
                 setDebugState("Approaching target");
-                if (!_progress.check(mod)) {
-                    _progress.reset();
+                if (!progress.check(mod)) {
+                    progress.reset();
                     Debug.logMessage("Failed to get to target, blacklisting.");
                     mod.getEntityTracker().requestEntityUnreachable(entity);
                 }
@@ -137,9 +134,9 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof AbstractDoToEntityTask task) {
-            if (!doubleCheck(task._maintainDistance, _maintainDistance)) return false;
-            if (!doubleCheck(task._combatGuardLowerFieldRadius, _combatGuardLowerFieldRadius)) return false;
-            if (!doubleCheck(task._combatGuardLowerRange, _combatGuardLowerRange)) return false;
+            if (!doubleCheck(task.maintainDistance, maintainDistance)) return false;
+            if (!doubleCheck(task.combatGuardLowerFieldRadius, combatGuardLowerFieldRadius)) return false;
+            if (!doubleCheck(task.combatGuardLowerRange, combatGuardLowerRange)) return false;
             return isSubEqual(task);
         }
         return false;

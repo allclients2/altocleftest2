@@ -18,21 +18,21 @@ public class ItemTarget {
     private static final int BASICALLY_INFINITY = 99999999;
 
     public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
-    private Item[] _itemMatches;
-    private int _targetCount;
-    private String _catalogueName = null;
-    private boolean _infinite = false;
+    private Item[] itemMatches;
+    private final int targetCount;
+    private String catalogueName = null;
+    private boolean infinite = false;
 
     public ItemTarget(Item[] items, int targetCount) {
-        _itemMatches = items;
-        _targetCount = targetCount;
-        _infinite = false;
+        itemMatches = items;
+        this.targetCount = targetCount;
+        infinite = false;
     }
 
     public ItemTarget(String catalogueName, int targetCount) {
-        _catalogueName = catalogueName;
-        _itemMatches = TaskCatalogue.getItemMatches(catalogueName);
-        _targetCount = targetCount;
+        this.catalogueName = catalogueName;
+        itemMatches = TaskCatalogue.getItemMatches(catalogueName);
+        this.targetCount = targetCount;
     }
 
     public ItemTarget(String catalogueName) {
@@ -52,13 +52,13 @@ public class ItemTarget {
     }
 
     public ItemTarget(ItemTarget toCopy, int newCount) {
-        if (toCopy._itemMatches != null) {
-            _itemMatches = new Item[toCopy._itemMatches.length];
-            System.arraycopy(toCopy._itemMatches, 0, _itemMatches, 0, toCopy._itemMatches.length);
+        if (toCopy.itemMatches != null) {
+            itemMatches = new Item[toCopy.itemMatches.length];
+            System.arraycopy(toCopy.itemMatches, 0, itemMatches, 0, toCopy.itemMatches.length);
         }
-        _catalogueName = toCopy._catalogueName;
-        _targetCount = newCount;
-        _infinite = toCopy._infinite;
+        catalogueName = toCopy.catalogueName;
+        targetCount = newCount;
+        infinite = toCopy.infinite;
     }
 
     public static boolean nullOrEmpty(ItemTarget target) {
@@ -74,24 +74,24 @@ public class ItemTarget {
     }
 
     public ItemTarget infinite() {
-        _infinite = true;
+        infinite = true;
         return this;
     }
 
     public Item[] getMatches() {
-        return _itemMatches != null ? _itemMatches : new Item[0];
+        return itemMatches != null ? itemMatches : new Item[0];
     }
 
     public int getTargetCount() {
-        if (_infinite) {
+        if (infinite) {
             return BASICALLY_INFINITY;
         }
-        return _targetCount;
+        return targetCount;
     }
 
     public boolean matches(Item item) {
-        if (_itemMatches != null) {
-            for (Item match : _itemMatches) {
+        if (itemMatches != null) {
+            for (Item match : itemMatches) {
                 if (match == null) continue;
                 if (match.equals(item)) return true;
             }
@@ -100,30 +100,30 @@ public class ItemTarget {
     }
 
     public boolean isCatalogueItem() {
-        return _catalogueName != null;
+        return catalogueName != null;
     }
 
     public String getCatalogueName() {
-        return _catalogueName;
+        return catalogueName;
     }
 
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof ItemTarget other) {
-            if (_infinite) {
-                if (!other._infinite) return false;
+            if (infinite) {
+                if (!other.infinite) return false;
             } else {
                 // Neither are infinite
-                if (_targetCount != other._targetCount) return false;
+                if (targetCount != other.targetCount) return false;
             }
-            if ((other._itemMatches == null) != (_itemMatches == null)) return false;
-            if (_itemMatches != null) {
-                if (_itemMatches.length != other._itemMatches.length) return false;
-                for (int i = 0; i < _itemMatches.length; ++i) {
-                    if (other._itemMatches[i] == null) {
-                        if ((other._itemMatches[i] == null) != (_itemMatches[i] == null)) return false;
+            if ((other.itemMatches == null) != (itemMatches == null)) return false;
+            if (itemMatches != null) {
+                if (itemMatches.length != other.itemMatches.length) return false;
+                for (int i = 0; i < itemMatches.length; ++i) {
+                    if (other.itemMatches[i] == null) {
+                        if ((other.itemMatches[i] == null) != (itemMatches[i] == null)) return false;
                     } else {
-                        if (!other._itemMatches[i].equals(_itemMatches[i])) return false;
+                        if (!other.itemMatches[i].equals(itemMatches[i])) return false;
                     }
                 }
             }
@@ -133,7 +133,7 @@ public class ItemTarget {
     }
 
     public boolean isEmpty() {
-        return _itemMatches == null || _itemMatches.length == 0;
+        return itemMatches == null || itemMatches.length == 0;
     }
 
     @Override
@@ -143,27 +143,27 @@ public class ItemTarget {
         if (isEmpty()) {
             result.append("(empty)");
         } else if (isCatalogueItem()) {
-            result.append(_catalogueName);
+            result.append(catalogueName);
         } else {
             result.append("[");
             int counter = 0;
-            if (_itemMatches != null) {
-                for (Item item : _itemMatches) {
+            if (itemMatches != null) {
+                for (Item item : itemMatches) {
                     if (item == null) {
                         result.append("(null??)");
                     } else {
                         result.append(ItemHelper.trimItemName(item.getTranslationKey()));
                     }
-                    if (++counter != _itemMatches.length) {
+                    if (++counter != itemMatches.length) {
                         result.append(",");
                     }
                 }
             }
             result.append("]");
         }
-        if (!_infinite && !isEmpty()) {
-            result.append(" x ").append(_targetCount);
-        } else if (_infinite) {
+        if (!infinite && !isEmpty() && targetCount > 1) {
+            result.append(" x ").append(targetCount);
+        } else if (infinite) {
             result.append(" x infinity");
         }
 

@@ -52,7 +52,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.SPAWNER);
+
     }
 
     @Override
@@ -111,7 +111,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             } else {
 
                 // Put out fire that might mess with us.
-                Optional<BlockPos> nearestFire = mod.getBlockTracker().getNearestWithinRange(_foundBlazeSpawner, 5, Blocks.FIRE);
+                Optional<BlockPos> nearestFire = mod.getBlockScanner().getNearestWithinRange(_foundBlazeSpawner, 5, Blocks.FIRE);
                 if (nearestFire.isPresent()) {
                     setDebugState("Clearing fire around spawner to prevent loss of blaze rods.");
                     return new PutOutFireTask(nearestFire.get());
@@ -122,12 +122,9 @@ public class CollectBlazeRodsTask extends ResourceTask {
             }
         } else {
             // Search for blaze
-            for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.SPAWNER)) {
-                if (isValidBlazeSpawner(mod, pos)) {
-                    _foundBlazeSpawner = pos;
-                    break;
-                }
-            }
+            Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(blockPos->isValidBlazeSpawner(mod, blockPos),Blocks.SPAWNER);
+
+            pos.ifPresent(blockPos -> _foundBlazeSpawner = blockPos);
         }
 
         // We need to find our fortress.
@@ -146,7 +143,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.SPAWNER);
+
     }
 
     @Override
@@ -156,7 +153,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collect " + _count + " blaze rods";
+        return "Collect blaze rods - "+AltoClef.INSTANCE.getItemStorage().getItemCount(Items.BLAZE_ROD)+"/"+_count;
     }
 
     @Override

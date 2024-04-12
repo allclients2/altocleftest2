@@ -3,14 +3,16 @@ package adris.altoclef.tasks.construction;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.BlockTracker;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -107,7 +109,7 @@ public class PlaceObsidianBucketTask extends Task {
         }
 
         // Clear leftover water
-        if (mod.getBlockTracker().blockIsValid(_pos, Blocks.OBSIDIAN) && mod.getBlockTracker().blockIsValid(_pos.up(), Blocks.WATER)) {
+        if (mod.getBlockScanner().isBlockAtPosition(_pos, Blocks.OBSIDIAN) && mod.getBlockScanner().isBlockAtPosition(_pos.up(), Blocks.WATER)) {
             return new ClearLiquidTask(_pos.up());
         }
 
@@ -120,7 +122,7 @@ public class PlaceObsidianBucketTask extends Task {
         // Make sure we have a lava bucket
         if (!mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
             // The only excuse is that we have lava at our position.
-            if (!mod.getBlockTracker().blockIsValid(_pos, Blocks.LAVA)) {
+            if (!mod.getBlockScanner().isBlockAtPosition(_pos, Blocks.LAVA)) {
                 _progressChecker.reset();
                 return TaskCatalogue.getItemTask(Items.LAVA_BUCKET, 1);
             }
@@ -129,7 +131,7 @@ public class PlaceObsidianBucketTask extends Task {
         // Check progress
         if (!_progressChecker.check(mod)) {
             mod.getClientBaritone().getPathingBehavior().forceCancel();
-            mod.getBlockTracker().requestBlockUnreachable(_pos);
+            mod.getBlockScanner().requestBlockUnreachable(_pos);
             _progressChecker.reset();
             return new TimeoutWanderTask(5);
         }
@@ -139,7 +141,9 @@ public class PlaceObsidianBucketTask extends Task {
             if (WorldHelper.isSolid(mod, _currentCastTarget)) {
                 _currentCastTarget = null;
             } else {
-                return new PlaceStructureBlockTask(_currentCastTarget);
+                return new PlaceBlockTask(_currentCastTarget,
+                        Arrays.stream(ItemHelper.itemsToBlocks(mod.getModSettings().getThrowawayItems(mod))).filter((b)-> !Arrays.stream(ItemHelper.itemsToBlocks(ItemHelper.LEAVES)).toList().contains(b)).toArray(Block[]::new)
+                );
             }
         }
 
@@ -245,17 +249,17 @@ public class PlaceObsidianBucketTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         // Get the BlockTracker instance from the mod
-        BlockTracker blockTracker = mod.getBlockTracker();
+        BlockScanner blockTracker = mod.getBlockScanner();
 
         // Get the position of the block to check
         BlockPos pos = _pos;
 
         // Check if the block at the specified position is obsidian
-        boolean isObsidian = blockTracker.blockIsValid(pos, Blocks.OBSIDIAN);
+        boolean isObsidian = blockTracker.isBlockAtPosition(pos, Blocks.OBSIDIAN);
         Debug.logInternal("isObsidian: " + isObsidian);
 
         // Check if there is no water block above the specified position
-        boolean isNotWaterAbove = !blockTracker.blockIsValid(pos.up(), Blocks.WATER);
+        boolean isNotWaterAbove = !blockTracker.isBlockAtPosition(pos.up(), Blocks.WATER);
         Debug.logInternal("isNotWaterAbove: " + isNotWaterAbove);
 
         // The task is considered finished if the block is obsidian and there is no water above

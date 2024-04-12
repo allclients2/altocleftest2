@@ -15,6 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Streams;
 import net.minecraft.item.Item;
+import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
@@ -72,7 +73,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If true, will show a timer.
      */
-    private boolean showTimer = false;
+    private boolean showTimer = true;
 
     /**
      * The delay between moving items for crafting/furnace/any kind of inventory movement.
@@ -378,7 +379,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If true, a blast furnace will be used in smelting if an item to smelt is applicable.
      */
-    private boolean useBlastFurnace = true;
+    private boolean useBlastFurnace = false;
 
     /**
      * If true, will only accept items found in `supportedFuels` as fuel when smelting.

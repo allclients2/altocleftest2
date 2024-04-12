@@ -66,6 +66,7 @@ public class InteractWithBlockTask extends Task {
     };
     private Task _unstuckTask = null;
     private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
+    private int waitingForClickTicks = 0;
 
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
         _toUse = toUse;
@@ -285,7 +286,7 @@ public class InteractWithBlockTask extends Task {
         }
         if (!_moveChecker.check(mod)) {
             Debug.logMessage("Failed, blacklisting and wandering.");
-            mod.getBlockTracker().requestBlockUnreachable(_target);
+            mod.getBlockScanner().requestBlockUnreachable(_target);
             return _wanderTask;
         }
 
@@ -309,6 +310,19 @@ public class InteractWithBlockTask extends Task {
                     proc.onLostControl();
                 }
                 _clickTimer.reset();
+
+                // try to get unstuck by pressing shift
+                waitingForClickTicks++;
+                if (waitingForClickTicks % 25 == 0 && _shiftClick) {
+                    mod.getInputControls().hold(Input.SNEAK);
+                    mod.log("trying to press shift");
+                }
+
+                if (waitingForClickTicks > 10*20) {
+                    mod.log("trying to wander");
+                    waitingForClickTicks = 0;
+                    return _wanderTask;
+                }
             }
             case CLICK_ATTEMPTED -> {
                 setDebugState("Clicking.");

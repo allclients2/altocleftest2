@@ -68,7 +68,6 @@ public class KillEnderDragonTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.END_PORTAL);
         // Don't forcefield endermen.
         mod.getBehaviour().addForceFieldExclusion(entity -> entity instanceof EndermanEntity || entity instanceof EnderDragonEntity || entity instanceof EnderDragonPart);
         mod.getBehaviour().setPreferredStairs(true);
@@ -120,7 +119,7 @@ public class KillEnderDragonTask extends Task {
         }
 
         // If there is a portal, enter it.
-        if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
+        if (mod.getBlockScanner().anyFound(Blocks.END_PORTAL)) {
             setDebugState("Entering portal to beat the game.");
             return new DoToClosestBlockTask(
                     blockPos -> new GetToBlockTask(blockPos.up(), false),
@@ -170,7 +169,6 @@ public class KillEnderDragonTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
-        mod.getBlockTracker().stopTracking(Blocks.END_PORTAL);
     }
 
     @Override

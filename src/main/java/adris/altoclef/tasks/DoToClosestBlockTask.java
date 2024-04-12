@@ -57,7 +57,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         if (_getClosest != null) {
             return _getClosest.apply(pos);
         }
-        return mod.getBlockTracker().getNearestTracking(pos, _isValid, _targetBlocks);
+        return mod.getBlockScanner().getNearestBlock(pos, _isValid, _targetBlocks);
     }
 
     @Override
@@ -80,17 +80,17 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         // Our valid predicate
         if (_isValid != null && !_isValid.test(obj)) return false;
         // Correct block
-        return mod.getBlockTracker().blockIsValid(obj, _targetBlocks);
+        return mod.getBlockScanner().isBlockAtPosition(obj, _targetBlocks);
     }
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(_targetBlocks);
+
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_targetBlocks);
+
     }
 
     @Override

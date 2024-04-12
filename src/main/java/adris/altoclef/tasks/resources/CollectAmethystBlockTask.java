@@ -27,8 +27,6 @@ public class CollectAmethystBlockTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.BUDDING_AMETHYST);
-
         // Bot will not break Budding Amethyst
         mod.getBehaviour().push();
         mod.getBehaviour().avoidBlockBreaking(blockPos -> {
@@ -49,7 +47,6 @@ public class CollectAmethystBlockTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.BUDDING_AMETHYST);
         mod.getBehaviour().pop();
     }
 

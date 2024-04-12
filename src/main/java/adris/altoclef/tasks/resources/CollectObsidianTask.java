@@ -69,10 +69,6 @@ public class CollectObsidianTask extends ResourceTask {
 
         mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
 
-        mod.getBlockTracker().trackBlock(Blocks.OBSIDIAN);
-        //mod.getBlockTracker().trackBlock(Blocks.WATER);
-        //mod.getBlockTracker().trackBlock(Blocks.LAVA);
-
         // Avoid placing on the lava block we're trying to mine.
         mod.getBehaviour().avoidBlockPlacing(pos -> {
             if (_lavaWaitCurrentPos != null) {
@@ -125,7 +121,7 @@ public class CollectObsidianTask extends ResourceTask {
             }
         }
          */
-        if (/*obsidianNearby || */mod.getBlockTracker().anyFound(goodObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+        if (/*obsidianNearby || */mod.getBlockScanner().anyFound(goodObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
             /*
             // Clear nearby water
             BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
@@ -182,9 +178,6 @@ public class CollectObsidianTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
-        //mod.getBlockTracker().stopTracking(Blocks.LAVA);
-        //mod.getBlockTracker().stopTracking(Blocks.WATER);
-        mod.getBlockTracker().stopTracking(Blocks.OBSIDIAN);
         mod.getBehaviour().pop();
     }
 

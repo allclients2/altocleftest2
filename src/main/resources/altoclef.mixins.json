@@ -9,13 +9,13 @@
     "ClientBlockBreakAccessor",
     "ClientConnectionAccessor",
     "ClientInteractWithBlockMixin",
-    "ClientPlayerInteractionAccessor",
     "ClientUIMixin",
     "DeathScreenAccessor",
     "EntityAccessor",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",
     "SlotClickMixin",
+    "ToolSetMixin",
     "WorldBlockModifiedMixin"
   ],
   "client": [
@@ -27,7 +27,8 @@
     "EntryMixin",
     "LoadChunkMixin",
     "MixinLocalPlayer",
-    "PlayerCollidesWithEntityMixin"
+    "PlayerCollidesWithEntityMixin",
+    "SimpleOptionMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -42,22 +42,11 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
         return false;
     }
 
-    @Override
-    protected void onResourceStart(AltoClef mod) {
-        super.onResourceStart(mod);
-        mod.getBlockTracker().trackBlock(BEDS);
-    }
-
-    @Override
-    protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        super.onResourceStop(mod, interruptTask);
-        mod.getBlockTracker().stopTracking(BEDS);
-    }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Break beds from the world if possible, that would be pretty fast.
-        if (mod.getBlockTracker().anyFound(BEDS)) {
+        if (mod.getBlockScanner().anyFound(BEDS)) {
             // Failure + blacklisting is encapsulated within THIS task
             return new MineAndCollectTask(new ItemTarget(ItemHelper.BED, 1), BEDS, MiningRequirement.HAND);
         }

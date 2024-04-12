@@ -118,9 +118,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
      */
     @Override
     protected void onStart(AltoClef mod) {
-        // Track bed blocks
-        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
-
         // Push the current behaviour
         mod.getBehaviour().push();
 
@@ -214,11 +211,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
             Debug.logMessage("Searching new bed region.");
             _currentBedRegion = null;
         }
-        if (mod.getPlayer().isTouchingWater() && mod.getItemStorage().hasItem(ItemHelper.BED)) {
-            setDebugState("We are in water. Wandering");
-            _currentBedRegion = null;
-            return new TimeoutWanderTask();
-        }
         if (WorldHelper.isInNetherPortal(mod)) {
             setDebugState("We are in nether portal. Wandering");
             _currentBedRegion = null;
@@ -246,7 +238,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 return null;
             }
         }
-        if (mod.getBlockTracker().anyFound(blockPos -> (WorldHelper.canReach(mod, blockPos) &&
+        if (mod.getBlockScanner().anyFound(blockPos -> (WorldHelper.canReach(mod, blockPos) &&
                 blockPos.isWithinDistance(mod.getPlayer().getPos(), 40) &&
                 mod.getItemStorage().hasItem(ItemHelper.BED)) || (WorldHelper.canReach(mod, blockPos) &&
                 !mod.getItemStorage().hasItem(ItemHelper.BED)), ItemHelper.itemsToBlocks(ItemHelper.BED))) {
@@ -295,11 +287,18 @@ public class PlaceBedAndSetSpawnTask extends Task {
                 return new InteractWithBlockTask(_bedForSpawnPoint);
             }, ItemHelper.itemsToBlocks(ItemHelper.BED));
         }
+
+        if (mod.getPlayer().isTouchingWater() && mod.getItemStorage().hasItem(ItemHelper.BED)) {
+            setDebugState("We are in water. Wandering");
+            _currentBedRegion = null;
+            return new TimeoutWanderTask();
+        }
+
         if (_currentBedRegion != null) {
             for (Vec3i BedPlacePos : BED_PLACE_POS_OFFSET) {
                 Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BedPlacePos)).getBlock();
                 if (getBlock instanceof BedBlock) {
-                    mod.getBlockTracker().addBlock(getBlock, _currentBedRegion.add(BedPlacePos));
+                    mod.getBlockScanner().addBlock(getBlock, _currentBedRegion.add(BedPlacePos));
                     break;
                 }
             }
@@ -404,9 +403,6 @@ public class PlaceBedAndSetSpawnTask extends Task {
      */
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        // Stop tracking beds
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
-
         // Pop the behaviour stack
         mod.getBehaviour().pop();
 

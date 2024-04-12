@@ -17,7 +17,12 @@ public class SetGammaCommand extends Command {
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
         double gammaValue = parser.get(Double.class);
-        Debug.logMessage("Gamma set to " + gammaValue);
-        MinecraftClient.getInstance().options.getGamma().setValue(gammaValue);
+        changeGamma(gammaValue);
     }
+
+    public static void changeGamma(double value) {
+        Debug.logMessage("Gamma set to " + value);
+        MinecraftClient.getInstance().options.getGamma().setValue(value);
+    }
+
 }

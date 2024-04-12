@@ -47,6 +47,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     // Extra resource parameters
     private Block[] _mineIfPresent = null;
     private boolean _forceDimension = false;
+    private boolean allowContainers = false;
     private Dimension _targetDimension;
     private BlockPos _mineLastClosest = null;
 
@@ -80,9 +81,6 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         //removeThrowawayItems(_itemTargets);
-        if (_mineIfPresent != null) {
-            mod.getBlockTracker().trackBlock(_mineIfPresent);
-        }
         onResourceStart(mod);
     }
 
@@ -138,7 +136,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
                     }
                 }
 
-                double range = mod.getModSettings().getResourcePickupRange();
+                double range = getPickupRange(mod);
                 Optional<ItemEntity> closest = mod.getEntityTracker().getClosestItemDrop(mod.getPlayer().getPos(), _itemTargets);
                 if (range < 0 || (closest.isPresent() && closest.get().isInRange(mod.getPlayer(), range)) || (_pickupTask.isActive() && !_pickupTask.isFinished(mod))) {
                     setDebugState("Picking up");
@@ -148,7 +146,7 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         }
 
         // Check for chests and grab resources from them.
-        if (_currentContainer == null) {
+        if (_currentContainer == null && allowContainers) {
             List<ContainerCache> containersWithItem = mod.getItemStorage().getContainersWithItem(Arrays.stream(_itemTargets).reduce(new Item[0], (items, target) -> ArrayUtils.addAll(items, target.getMatches()), ArrayUtils::addAll));
             if (!containersWithItem.isEmpty()) {
                 ContainerCache closest = containersWithItem.stream().min(StlHelper.compareValues(container -> container.getBlockPos().getSquaredDistance(mod.getPlayer().getPos()))).get();
@@ -177,8 +175,8 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
             ArrayList<Block> satisfiedReqs = new ArrayList<>(Arrays.asList(_mineIfPresent));
             satisfiedReqs.removeIf(block -> !StorageHelper.miningRequirementMet(mod, MiningRequirement.getMinimumRequirementForBlock(block)));
             if (!satisfiedReqs.isEmpty()) {
-                if (mod.getBlockTracker().anyFound(satisfiedReqs.toArray(Block[]::new))) {
-                    Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), _mineIfPresent);
+                if (mod.getBlockScanner().anyFound(satisfiedReqs.toArray(Block[]::new))) {
+                    Optional<BlockPos> closest = mod.getBlockScanner().getNearestBlock(_mineIfPresent);
                     if (closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), mod.getModSettings().getResourceMineRange())) {
                         _mineLastClosest = closest.get();
                     }
@@ -203,12 +201,13 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         return onResourceTick(mod);
     }
 
+    protected double getPickupRange(AltoClef mod) {
+        return mod.getModSettings().getResourcePickupRange();
+    }
+
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getBehaviour().pop();
-        if (_mineIfPresent != null) {
-            mod.getBlockTracker().stopTracking(_mineIfPresent);
-        }
         onResourceStop(mod, interruptTask);
     }
 
@@ -259,6 +258,14 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
         _forceDimension = true;
         _targetDimension = dimension;
         return this;
+    }
+
+    public void setAllowContainers(boolean value) {
+        this.allowContainers = value;
+    }
+
+    public boolean getAllowContainers() {
+        return allowContainers;
     }
 
     protected abstract boolean shouldAvoidPickingUp(AltoClef mod);

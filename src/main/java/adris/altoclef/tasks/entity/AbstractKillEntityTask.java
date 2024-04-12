@@ -21,15 +21,15 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
     // Not the "striking" distance, but the "ok we're close enough, lower our guard for other mobs and focus on this one" range.
     private static final double CONSIDER_COMBAT_RANGE = 10;
 
-    public AbstractKillEntityTask() {
+    protected AbstractKillEntityTask() {
         this(CONSIDER_COMBAT_RANGE, OTHER_FORCE_FIELD_RANGE);
     }
 
-    public AbstractKillEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+    protected AbstractKillEntityTask(double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
-    public AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
+    protected AbstractKillEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
@@ -72,11 +72,9 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         // Equip weapon
         if (!equipWeapon(mod)) {
             float hitProg = mod.getPlayer().getAttackCooldownProgress(0);
-            if (hitProg >= 1) {
-                if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
-                    LookHelper.lookAt(mod, entity.getEyePos());
-                    mod.getControllerExtras().attack(entity);
-                }
+            if (hitProg >= 1 && (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater())) {
+                LookHelper.lookAt(mod, entity.getEyePos());
+                mod.getControllerExtras().attack(entity);
             }
         }
         return null;

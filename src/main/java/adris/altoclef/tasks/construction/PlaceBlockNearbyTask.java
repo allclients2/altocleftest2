@@ -90,7 +90,7 @@ public class PlaceBlockNearbyTask extends Task {
         // Close screen first
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
         if (!cursorStack.isEmpty()) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
+           /* Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
             if (moveTo.isPresent()) {
                 mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
                 return null;
@@ -105,7 +105,7 @@ public class PlaceBlockNearbyTask extends Task {
                 mod.getSlotHandler().clickSlot(garbage.get(), 0, SlotActionType.PICKUP);
                 return null;
             }
-            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
+            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);*/
         } else {
             StorageHelper.closeScreen();
         }
@@ -132,7 +132,7 @@ public class PlaceBlockNearbyTask extends Task {
             Debug.logMessage("Failed placing, wandering and trying again.");
             LookHelper.randomOrientation(mod);
             if (_tryPlace != null) {
-                mod.getBlockTracker().requestBlockUnreachable(_tryPlace);
+                mod.getBlockScanner().requestBlockUnreachable(_tryPlace);
                 _tryPlace = null;
             }
             return _wander;

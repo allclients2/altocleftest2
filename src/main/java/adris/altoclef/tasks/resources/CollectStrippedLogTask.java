@@ -48,8 +48,6 @@ public class CollectStrippedLogTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(_strippedLogs));
-        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(_strippableLogs));
     }
 
     @Override
@@ -59,13 +57,13 @@ public class CollectStrippedLogTask extends ResourceTask {
             return TaskCatalogue.getItemTask(Items.WOODEN_AXE, 1);
         }
         if (mod.getItemStorage().getItemCount(_strippedLogs) < _targetCount) {
-            Optional<BlockPos> strippedLogBlockPos = mod.getBlockTracker().getNearestTracking(ItemHelper.itemsToBlocks(_strippedLogs));
+            Optional<BlockPos> strippedLogBlockPos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(_strippedLogs));
             if (strippedLogBlockPos.isPresent()) {
                 setDebugState("Getting stripped log");
                 return new MineAndCollectTask(new ItemTarget(_strippedLogs), ItemHelper.itemsToBlocks(_strippedLogs), MiningRequirement.HAND);
             }
         }
-        Optional<BlockPos> strippableLogBlockPos = mod.getBlockTracker().getNearestTracking(ItemHelper.itemsToBlocks(_strippableLogs));
+        Optional<BlockPos> strippableLogBlockPos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(_strippableLogs));
         if (strippableLogBlockPos.isPresent()) {
             setDebugState("Stripping log");
             return new InteractWithBlockTask(new ItemTarget(_axes), strippableLogBlockPos.get());
@@ -76,8 +74,6 @@ public class CollectStrippedLogTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(_strippedLogs));
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(_strippableLogs));
     }
 
     @Override

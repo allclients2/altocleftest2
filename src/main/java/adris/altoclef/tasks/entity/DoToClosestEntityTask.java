@@ -15,7 +15,7 @@ import java.util.function.Supplier;
 /**
  * Finds the closest entity and runs a task on that entity
  */
-@SuppressWarnings("ALL")
+@SuppressWarnings("rawtypes")
 public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity> {
 
     private final Class[] _targetEntities;

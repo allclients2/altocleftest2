@@ -32,14 +32,4 @@ public class BlockModifiedByPlayerMixin {
         }
     }
 
-    @Inject(
-            method = "onPlaced",
-            at = @At("HEAD")
-    )
-    public void onBlockPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack, CallbackInfo ci) {
-        // This one is weirdly unreliable.
-        //Debug.logInternal("[TEMP] global place");
-        //StaticMixinHookups.onBlockPlaced(world, pos, state, placer, itemStack);
-    }
-
 }
