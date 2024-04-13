@@ -55,6 +55,7 @@ The new status overlay is a bit smaller and has some color coding.
 It also includes name of the class that is executing the tasks as well as the current task chain and its priority.
 
 **OLD:**
-![old_overlay.png]()
+![old_overlay.png](https://github.com/MiranCZ/altoclef/assets/98049269/16f29a8c-1e1f-4a3d-a26b-d8bd053602ca)
 **NEW:**
-![new_overlay.png]()
+![new_overlay.png](https://github.com/MiranCZ/altoclef/assets/98049269/6708a091-88a8-4be2-b4bc-eade779b7bc5)
+
