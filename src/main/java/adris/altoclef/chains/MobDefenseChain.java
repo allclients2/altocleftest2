@@ -543,57 +543,22 @@ public class MobDefenseChain extends SingleTaskChain {
     private Optional<Entity> getUniversallyDangerousMob(AltoClef mod) {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
-        Optional<Entity> warden = mod.getEntityTracker().getClosestEntity(WardenEntity.class);
-        if (warden.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (warden.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, warden.get())) {
-                return warden;
+
+        Class<?>[] dangerousMobs = new Class[]{WardenEntity.class,WitherEntity.class,WitherSkeletonEntity.class,
+                HoglinEntity.class,ZoglinEntity.class,PiglinBruteEntity.class,VindicatorEntity.class};
+
+        double range = SAFE_KEEP_DISTANCE - 2;
+
+        for (Class<?> dangerous : dangerousMobs) {
+            Optional<Entity> entity = mod.getEntityTracker().getClosestEntity(dangerous);
+
+            if (entity.isPresent()) {
+                if (entity.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, entity.get())) {
+                    return entity;
+                }
             }
         }
-        Optional<Entity> wither = mod.getEntityTracker().getClosestEntity(WitherEntity.class);
-        if (wither.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (wither.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, wither.get())) {
-                return wither;
-            }
-        }
-        Optional<Entity> witherSkeleton = mod.getEntityTracker().getClosestEntity(WitherSkeletonEntity.class);
-        if (witherSkeleton.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (witherSkeleton.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, witherSkeleton.get())) {
-                return witherSkeleton;
-            }
-        }
-        // Hoglins are dangerous because we can't push them with the force field.
-        // If we merely force field them and stand still our health will slowly be chipped away until we die
-        Optional<Entity> hoglin = mod.getEntityTracker().getClosestEntity(HoglinEntity.class);
-        if (hoglin.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (hoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, hoglin.get())) {
-                return hoglin;
-            }
-        }
-        Optional<Entity> zoglin = mod.getEntityTracker().getClosestEntity(ZoglinEntity.class);
-        if (zoglin.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (zoglin.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, zoglin.get())) {
-                return zoglin;
-            }
-        }
-        Optional<Entity> piglinBrute = mod.getEntityTracker().getClosestEntity(PiglinBruteEntity.class);
-        if (piglinBrute.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (piglinBrute.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, piglinBrute.get())) {
-                return piglinBrute;
-            }
-        }
-        Optional<Entity> vindicator = mod.getEntityTracker().getClosestEntity(VindicatorEntity.class);
-        if (vindicator.isPresent()) {
-            double range = SAFE_KEEP_DISTANCE - 2;
-            if (vindicator.get().squaredDistanceTo(mod.getPlayer()) < range * range && EntityHelper.isAngryAtPlayer(mod, vindicator.get())) {
-                return vindicator;
-            }
-        }
+
         return Optional.empty();
     }
 
