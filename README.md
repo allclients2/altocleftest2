@@ -13,7 +13,7 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 **Join the [Discord Server](https://discord.gg/JdFP4Kqdqc)** for discussions/updates/goofs & gaffs
 
 ## About this fork
-This fork aims to optimize `BeatMinecraftTask` by trying to fix a lot of cases where the bot gets stuck and improving some of the tasks.
+This fork aims to optimize `MarvionBeatMinecraftTask` (I will just refer to it as `BeatMinecraftTask`) from [Marvion's fork](https://github.com/MarvionKirito/altoclef) by trying to fix a lot of cases where the bot gets stuck and improving some of the tasks.
 
 You can look at the [changelog](changelog.md) if you are interested.
 
