@@ -35,7 +35,7 @@ import java.util.stream.Stream;
 /**
  * Helper functions for interpreting containers/slots/windows/inventory
  */
-@SuppressWarnings({"ConstantConditions", "rawtypes"})
+@SuppressWarnings("rawtypes")
 public class StorageHelper {
 
     public static List<PlayerSlot> INACCESSIBLE_PLAYER_SLOTS = Stream.concat(Stream.of(PlayerSlot.CRAFT_INPUT_SLOTS), Stream.of(PlayerSlot.ARMOR_SLOTS)).toList();
@@ -107,21 +107,21 @@ public class StorageHelper {
     }
 
     private static boolean miningRequirementMetInner(AltoClef mod, boolean inventoryOnly, MiningRequirement requirement) {
-        switch (requirement) {
-            case HAND:
-                return true;
-            case WOOD:
-                return h(mod, inventoryOnly, Items.WOODEN_PICKAXE) || h(mod, inventoryOnly, Items.STONE_PICKAXE) || h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
-            case STONE:
-                return h(mod, inventoryOnly, Items.STONE_PICKAXE) || h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
-            case IRON:
-                return h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
-            case DIAMOND:
-                return h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
-            default:
+        return switch (requirement) {
+            case HAND -> true;
+            case WOOD ->
+                    h(mod, inventoryOnly, Items.WOODEN_PICKAXE) || h(mod, inventoryOnly, Items.STONE_PICKAXE) || h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
+            case STONE ->
+                    h(mod, inventoryOnly, Items.STONE_PICKAXE) || h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
+            case IRON ->
+                    h(mod, inventoryOnly, Items.IRON_PICKAXE) || h(mod, inventoryOnly, Items.GOLDEN_PICKAXE) || h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
+            case DIAMOND ->
+                    h(mod, inventoryOnly, Items.DIAMOND_PICKAXE) || h(mod, inventoryOnly, Items.NETHERITE_PICKAXE);
+            default -> {
                 Debug.logError("You missed a spot");
-                return false;
-        }
+                yield false;
+            }
+        };
     }
 
     public static boolean miningRequirementMet(AltoClef mod, MiningRequirement requirement) {
@@ -142,28 +142,26 @@ public class StorageHelper {
 
         Slot bestToolSlot = null;
         double highestSpeed = Double.NEGATIVE_INFINITY;
-        if (Slot.getCurrentScreenSlots() != null) {
-            for (Slot slot : Slot.getCurrentScreenSlots()) {
-                if (!slot.isSlotInPlayerInventory())
-                    continue;
-                ItemStack stack = getItemStackInSlot(slot);
-                if (stack.getItem() instanceof ToolItem) {
-                    if (stack.getItem().isSuitableFor(state)) {
-                        if (shouldSaveStack(mod, block,stack)) continue;
+        for (Slot slot : Slot.getCurrentScreenSlots()) {
+            if (!slot.isSlotInPlayerInventory())
+                continue;
+            ItemStack stack = getItemStackInSlot(slot);
+            if (stack.getItem() instanceof ToolItem) {
+                if (stack.getItem().isSuitableFor(state)) {
+                    if (shouldSaveStack(mod, block, stack)) continue;
 
-                        double speed = ToolSet.calculateSpeedVsBlock(stack, state);
-                        if (speed > highestSpeed) {
-                            highestSpeed = speed;
-                            bestToolSlot = slot;
-                        }
+                    double speed = ToolSet.calculateSpeedVsBlock(stack, state);
+                    if (speed > highestSpeed) {
+                        highestSpeed = speed;
+                        bestToolSlot = slot;
                     }
                 }
-                if (stack.getItem() == Items.SHEARS) {
-                    // Shears take priority over leaf blocks.
-                    if (ItemHelper.areShearsEffective(state.getBlock())) {
-                        bestToolSlot = slot;
-                        break;
-                    }
+            }
+            if (stack.getItem() == Items.SHEARS) {
+                // Shears take priority over leaf blocks.
+                if (ItemHelper.areShearsEffective(state.getBlock())) {
+                    bestToolSlot = slot;
+                    break;
                 }
             }
         }
@@ -220,29 +218,33 @@ public class StorageHelper {
 
         // Try throwing away lower tier tools
         final HashMap<Class, Integer> bestMaterials = new HashMap<>();
-        final HashMap<Class, Slot> bestTool = new HashMap<>();
-        if (PlayerSlot.getCurrentScreenSlots() != null) {
-            for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
-                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-                if (!ItemHelper.canThrowAwayStack(mod, stack))
-                    continue;
-                Item item = stack.getItem();
-                if (item instanceof ToolItem tool) {
-                    Class c = tool.getClass();
-                    int level = tool.getMaterial().getMiningLevel();
-                    int prevBest = bestMaterials.getOrDefault(c, 0);
-                    if (level > prevBest) {
-                        // We had a WORSE tool before.
-                        if (bestTool.containsKey(c)) {
-                            return Optional.of(bestTool.get(c));
-                        }
-                        bestMaterials.put(c, level);
-                        bestTool.put(c, slot);
-                    } else if (level < prevBest) {
-                        // We found something WORSE!
-                        return Optional.of(slot);
-                    }
+        final HashMap<Class, Slot> bestToolSlot = new HashMap<>();
+
+        for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
+            ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+            if (!ItemHelper.canThrowAwayStack(mod, stack))
+                continue;
+
+            Item item = stack.getItem();
+
+            if (!(item instanceof ToolItem tool)) continue;
+
+            Class clazz = tool.getClass();
+
+            int level = tool.getMaterial().getMiningLevel();
+            int prevBest = bestMaterials.getOrDefault(clazz, 0);
+
+            if (level > prevBest) {
+                // We had a WORSE tool before.
+                if (bestMaterials.containsKey(clazz)) {
+                    return Optional.of(bestToolSlot.get(clazz));
                 }
+
+                bestMaterials.put(clazz, level);
+                bestToolSlot.put(clazz, slot);
+            } else if (level < prevBest) {
+                // We found something WORSE!
+                return Optional.of(slot);
             }
         }
 
@@ -254,23 +256,21 @@ public class StorageHelper {
 
             // Get all non-important items. For now there is no measure of value.
             final List<Slot> possibleSlots = new ArrayList<>();
-            if (PlayerSlot.getCurrentScreenSlots() != null) {
-                for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
-                    ItemStack stack = StorageHelper.getItemStackInSlot(slot);
-                    // If we're an armor slot, don't count us.
-                    if (slot instanceof PlayerSlot playerSlot) {
-                        if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot) ||
-                                playerSlot.getWindowSlot() == PlayerSlot.OFFHAND_SLOT.getWindowSlot()) {
-                            continue;
-                        }
+            for (Slot slot : PlayerSlot.getCurrentScreenSlots()) {
+                ItemStack stack = StorageHelper.getItemStackInSlot(slot);
+                // If we're an armor slot, don't count us.
+                if (slot instanceof PlayerSlot playerSlot) {
+                    if (ArrayUtils.contains(PlayerSlot.ARMOR_SLOTS, playerSlot) ||
+                            playerSlot.getWindowSlot() == PlayerSlot.OFFHAND_SLOT.getWindowSlot()) {
+                        continue;
                     }
-                    // Throw away-able slots are good!
-                    if (ItemHelper.canThrowAwayStack(mod, stack)) {
-                        possibleSlots.add(slot);
-                    }
-                    if (stack.getItem().isFood()) {
-                        calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
-                    }
+                }
+                // Throw away-able slots are good!
+                if (ItemHelper.canThrowAwayStack(mod, stack)) {
+                    possibleSlots.add(slot);
+                }
+                if (stack.getItem().isFood()) {
+                    calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
                 }
             }
 
@@ -288,7 +288,7 @@ public class StorageHelper {
                     } else if (leftIsTool && !rightIsTool) {
                         return 1;
                     }
-                    if (rightIsTool && leftIsTool) {
+                    if (rightIsTool) {
                         // Prioritize material type, then durability.
                         ToolItem leftTool = (ToolItem) left.getItem();
                         ToolItem rightTool = (ToolItem) right.getItem();
@@ -635,13 +635,11 @@ public class StorageHelper {
 
     public static ItemTarget[] getAllInventoryItemsAsTargets(Predicate<Slot> accept) {
         HashMap<Item, Integer> counts = new HashMap<>();
-        if (Slot.getCurrentScreenSlots() != null) {
-            for (Slot slot : Slot.getCurrentScreenSlots()) {
-                if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
-                    ItemStack stack = getItemStackInSlot(slot);
-                    if (!stack.isEmpty()) {
-                        counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
-                    }
+        for (Slot slot : Slot.getCurrentScreenSlots()) {
+            if (slot.isSlotInPlayerInventory() && accept.test(slot)) {
+                ItemStack stack = getItemStackInSlot(slot);
+                if (!stack.isEmpty()) {
+                    counts.put(stack.getItem(), counts.getOrDefault(stack.getItem(), 0) + stack.getCount());
                 }
             }
         }
