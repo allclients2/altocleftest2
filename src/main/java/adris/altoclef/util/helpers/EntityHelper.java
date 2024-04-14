@@ -40,6 +40,9 @@ public class EntityHelper {
             if (mob instanceof EndermanEntity enderman) {
                 return enderman.isAngry();
             }
+            if (mob instanceof ZombifiedPiglinEntity zombifiedPiglin) {
+                return zombifiedPiglin.isAttacking();
+            }
 
             return mob.isAttacking() || mob instanceof HostileEntity;
         }
