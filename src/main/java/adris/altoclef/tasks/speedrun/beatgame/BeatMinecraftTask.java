@@ -126,6 +126,7 @@ public class BeatMinecraftTask extends Task {
             // random jung, might add more things in the future
             Items.FEATHER,
             Items.EGG,
+            Items.PINK_PETALS,
             Items.BONE,
             Items.LEATHER,
             Items.RAW_COPPER,
