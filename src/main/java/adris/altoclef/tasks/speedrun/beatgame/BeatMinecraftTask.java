@@ -297,6 +297,7 @@ public class BeatMinecraftTask extends Task {
         addPickaxeTasks(mod);
         addDiamondArmorTasks(mod);
         addLootChestsTasks(mod);
+        addPickupImportantItemsTask(mod);
 
         gatherResources.add(new GatherResource(0, 1,
                 getBlockCalculator(mod, new Block[]{Blocks.GRAVEL}, 50)
@@ -366,6 +367,28 @@ public class BeatMinecraftTask extends Task {
 
         addSmeltTasks(mod);
         addCookFoodTasks(mod);
+    }
+
+    private void addPickupImportantItemsTask(AltoClef mod) {
+        List<Item> importantItems = List.of(Items.IRON_PICKAXE,Items.DIAMOND_PICKAXE,Items.GOLDEN_HELMET,Items.DIAMOND_SWORD,
+                Items.DIAMOND_CHESTPLATE,Items.DIAMOND_LEGGINGS,Items.DIAMOND_BOOTS);
+
+        GatherResource pickupImportantItems = new GatherResource(99,99,null,item->true,Items.BEDROCK)
+                .withDescription("Picking up important item...");
+
+        pickupImportantItems.withPriorityCalculator((items, count, minCount, maxCount) -> {
+            for (Item item : importantItems) {
+                if (item == Items.IRON_PICKAXE && mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) continue;
+
+                if (!mod.getItemStorage().hasItem(item) && mod.getEntityTracker().itemDropped(item)) {
+                    pickupImportantItems.data = Optional.of(new PickupDroppedItemTask(item,1));
+                    return 8_000;
+                }
+            }
+            return 0;
+        });
+
+        gatherResources.add(pickupImportantItems);
     }
 
     /**
@@ -2429,6 +2452,20 @@ public class BeatMinecraftTask extends Task {
                 }
                 // Then go to the nether.
                 setDebugState("Going to Nether");
+
+                // make new pickaxe if old one breaks
+                // TODO refactor duplicated code
+                ItemStorageTracker itemStorage = mod.getItemStorage();
+                if (itemStorage.getItemCount(Items.DIAMOND) >= 3 && !itemStorage.hasItem(Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE)) {
+                    return TaskCatalogue.getItemTask(Items.DIAMOND_PICKAXE, 1);
+                } else if (itemStorage.getItemCount(Items.IRON_INGOT) >= 3 && !itemStorage.hasItem(Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE)) {
+                    return TaskCatalogue.getItemTask(Items.IRON_PICKAXE, 1);
+                } else if (!itemStorage.hasItem(Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE, Items.STONE_PICKAXE)) {
+                    return TaskCatalogue.getItemTask(Items.STONE_PICKAXE, 1);
+                }
+                if (!itemStorage.hasItem(Items.DIAMOND_PICKAXE, Items.IRON_PICKAXE, Items.STONE_PICKAXE, Items.WOODEN_PICKAXE)) {
+                    return TaskCatalogue.getItemTask(Items.WOODEN_PICKAXE, 1);
+                }
 
                 // DO NOT INTERRUPT GOING TO NETHER
                 gatherResources.clear();
