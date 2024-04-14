@@ -128,7 +128,7 @@ public class MobDefenseChain extends SingleTaskChain {
         return false;
     }
 
-    public float getPriorityInner(AltoClef mod) {
+    private float getPriorityInner(AltoClef mod) {
         if (!AltoClef.inGame()) {
             return Float.NEGATIVE_INFINITY;
         }
@@ -250,16 +250,6 @@ public class MobDefenseChain extends SingleTaskChain {
             hostiles.sort(Comparator.comparingDouble((entity)-> mod.getPlayer().distanceTo(entity)));
 
 
-            SwordItem bestSword = null;
-            Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD, Items.STONE_SWORD, Items.WOODEN_SWORD};
-
-            for (Item item : SWORDS) {
-                if (mod.getItemStorage().hasItem(item)) {
-                    bestSword = (SwordItem) item;
-                    break;
-                }
-            }
-
             List<Entity> toDealWith = new ArrayList<>();
 
             // TODO: I don't think this lock is necessary at all.
@@ -311,7 +301,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             }
 
-            // Clear dead/non existing hostiles
+            // Clear dead/non-existing hostiles
             List<Entity> toRemove = new ArrayList<>();
             for (Entity check : closeAnnoyingEntities.keySet()) {
                 if (!check.isAlive()) {
@@ -323,15 +313,17 @@ public class MobDefenseChain extends SingleTaskChain {
 
             int numberOfProblematicEntities = toDealWith.size();
 
-            for (Entity ToDealWith : toDealWith) {
+            // note: this seems like a weird thing to do, but I am not sure of the intention of this, so I am just commenting it out for now
+           /* for (Entity ToDealWith : toDealWith) {
                 if (ToDealWith.getClass() == SlimeEntity.class || ToDealWith.getClass() == MagmaCubeEntity.class) {
                     numberOfProblematicEntities = 1;
                     break;
                 }
-            }
+            }*/
+
             if (numberOfProblematicEntities > 0) {
 
-                // Depending on our weapons/armor, we may chose to straight up kill hostiles if we're not dodging their arrows.
+                // Depending on our weapons/armor, we may choose to straight up kill hostiles if we're not dodging their arrows.
 
                 // wood 0 : 1 skeleton
                 // stone 1 : 1 skeleton
@@ -350,15 +342,26 @@ public class MobDefenseChain extends SingleTaskChain {
                 // Diamond+netherite have bonus "toughness" parameter (we can simply add them I think, for now.)
                 // full diamond has 8 bonus toughness
                 // full netherite has 12 bonus toughness
+                SwordItem bestSword = null;
+                Item[] SWORDS = new Item[]{Items.NETHERITE_SWORD, Items.DIAMOND_SWORD, Items.IRON_SWORD, Items.GOLDEN_SWORD,
+                        Items.STONE_SWORD, Items.WOODEN_SWORD};
+
+                for (Item item : SWORDS) {
+                    if (mod.getItemStorage().hasItem(item)) {
+                        bestSword = (SwordItem) item;
+                        break;
+                    }
+                }
+
                 int armor = mod.getPlayer().getArmor();
-                float damage = bestSword == null ? 0 : (1 + bestSword.getMaterial().getAttackDamage());
+                float damage = bestSword == null ? 0 : (bestSword.getMaterial().getAttackDamage())+1;
                 boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
 
-                int shield = hasShield ? 20 : 0;
+                int shield = hasShield ? 3 : 0;
 
                 int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8) + (shield));
-                canDealWith += 1;
-                if (canDealWith > numberOfProblematicEntities) {
+
+                if (canDealWith >= numberOfProblematicEntities) {
                     // We can deal with it.
                     runAwayTask = null;
 
@@ -420,7 +423,6 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void doForceField(AltoClef mod) {
-
         killAura.tickStart();
 
         // Hit all hostiles close to us.
@@ -431,7 +433,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean shouldForce = false;
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof MobEntity) {
-                    if (EntityHelper.isGenerallyHostileToPlayer(mod, entity)) {
+                    if (EntityHelper.isHostileToPlayer(mod, entity)) {
                         if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }
@@ -445,7 +447,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 }
                 if (shouldForce) {
-                    applyForceField(entity);
+                    killAura.applyAura(entity);
                 }
             }
 
@@ -455,9 +457,6 @@ public class MobDefenseChain extends SingleTaskChain {
         killAura.tickEnd(mod);
     }
 
-    private void applyForceField(Entity entity) {
-        killAura.applyAura(entity);
-    }
 
     private CreeperEntity getClosestFusingCreeper(AltoClef mod) {
         double worstSafety = Float.POSITIVE_INFINITY;
@@ -500,12 +499,13 @@ public class MobDefenseChain extends SingleTaskChain {
                             mod.getClientBaritone().getPathingBehavior().requestPause();
                             LookHelper.lookAt(mod, ghast.get().getEyePos());
                         }
-                        return false;
+
                         // Ignore ghast balls
+                        return false;
                     }
                     if (projectile.projectileType == DragonFireballEntity.class) {
                         // Ignore dragon fireballs
-                        return false;
+                        continue;
                     }
                     if (projectile.projectileType == ArrowEntity.class || projectile.projectileType == SpectralArrowEntity.class || projectile.projectileType == SmallFireballEntity.class) {
                         // check if the projectile is going away from us
@@ -537,6 +537,16 @@ public class MobDefenseChain extends SingleTaskChain {
         } catch (ConcurrentModificationException e) {
             Debug.logWarning(e.getMessage());
         }
+
+        for (SkeletonEntity skeleton : mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class)) {
+            if (skeleton.distanceTo(mod.getPlayer()) > 10 || !skeleton.canSee(mod.getPlayer())) continue;
+
+            // when the skeleton is about to shoot (it takes 5 ticks to raise the shield)
+            if (skeleton.getItemUseTime() > 15) {
+                mod.log("SKELETON IS ABOUT TO SHOOT " + skeleton.getItemUseTime());
+                return true;
+            }
+        }
         return false;
     }
 
@@ -563,14 +573,14 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private boolean isInDanger(AltoClef mod) {
-        Optional<Entity> witch = mod.getEntityTracker().getClosestEntity(WitchEntity.class);
-        boolean hasFood = mod.getFoodChain().hasFood();
+        boolean witchNearby = mod.getEntityTracker().entityFound(WitchEntity.class);
+
         float health = mod.getPlayer().getHealth();
-        if (health <= 10 && hasFood && witch.isEmpty()) {
+        if (health <= 10 && !witchNearby) {
             return true;
         }
         if (mod.getPlayer().hasStatusEffect(StatusEffects.WITHER) ||
-                (mod.getPlayer().hasStatusEffect(StatusEffects.POISON) && witch.isEmpty())) {
+                (mod.getPlayer().hasStatusEffect(StatusEffects.POISON) && !witchNearby)) {
             return true;
         }
         if (isVulnerable(mod)) {
@@ -588,13 +598,11 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
 
             } catch (Exception e) {
-                Debug.logWarning("Weird multithread exception. Will fix later.");
+                Debug.logWarning("Weird multithread exception. Will fix later. "+e.getMessage());
             }
         }
         return false;
     }
-
-    ;
 
     private boolean isVulnerable(AltoClef mod) {
         int armor = mod.getPlayer().getArmor();

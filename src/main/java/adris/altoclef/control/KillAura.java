@@ -10,7 +10,10 @@ import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.mob.*;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.HoglinEntity;
+import net.minecraft.entity.mob.WardenEntity;
+import net.minecraft.entity.mob.ZoglinEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
@@ -29,7 +32,7 @@ import java.util.Optional;
 public class KillAura {
     // Smart aura data
     private final List<Entity> targets = new ArrayList<>();
-    private final TimerGame hitDelay = new TimerGame(0.2);
+    private final TimerGame hitDelay = new TimerGame(1.2);
     boolean shielding = false;
     private double forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity forceHit = null;
@@ -98,38 +101,25 @@ public class KillAura {
                     startShielding(mod);
                 }
             }
-            performDelayedAttack(mod);
         } else {
             stopShielding(mod);
         }
+
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
                 performFastestAttack(mod);
                 break;
             case SMART:
-                if (targets.size() <= 2 || targets.stream().allMatch(e -> e instanceof SkeletonEntity) ||
-                        targets.stream().allMatch(e -> e instanceof WitchEntity) ||
-                        targets.stream().allMatch(e -> e instanceof PillagerEntity) ||
-                        targets.stream().allMatch(e -> e instanceof PiglinEntity) ||
-                        targets.stream().allMatch(e -> e instanceof StrayEntity) ||
-                        targets.stream().allMatch(e -> e instanceof BlazeEntity)) {
+                // Attack force mobs ALWAYS. (currently used only for fireballs)
+                if (forceHit != null) {
+                    attack(mod, forceHit, true);
+                    break;
+                }
+
+                if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFalling(mod) &&
+                        mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
                     performDelayedAttack(mod);
-                } else {
-                    if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFalling(mod) &&
-                            mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
-                        // Attack force mobs ALWAYS. (currently used only for fireballs)
-                        if (forceHit != null) {
-                            attack(mod, forceHit, true);
-                        }
-                        if (hitDelay.elapsed()) {
-                            hitDelay.reset();
-
-                            Optional<Entity> toHit = targets.stream().min(StlHelper.compareValues(e -> e.squaredDistanceTo(mod.getPlayer())));
-
-                            toHit.ifPresent(e -> attack(mod, e, true));
-                        }
-                    }
                 }
                 break;
             case DELAY:

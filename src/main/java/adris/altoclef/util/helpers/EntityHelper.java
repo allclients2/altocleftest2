@@ -22,26 +22,29 @@ public class EntityHelper {
     public static final double ENTITY_GRAVITY = 0.08; // per second
 
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
-        boolean hostile = isGenerallyHostileToPlayer(mod, mob);
+        boolean hostile = isHostileToPlayer(mod, mob);
         if (mob instanceof LivingEntity entity) {
             return hostile && entity.canSee(mod.getPlayer());
         }
         return hostile;
     }
 
-    public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
-        // This is only temporary.
-        if (hostile instanceof MobEntity entity) {
-            if (entity instanceof HostileEntity entity1) {
-                return entity1.isAttacking() || !(entity1 instanceof EndermanEntity || entity1 instanceof PiglinEntity ||
-                        entity1 instanceof SpiderEntity || entity1 instanceof ZombifiedPiglinEntity);
+    public static boolean isHostileToPlayer(AltoClef mod, Entity entity) {
+        if (entity instanceof MobEntity mob) {
+            if (mob instanceof SlimeEntity slime) {
+                return slime.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE) > 0;
             }
-            if (entity instanceof SlimeEntity entity1) {
-                return entity1.canSee(mod.getPlayer());
+            if (mob instanceof PiglinEntity piglin) {
+                return piglin.isAttacking() && !isTradingPiglin(mob) && piglin.isAdult();
             }
-            return entity.isAttacking();
+            if (mob instanceof EndermanEntity enderman) {
+                return enderman.isAngry();
+            }
+
+            return mob.isAttacking() || mob instanceof HostileEntity;
         }
-        return !isTradingPiglin(hostile);
+
+        return false;
     }
 
     public static boolean isTradingPiglin(Entity entity) {
