@@ -14,6 +14,7 @@
     "EntityAccessor",
     "GameOverlayMixin",
     "PersistentProjectileEntityAccessor",
+    "ProjectileAttackGoalMixin",
     "SlotClickMixin",
     "ToolSetMixin",
     "WorldBlockModifiedMixin"

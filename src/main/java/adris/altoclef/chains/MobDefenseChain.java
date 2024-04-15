@@ -23,6 +23,7 @@ import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.ai.RangedAttackMob;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
@@ -51,6 +52,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private final DragonBreathTracker dragonBreathTracker = new DragonBreathTracker();
     private final KillAura killAura = new KillAura();
     private final HashMap<Entity, TimerGame> closeAnnoyingEntities = new HashMap<>();
+    private final List<MobEntity> aboutToShoot = new ArrayList<>();
     private Entity targetEntity;
     private boolean doingFunkyStuff = false;
     private boolean wasPuttingOutFire = false;
@@ -98,6 +100,8 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
         cachedLastPriority = getPriorityInner(mod);
+        aboutToShoot.clear();
+
         return cachedLastPriority;
     }
 
@@ -484,6 +488,10 @@ public class MobDefenseChain extends SingleTaskChain {
         return target;
     }
 
+    public void hostileAboutToShoot(MobEntity entity) {
+        aboutToShoot.add(entity);
+    }
+
     private boolean isProjectileClose(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
         try {
@@ -538,14 +546,26 @@ public class MobDefenseChain extends SingleTaskChain {
             Debug.logWarning(e.getMessage());
         }
 
+        // TODO refactor this into something more reliable for all mobs
+        // sometimes the about to shoot check fails
         for (SkeletonEntity skeleton : mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class)) {
             if (skeleton.distanceTo(mod.getPlayer()) > 10 || !skeleton.canSee(mod.getPlayer())) continue;
 
             // when the skeleton is about to shoot (it takes 5 ticks to raise the shield)
             if (skeleton.getItemUseTime() > 15) {
-                mod.log("SKELETON IS ABOUT TO SHOOT " + skeleton.getItemUseTime());
                 return true;
             }
+        }
+
+        for (MobEntity entity : aboutToShoot) {
+            if (entity.distanceTo(mod.getPlayer()) > 10) continue;
+            if (!(entity instanceof RangedAttackMob)) {
+                mod.logWarning("Non-ranged hostile in about to shoot list!");
+                continue;
+            }
+
+            // when the hostile is about to shoot
+            return true;
         }
         return false;
     }
