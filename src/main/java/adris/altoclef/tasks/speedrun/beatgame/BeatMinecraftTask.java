@@ -2365,7 +2365,7 @@ public class BeatMinecraftTask extends Task {
 
                 if (toGather != null) {
                     setDebugState("Priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
-                    if (prevLastGather == toGather && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
+                    if (prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
                         mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
                         prevLastGather = null; //do not force infinitely, 3 sec should be enough I hope
