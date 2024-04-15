@@ -374,7 +374,7 @@ public class BeatMinecraftTask extends Task {
 
     private void addPickupImportantItemsTask(AltoClef mod) {
         List<Item> importantItems = List.of(Items.IRON_PICKAXE,Items.DIAMOND_PICKAXE,Items.GOLDEN_HELMET,Items.DIAMOND_SWORD,
-                Items.DIAMOND_CHESTPLATE,Items.DIAMOND_LEGGINGS,Items.DIAMOND_BOOTS);
+                Items.DIAMOND_CHESTPLATE,Items.DIAMOND_LEGGINGS,Items.DIAMOND_BOOTS, Items.FLINT_AND_STEEL);
 
         GatherResource pickupImportantItems = new GatherResource(99,99,null,item->true,Items.BEDROCK)
                 .withDescription("Picking up important item...");
