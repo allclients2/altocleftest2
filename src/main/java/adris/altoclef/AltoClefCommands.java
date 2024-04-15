@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.commands.*;
 import adris.altoclef.commands.random.CycleTestCommand;
+import adris.altoclef.commands.random.DummyTaskCommand;
 import adris.altoclef.commands.random.ScanCommand;
 import adris.altoclef.commandsystem.CommandException;
 
@@ -20,6 +21,7 @@ public class AltoClefCommands {
                 new TestCommand(),
                 new GamerCommand(),
                 new MarvionCommand(),
+                new DummyTaskCommand(),
                 new ReloadSettingsCommand(),
                 //new CycleTestCommand(),
                 new ScanCommand()
