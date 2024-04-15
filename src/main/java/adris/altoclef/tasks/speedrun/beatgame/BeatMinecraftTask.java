@@ -183,6 +183,9 @@ public class BeatMinecraftTask extends Task {
             Items.AZURE_BLUET,
 
             Items.ACACIA_DOOR,
+            Items.OAK_FENCE,
+            Items.COMPOSTER,
+            Items.OAK_PRESSURE_PLATE,
             Items.JUNGLE_DOOR,
             Items.CHISELED_SANDSTONE,
             Items.CACTUS,
