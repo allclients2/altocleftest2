@@ -35,22 +35,6 @@ public class CollectIronIngotTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        if (mod.getModSettings().shouldUseBlastFurnace()) {
-            if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) ||
-                    mod.getBlockScanner().anyFound(Blocks.BLAST_FURNACE) ||
-                    mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) {
-                return new SmeltInBlastFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
-            }
-            if (count < 5) {
-                return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
-            }
-            Optional<BlockPos> furnacePos = mod.getBlockScanner().getNearestBlock(Blocks.FURNACE);
-            furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
-            if (mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 5) {
-                return TaskCatalogue.getItemTask(Items.BLAST_FURNACE, 1);
-            }
-            return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, 5), new ItemTarget(Items.RAW_IRON, 5)));
-        }
         return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, count), new ItemTarget(Items.RAW_IRON, count)));
     }
 

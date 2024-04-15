@@ -376,10 +376,7 @@ public class Settings implements IFailableConfigFile {
             Stream.of(ItemHelper.SHULKER_BOXES)
     ).toList();
 
-    /**
-     * If true, a blast furnace will be used in smelting if an item to smelt is applicable.
-     */
-    private boolean useBlastFurnace = false;
+
 
     /**
      * If true, will only accept items found in `supportedFuels` as fuel when smelting.
@@ -597,9 +594,6 @@ public class Settings implements IFailableConfigFile {
         return limitFuelsToSupportedFuels;
     }
 
-    public boolean shouldUseBlastFurnace() {
-        return useBlastFurnace;
-    }
 
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);

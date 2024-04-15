@@ -39,23 +39,6 @@ public class CollectGoldIngotTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
-            if (mod.getModSettings().shouldUseBlastFurnace()) {
-                if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) ||
-                        mod.getBlockScanner().anyFound(Blocks.BLAST_FURNACE) ||
-                        mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) {
-                    return new SmeltInBlastFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, count), new ItemTarget(Items.RAW_GOLD, count)));
-                }
-                if (count < 5) {
-                    return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, count), new ItemTarget(Items.RAW_GOLD, count)));
-                }
-                mod.getBehaviour().addProtectedItems(Items.COBBLESTONE, Items.STONE, Items.SMOOTH_STONE);
-                Optional<BlockPos> furnacePos = mod.getBlockScanner().getNearestBlock(Blocks.FURNACE);
-                furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
-                if (mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 5) {
-                    return TaskCatalogue.getItemTask(Items.BLAST_FURNACE, 1);
-                }
-                return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, 5), new ItemTarget(Items.RAW_IRON, 5)));
-            }
             return new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, count), new ItemTarget(Items.RAW_GOLD, count)));
         } else if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             // If we have enough nuggets, craft them.
