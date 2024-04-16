@@ -1351,7 +1351,7 @@ public class BeatMinecraftTask extends Task {
      * @param mod The AltoClef instance.
      */
     private void addProtectedItems(AltoClef mod) {
-        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.CRAFTING_TABLE, Items.IRON_INGOT, Items.WATER_BUCKET, Items.FLINT_AND_STEEL, Items.SHIELD, Items.SHEARS, Items.BUCKET, Items.GOLDEN_HELMET, Items.SMOKER, Items.FURNACE);
+        mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.BLAZE_POWDER, Items.ENDER_PEARL, Items.CRAFTING_TABLE, Items.IRON_INGOT, Items.WATER_BUCKET, Items.FLINT_AND_STEEL, Items.SHIELD, Items.SHEARS, Items.BUCKET, Items.GOLDEN_HELMET, Items.SMOKER, Items.FURNACE);
 
         // Add protected items using helper classes
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
