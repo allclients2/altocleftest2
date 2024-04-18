@@ -1,16 +1,14 @@
 package adris.altoclef.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.LookHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.item.Item;
 import net.minecraft.state.property.Properties;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.hit.HitResult;
@@ -21,6 +19,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class SafeNetherPortalTask extends Task {
+    private final TimerGame wait = new TimerGame(1);
+    private boolean keyReset = false;
     private boolean finished = false;
     private List<BlockPos> positions = null;
     private List<Direction> directions = null;
@@ -29,10 +29,19 @@ public class SafeNetherPortalTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
+        wait.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
+        if (!wait.elapsed()) {
+            return null;
+        }
+        if (!keyReset) {
+            keyReset = true;
+            mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
+        }
+
         if (mod.getPlayer().getPortalCooldown() < 10) {
             if (positions != null && directions != null) {
                 BlockPos pos1 = mod.getPlayer().getSteppingPos().offset(axis, 1);
