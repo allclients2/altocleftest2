@@ -4,8 +4,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.entity.KillEntityTask;
-import adris.altoclef.tasks.movement.GetCloseToBlockTask;
-import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.GetWithinRangeOfBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
@@ -14,11 +12,13 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Blocks;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
 import java.util.Optional;
+import java.util.function.Predicate;
 
 public class KillEndermanTask extends ResourceTask {
 
@@ -52,13 +52,13 @@ public class KillEndermanTask extends ResourceTask {
             //nearest warped forest related block
             Optional<BlockPos> nearest = mod.getBlockScanner().getNearestBlock(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM);
             if (nearest.isPresent()) {
-                if (WorldHelper.inRangeXZ(nearest.get(),mod.getPlayer().getBlockPos(), 40)) {
+                if (WorldHelper.inRangeXZ(nearest.get(), mod.getPlayer().getBlockPos(), 40)) {
                     setDebugState("Waiting for endermen to spawn...");
                     return null;
                 }
 
                 setDebugState("Getting to warped forest biome");
-                return new GetWithinRangeOfBlockTask(nearest.get(),35);
+                return new GetWithinRangeOfBlockTask(nearest.get(), 35);
             }
 
             setDebugState("Warped forest biome not found");
@@ -66,18 +66,20 @@ public class KillEndermanTask extends ResourceTask {
         }
 
 
+        Predicate<Entity> belowNetherRoof = (entity) -> WorldHelper.getCurrentDimension() != Dimension.NETHER || entity.getY() < 125;
+        final int TOO_FAR_AWAY = WorldHelper.getCurrentDimension() == Dimension.NETHER ? 10 : 256;
+
 
         // Kill the angry one
         for (EndermanEntity entity : mod.getEntityTracker().getTrackedEntities(EndermanEntity.class)) {
-            final int TOO_FAR_AWAY = 256;
 
-            if (entity.isAngry() && entity.getPos().isInRange(mod.getPlayer().getPos(), TOO_FAR_AWAY)) {
+            if (belowNetherRoof.test(entity) && entity.isAngry() && entity.getPos().isInRange(mod.getPlayer().getPos(), TOO_FAR_AWAY)) {
                 return new KillEntityTask(entity);
             }
         }
 
         // Attack the closest one
-        return new KillEntitiesTask(EndermanEntity.class);
+        return new KillEntitiesTask(belowNetherRoof, EndermanEntity.class);
     }
 
     @Override
@@ -95,6 +97,6 @@ public class KillEndermanTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Hunting endermen for pearls - "+AltoClef.INSTANCE.getItemStorage().getItemCount(Items.ENDER_PEARL)+"/"+_count;
+        return "Hunting endermen for pearls - " + AltoClef.INSTANCE.getItemStorage().getItemCount(Items.ENDER_PEARL) + "/" + _count;
     }
 }
