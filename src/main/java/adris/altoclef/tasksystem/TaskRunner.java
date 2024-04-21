@@ -21,7 +21,11 @@ public class TaskRunner {
     }
 
     public void tick() {
-        if (!active || !AltoClef.inGame()) return;
+        if (!active || !AltoClef.inGame()) {
+            statusReport = " (no chain running) ";
+            return;
+        }
+
         // Get highest priority chain and run
         TaskChain maxChain = null;
         float maxPriority = Float.NEGATIVE_INFINITY;
@@ -67,6 +71,10 @@ public class TaskRunner {
         active = false;
 
         Debug.logMessage("Stopped");
+    }
+
+    public boolean isActive() {
+        return active;
     }
 
     public TaskChain getCurrentTaskChain() {
