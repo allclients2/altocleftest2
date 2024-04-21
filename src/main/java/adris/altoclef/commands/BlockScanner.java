@@ -350,6 +350,8 @@ public class BlockScanner {
             queue.add(new Node(new ChunkPos(node.pos.x + 1, node.pos.z - 1), node.distance + 1));
         }
         if (forceStop) {
+            // reset again, might have changed some values from the time forceStop was called
+            reset();
             forceStop = false;
             return;
         }
