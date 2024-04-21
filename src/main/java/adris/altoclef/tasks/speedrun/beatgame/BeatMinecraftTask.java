@@ -50,6 +50,7 @@ import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.collection.DefaultedList;
 import net.minecraft.util.math.*;
+import net.minecraft.world.Difficulty;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
@@ -286,6 +287,17 @@ public class BeatMinecraftTask extends Task {
     public BeatMinecraftTask(AltoClef mod) {
         locateStrongholdTask = new GoToStrongholdPortalTask(config.targetEyes);
         buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
+
+        SetGammaCommand.changeGamma(20d);
+
+        if (mod.getWorld().getDifficulty() != Difficulty.EASY) {
+            mod.logWarning("Detected that the difficulty is other than easy!");
+            if (mod.getWorld().getDifficulty() == Difficulty.PEACEFUL) {
+                mod.logWarning("No mobs spawn on peaceful difficulty, so the bot will not be able to beat the game. Please change it!");
+            } else {
+                mod.logWarning("This could cause the bot to die sooner, please consider changing it...");
+            }
+        }
 
         gatherResources.add(new GatherResource(4, 10,
                 getBlockCalculator(mod, ItemHelper.itemsToBlocks(ItemHelper.LOG), 3)
@@ -1283,8 +1295,6 @@ public class BeatMinecraftTask extends Task {
         avoidBreakingBed(mod);
 
         mod.getBehaviour().avoidBlockBreaking((pos) -> mod.getWorld().getBlockState(pos).getBlock().equals(Blocks.NETHER_PORTAL));
-
-        SetGammaCommand.changeGamma(20d);
     }
 
     /**
