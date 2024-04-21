@@ -44,14 +44,6 @@ public class CommandStatusOverlay {
     private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType, int maxLines, List<Task> tasks, AltoClef mod) {
         int whiteColor = 0xFFFFFFFF;
 
-        if (tasks.isEmpty()) {
-            renderer.draw(" (no task running) ", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-            if (lastTime + 10000 < Instant.now().toEpochMilli() && mod.getModSettings().shouldShowTimer()) {//if it doesn't run any task in 10 secs
-                timeRunning = Instant.now().toEpochMilli();//reset the timer
-            }
-            return;
-        }
-
         matrix.scale(0.5F, 0.5F, 0.5F);
 
         float fontHeight = renderer.fontHeight;
@@ -60,6 +52,16 @@ public class CommandStatusOverlay {
 
         renderer.draw(mod.getTaskRunner().statusReport, x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
         y += addY;
+
+        if (tasks.isEmpty()) {
+            if (mod.getTaskRunner().isActive()) {
+                renderer.draw(" (no task running) ", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
+                if (lastTime + 10000 < Instant.now().toEpochMilli() && mod.getModSettings().shouldShowTimer()) {//if it doesn't run any task in 10 secs
+                    timeRunning = Instant.now().toEpochMilli();//reset the timer
+                }
+            }
+            return;
+        }
 
         if (mod.getModSettings().shouldShowTimer()) {
             lastTime = Instant.now().toEpochMilli();
