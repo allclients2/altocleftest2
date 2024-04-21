@@ -4,9 +4,9 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
-import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -21,6 +21,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.SwordItem;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,30 +33,27 @@ import java.util.Optional;
 public class KillAura {
     // Smart aura data
     private final List<Entity> targets = new ArrayList<>();
-    private final TimerGame hitDelay = new TimerGame(1.2);
     boolean shielding = false;
     private double forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity forceHit = null;
 
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
-        float handDamage = Float.NEGATIVE_INFINITY;
-        for (ItemStack invStack : invStacks) {
-            if (invStack.getItem() instanceof SwordItem item) {
-
-                float itemDamage = item.getMaterial().getAttackDamage();
-                Item handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
-
-                if (handItem instanceof SwordItem handToolItem) {
-                    handDamage = handToolItem.getMaterial().getAttackDamage();
+        if (!invStacks.isEmpty()) {
+            float handDamage = Float.NEGATIVE_INFINITY;
+            for (ItemStack invStack : invStacks) {
+                if (invStack.getItem() instanceof SwordItem item) {
+                    float itemDamage = item.getMaterial().getAttackDamage();
+                    Item handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
+                    if (handItem instanceof SwordItem handToolItem) {
+                        handDamage = handToolItem.getMaterial().getAttackDamage();
+                    }
+                    if (itemDamage > handDamage) {
+                        mod.getSlotHandler().forceEquipItem(item);
+                    } else {
+                        mod.getSlotHandler().forceEquipItem(handItem);
+                    }
                 }
-
-                if (itemDamage > handDamage) {
-                    mod.getSlotHandler().forceEquipItem(item);
-                } else {
-                    mod.getSlotHandler().forceEquipItem(handItem);
-                }
-
             }
         }
     }
@@ -76,35 +74,33 @@ public class KillAura {
     }
 
     public void tickEnd(AltoClef mod) {
-        Optional<Entity> entity = targets.stream().min(StlHelper.compareValues(e -> e.squaredDistanceTo(mod.getPlayer())));
-        if (entity.isPresent() && mod.getPlayer().getHealth() >= 10 &&
-                !mod.getEntityTracker().entityFound(PotionEntity.class) && !mod.getFoodChain().needsToEat() &&
-                (Double.isInfinite(forceFieldRange) || entity.get().squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
-                        entity.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
-                !mod.getMLGBucketChain().isFalling(mod) && mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
-
+        Optional<Entity> entities = targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+        if (entities.isPresent() &&
+                !mod.getEntityTracker().entityFound(PotionEntity.class) &&
+                (Double.isInfinite(forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
+                        entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
+                !mod.getMLGBucketChain().isFalling(mod) && mod.getMLGBucketChain().doneMLG() &&
+                !mod.getMLGBucketChain().isChorusFruiting()) {
             PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
             Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
-
-            if (entity.get().getClass() != CreeperEntity.class && entity.get().getClass() != HoglinEntity.class &&
-                    entity.get().getClass() != ZoglinEntity.class && entity.get().getClass() != WardenEntity.class &&
-                    entity.get().getClass() != WitherEntity.class
+            if (entities.get().getClass() != CreeperEntity.class && entities.get().getClass() != HoglinEntity.class &&
+                    entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
+                    entities.get().getClass() != WitherEntity.class
                     && (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
                     && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)
                     && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-
-                LookHelper.lookAt(mod, entity.get().getEyePos());
+                LookHelper.lookAt(mod, entities.get().getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
                     mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
-                } else {
+                } else if (!WorldHelper.isSurroundedByHostiles(mod)) {
                     startShielding(mod);
                 }
             }
+            performDelayedAttack(mod);
         } else {
             stopShielding(mod);
         }
-
         // Run force field on map
         switch (mod.getModSettings().getForceFieldStrategy()) {
             case FASTEST:
@@ -168,7 +164,10 @@ public class KillAura {
     private void attack(AltoClef mod, Entity entity, boolean equipSword) {
         if (entity == null) return;
         if (!(entity instanceof FireballEntity)) {
-            LookHelper.lookAt(mod, entity.getEyePos());
+            double xAim = entity.getX();
+            double yAim = entity.getY() + (entity.getHeight() / 1.4);
+            double zAim = entity.getZ();
+            LookHelper.lookAt(mod, new Vec3d(xAim, yAim, zAim));
         }
         if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
                 entity.squaredDistanceTo(mod.getPlayer()) < 40) {
@@ -193,8 +192,6 @@ public class KillAura {
 
     public void startShielding(AltoClef mod) {
         shielding = true;
-        mod.getInputControls().hold(Input.SNEAK);
-        mod.getInputControls().hold(Input.CLICK_RIGHT);
         mod.getClientBaritone().getPathingBehavior().requestPause();
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
@@ -213,6 +210,8 @@ public class KillAura {
                 garbage.ifPresent(slot -> mod.getSlotHandler().forceEquipItem(StorageHelper.getItemStackInSlot(slot).getItem()));
             }
         }
+        mod.getInputControls().hold(Input.SNEAK);
+        mod.getInputControls().hold(Input.CLICK_RIGHT);
     }
 
     public void stopShielding(AltoClef mod) {
@@ -231,6 +230,10 @@ public class KillAura {
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
             shielding = false;
         }
+    }
+
+    public boolean isShielding() {
+        return shielding;
     }
 
     public enum Strategy {

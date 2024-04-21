@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,14 +23,14 @@ public class EntityHelper {
     public static final double ENTITY_GRAVITY = 0.08; // per second
 
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
-        boolean hostile = isHostileToPlayer(mod, mob);
+        boolean hostile = isProbablyHostileToPlayer(mod, mob);
         if (mob instanceof LivingEntity entity) {
             return hostile && entity.canSee(mod.getPlayer());
         }
         return hostile;
     }
 
-    public static boolean isHostileToPlayer(AltoClef mod, Entity entity) {
+    public static boolean isProbablyHostileToPlayer(AltoClef mod, Entity entity) {
         if (entity instanceof MobEntity mob) {
             if (mob instanceof SlimeEntity slime) {
                 return slime.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE) > 0;

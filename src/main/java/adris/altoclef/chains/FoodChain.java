@@ -91,7 +91,12 @@ public class FoodChain extends SingleTaskChain {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }
-        if (mod.getMobDefenseChain().isPuttingOutFire()) {
+        // do not interrupt defending from mobs by eating
+        if (mod.getMobDefenseChain().isPuttingOutFire()
+                || mod.getMobDefenseChain().isShielding()
+                || mod.getPlayer().isBlocking()
+                || mod.getMobDefenseChain().isDoingAcrobatics()
+        ) {
             stopEat(mod);
             return Float.NEGATIVE_INFINITY;
         }

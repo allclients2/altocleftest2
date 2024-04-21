@@ -431,4 +431,77 @@ public interface WorldHelper {
         return 0;
     }
 
+    static boolean isVulnerable(AltoClef mod) {
+        int armor = mod.getPlayer().getArmor();
+        float health = mod.getPlayer().getHealth();
+        if (armor <= 15 && health < 3) return true;
+        if (armor < 10 && health < 10) return true;
+        return armor < 5 && health < 18;
+    }
+
+    static boolean isSurroundedByHostiles(AltoClef mod) {
+        List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+        return isSurrounded(mod, hostiles);
+    }
+
+    // Function to check if the player is surrounded on two or more sides
+    static boolean isSurrounded(AltoClef mod, List<Entity> entities) {
+
+        BlockPos playerPos = mod.getPlayer().getBlockPos();
+
+        // Minimum number of sides to consider the origin surrounded
+        final int MIN_SIDES_TO_SURROUND = 2;
+
+        // Count the number of unique sides based on angles
+        List<Direction> uniqueSides =  new ArrayList<Direction>();
+
+        // Iterate through each point and calculate the angle with the origin
+        for (Entity entity : entities) {
+            if(!entity.isInRange(mod.getPlayer(), 8)) continue;
+            BlockPos entityPos = entity.getBlockPos();
+            double angle = calculateAngle(playerPos, entityPos);
+
+            // Check if the angle is unique
+            boolean isUnique = !uniqueSides.contains(getHorizontalDirectionFromYaw(angle));
+
+            // If the angle is unique, increment the uniqueSides count
+            if (isUnique) {
+                uniqueSides.add(getHorizontalDirectionFromYaw(angle));
+            }
+        }
+
+        // Check if the origin is surrounded on two or more sides
+        return uniqueSides.size() >= MIN_SIDES_TO_SURROUND;
+    }
+
+    private static double calculateAngle(BlockPos origin, BlockPos target) {
+        double translatedX = target.getX() - origin.getX();
+        double translatedZ = target.getZ() - origin.getZ();
+        double angleRad = Math.atan2(translatedZ, translatedX);
+        double angleDeg = Math.toDegrees(angleRad);
+        angleDeg -= 90;
+        if (angleDeg < 0) {
+            angleDeg += 360;
+        }
+        return angleDeg;
+    }
+
+    private static Direction getHorizontalDirectionFromYaw(double yaw) {
+        yaw %= 360.0F;
+        if (yaw < 0) {
+            yaw += 360.0F;
+        }
+
+        if ((yaw >= 45 && yaw < 135) || (yaw >= -315 && yaw < -225)) {
+            return Direction.WEST;
+        } else if ((yaw >= 135 && yaw < 225) || (yaw >= -225 && yaw < -135)) {
+            return Direction.NORTH;
+        } else if ((yaw >= 225 && yaw < 315) || (yaw >= -135 && yaw < -45)) {
+            return Direction.EAST;
+        } else {
+            return Direction.SOUTH;
+        }
+    }
+
+
 }
