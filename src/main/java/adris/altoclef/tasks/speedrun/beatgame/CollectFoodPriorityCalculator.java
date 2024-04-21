@@ -43,7 +43,7 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         double foodPotential = CollectFoodTask.calculateFoodPotential(mod);
 
         //prevents from going to the nether without any food
-        if (distance == Double.NEGATIVE_INFINITY && foodPotential < foodUnits) return 0.1d;
+        if (Double.isInfinite(distance) && foodPotential < foodUnits) return 0.1d;
 
         Optional<BlockPos> hay = mod.getBlockScanner().getNearestBlock(Blocks.HAY_BLOCK);
         if ((hay.isPresent() && WorldHelper.inRangeXZ(hay.get(),mod.getPlayer().getBlockPos(),75))|| mod.getEntityTracker().itemDropped(Items.HAY_BLOCK)) {
