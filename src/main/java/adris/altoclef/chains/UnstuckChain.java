@@ -1,6 +1,7 @@
 package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -15,9 +16,8 @@ import java.util.LinkedList;
 
 public class UnstuckChain extends SingleTaskChain {
 
+    private final LinkedList<Vec3d> posHistory = new LinkedList<>();
     private boolean isProbablyStuck = false;
-    private LinkedList<Vec3d> posHistory = new LinkedList<>();
-    private TimerGame forceTimer = new TimerGame(2);
 
     public UnstuckChain(TaskRunner runner) {
         super(runner);
@@ -41,7 +41,7 @@ public class UnstuckChain extends SingleTaskChain {
         Vec3d pos1 = posHistory.get(0);
         for (int i = 1; i < 100; i++) {
             Vec3d pos2 = posHistory.get(i);
-            if (Math.abs(pos1.getX() - pos2.getX()) > 0.75 || Math.abs(pos1.getZ() - pos2.getZ()) > 0.75 || pos1.equals(pos2)) {
+            if (Math.abs(pos1.getX() - pos2.getX()) > 0.75 || Math.abs(pos1.getZ() - pos2.getZ()) > 0.75) {
                 return;
             }
         }
@@ -49,6 +49,17 @@ public class UnstuckChain extends SingleTaskChain {
         isProbablyStuck = true;
        // setTask(new SafeRandomShimmyTask());
         mod.getInputControls().tryPress(Input.CLICK_LEFT);
+        mod.getInputControls().tryPress(Input.JUMP);
+    }
+
+    private void checkStuckInPowderedSnow(AltoClef mod) {
+        PlayerEntity player = mod.getPlayer();
+
+
+        if (player.inPowderSnow) {
+            isProbablyStuck = true;
+            setTask(new DestroyBlockTask(mod.getBlockScanner().getNearestBlock(Blocks.POWDER_SNOW).get()));
+        }
     }
 
     @Override
@@ -62,25 +73,22 @@ public class UnstuckChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
-
         PlayerEntity player = mod.getPlayer();
         posHistory.addFirst(player.getPos());
         if (posHistory.size() > 500) {
             posHistory.removeLast();
         }
-        if (posHistory.size() < 10) return Float.NEGATIVE_INFINITY;
 
-        checkStuckInWater(mod);
+        if (posHistory.size() > 10) {
+            checkStuckInWater(mod);
+        }
+        checkStuckInPowderedSnow(mod);
 
 
-        if (isProbablyStuck || !forceTimer.elapsed()) {
-            if (isProbablyStuck && forceTimer.elapsed()) {
-                forceTimer.reset();
-            } else {
-                posHistory.clear();
-            }
+        if (isProbablyStuck) {
             return 55;
         }
+
         return Float.NEGATIVE_INFINITY;
     }
 
