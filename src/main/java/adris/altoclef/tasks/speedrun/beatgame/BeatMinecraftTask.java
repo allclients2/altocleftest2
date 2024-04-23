@@ -1895,8 +1895,38 @@ public class BeatMinecraftTask extends Task {
 
                 }
             }
-            // If we found our end portal...
-            if (endPortalFound(mod, endPortalCenterLocation)) {
+                ranStrongholdLocator = true;
+                // Get beds before starting our portal location.
+                if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
+                    setDebugState("Getting beds before stronghold search.");
+                    if (!mod.getClientBaritone().getExploreProcess().isActive() && timer1.elapsed()) {
+                        timer1.reset();
+                    }
+                    getBedTask = getBedTask(mod);
+                    return getBedTask;
+                } else {
+                    getBedTask = null;
+                }
+                if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                    setDebugState("Getting water bucket.");
+                    return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+                }
+                if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                    setDebugState("Getting flint and steel.");
+                    return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+                }
+                if (needsBuildingMaterials(mod)) {
+                    setDebugState("Collecting building materials.");
+                    return buildMaterialsTask;
+                }
+
+                if (!endPortalFound(mod,endPortalCenterLocation)) {
+                    // Portal Location
+                    setDebugState("Locating End Portal...");
+                    return locateStrongholdTask;
+                }
+
+                // WE FOUND END PORTAL AND SHOULD HAVE ALL THE NECESSARY STUFF
                 // Destroy silverfish spawner
                 if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                     Optional<BlockPos> silverfish = mod.getBlockScanner().getNearestBlock(blockPos -> (WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity)
@@ -1961,35 +1991,6 @@ public class BeatMinecraftTask extends Task {
                     openingEndPortal = true;
                     return new DoToClosestBlockTask(blockPos -> new InteractWithBlockTask(Items.ENDER_EYE, blockPos), blockPos -> !isEndPortalFrameFilled(mod, blockPos), Blocks.END_PORTAL_FRAME);
                 }
-            } else {
-                ranStrongholdLocator = true;
-                // Get beds before starting our portal location.
-                if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
-                    setDebugState("Getting beds before stronghold search.");
-                    if (!mod.getClientBaritone().getExploreProcess().isActive() && timer1.elapsed()) {
-                        timer1.reset();
-                    }
-                    getBedTask = getBedTask(mod);
-                    return getBedTask;
-                } else {
-                    getBedTask = null;
-                }
-                if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                    setDebugState("Getting water bucket.");
-                    return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
-                }
-                if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                    setDebugState("Getting flint and steel.");
-                    return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
-                }
-                if (needsBuildingMaterials(mod)) {
-                    setDebugState("Collecting building materials.");
-                    return buildMaterialsTask;
-                }
-                // Portal Location
-                setDebugState("Locating End Portal...");
-                return locateStrongholdTask;
-            }
         } else if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
             List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true, COLLECT_IRON_ARMOR);
