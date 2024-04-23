@@ -158,11 +158,17 @@ public class SmeltInFurnaceTask extends ResourceTask {
         }
 
         @Override
-        protected Task onTick(AltoClef mod) {
+        protected void onStart(AltoClef mod) {
+            super.onStart(mod);
+
             mod.getBehaviour().addProtectedItems(ItemHelper.PLANKS);
             mod.getBehaviour().addProtectedItems(Items.COAL);
             mod.getBehaviour().addProtectedItems(allMaterials.getMatches());
             mod.getBehaviour().addProtectedItems(target.getMaterial().getMatches());
+        }
+
+        @Override
+        protected Task onTick(AltoClef mod) {
             tryUpdateOpenFurnace(mod);
             // Include both regular + optional items
             ItemTarget materialTarget = allMaterials;

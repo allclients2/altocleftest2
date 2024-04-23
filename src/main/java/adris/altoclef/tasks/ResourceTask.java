@@ -81,12 +81,12 @@ public abstract class ResourceTask extends Task implements ITaskCanForce {
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
         //removeThrowawayItems(_itemTargets);
+        mod.getBehaviour().addProtectedItems(ItemTarget.getMatches(_itemTargets));
         onResourceStart(mod);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        mod.getBehaviour().addProtectedItems(ItemTarget.getMatches(_itemTargets));
         // If we have an item in an INACCESSIBLE inventory slot
         if (!(thisOrChildSatisfies(task -> task instanceof ITaskUsesCraftingGrid)) || _ensureFreeCraftingGridTask.isActive()) {
             for (ItemTarget target : _itemTargets) {
