@@ -18,6 +18,8 @@ public class UnstuckChain extends SingleTaskChain {
 
     private final LinkedList<Vec3d> posHistory = new LinkedList<>();
     private boolean isProbablyStuck = false;
+    private int eatingTicks = 0;
+    private boolean interruptedEating = false;
 
     public UnstuckChain(TaskRunner runner) {
         super(runner);
@@ -25,6 +27,8 @@ public class UnstuckChain extends SingleTaskChain {
 
 
     private void checkStuckInWater(AltoClef mod) {
+        if (posHistory.size() < 12) return;
+
         // is not in water
         if (!mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock().equals(Blocks.WATER)
                 && !mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos().down()).getBlock().equals(Blocks.WATER))
@@ -55,10 +59,31 @@ public class UnstuckChain extends SingleTaskChain {
     private void checkStuckInPowderedSnow(AltoClef mod) {
         PlayerEntity player = mod.getPlayer();
 
-
         if (player.inPowderSnow) {
             isProbablyStuck = true;
             setTask(new DestroyBlockTask(mod.getBlockScanner().getNearestBlock(Blocks.POWDER_SNOW).get()));
+        }
+    }
+
+    private void checkEatingGlitch(AltoClef mod) {
+        if (interruptedEating) {
+            mod.getFoodChain().shouldStop(false);
+            interruptedEating = false;
+        }
+
+        if (mod.getFoodChain().isTryingToEat()) {
+            eatingTicks++;
+        } else {
+            eatingTicks = 0;
+        }
+
+        if (eatingTicks > 7*20) {
+            mod.log("the bot is probably stuck trying to eat... resetting action");
+            mod.getFoodChain().shouldStop(true);
+
+            eatingTicks = 0;
+            interruptedEating = true;
+            isProbablyStuck = true;
         }
     }
 
@@ -79,10 +104,9 @@ public class UnstuckChain extends SingleTaskChain {
             posHistory.removeLast();
         }
 
-        if (posHistory.size() > 10) {
-            checkStuckInWater(mod);
-        }
+        checkStuckInWater(mod);
         checkStuckInPowderedSnow(mod);
+        checkEatingGlitch(mod);
 
 
         if (isProbablyStuck) {
