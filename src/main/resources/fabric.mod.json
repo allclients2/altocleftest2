@@ -11,10 +11,10 @@
     "MiranCZ"
   ],
   "contact": {
-    "homepage": "https://fabricc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/MiranCZ/altoclef",
+    "sources": "https://github.com/MiranCZ/altoclef"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/altoclef/icon.png",
   "environment": "*",
   "entrypoints": {
