@@ -56,9 +56,9 @@ public class CommandStatusOverlay {
         if (tasks.isEmpty()) {
             if (mod.getTaskRunner().isActive()) {
                 renderer.draw(" (no task running) ", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-                if (lastTime + 10000 < Instant.now().toEpochMilli() && mod.getModSettings().shouldShowTimer()) {//if it doesn't run any task in 10 secs
-                    timeRunning = Instant.now().toEpochMilli();//reset the timer
-                }
+            }
+            if (lastTime + 10000 < Instant.now().toEpochMilli() && mod.getModSettings().shouldShowTimer()) {//if it doesn't run any task in 10 secs
+                timeRunning = Instant.now().toEpochMilli();//reset the timer
             }
             return;
         }
