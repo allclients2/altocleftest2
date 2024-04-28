@@ -22,7 +22,7 @@ sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
-version = project.mod_version
+version = "${project.name}-${project.mod_version}"
 group = project.maven_group
 
 def mappingsVersions = [
@@ -60,7 +60,7 @@ dependencies {
     //to change the versions see the gradle.properties file
     minecraft("com.mojang:minecraft:${project.name}")
     mappings("net.fabricmc:yarn:${mappingsVersions[mcVersion]}:v2")
-    modImplementation("net.fabricmc:fabric-loader:0.15.7")
+    modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
     include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.5")))
 
     // Fabric API. This is technically optional, but you probably want it anyway.
@@ -107,14 +107,12 @@ remapJar {
 }
 
 processResources {
-    inputs.property("version", project.name + "-" + project.version)
+    inputs.property("version", project.version)
     inputs.property("mcVersion", project.name)
 
-
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-        expand "version": project.version
-        duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "mcVersion": project.name
     }
 
     from(sourceSets.main.resources.srcDirs) {
