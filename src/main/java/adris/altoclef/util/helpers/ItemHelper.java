@@ -372,7 +372,7 @@ public class ItemHelper {
                 // BlockTags.LEAVES); should also work... but is slower
                 b instanceof LeavesBlock
                         || b == Blocks.COBWEB
-                        || b == Blocks.GRASS
+                        || b == Blocks.SHORT_GRASS
                         || b == Blocks.TALL_GRASS
                         || b == Blocks.LILY_PAD
                         || b == Blocks.FERN

@@ -3,6 +3,7 @@ package adris.altoclef.util.helpers;
 import adris.altoclef.AltoClef;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.mixins.EntityAccessor;
+import adris.altoclef.multiversion.MethodWrapper;
 import adris.altoclef.util.Dimension;
 import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
@@ -374,7 +375,7 @@ public interface WorldHelper {
         if (state.getBlock() instanceof SpawnerBlock) {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);
             if (be instanceof MobSpawnerBlockEntity blockEntity) {
-                return blockEntity.getLogic().getRenderedEntity(mod.getWorld(), Random.create(), pos);
+                return MethodWrapper.getRenderedEntity(blockEntity.getLogic(), mod.getWorld(),pos);
             }
         }
         return null;

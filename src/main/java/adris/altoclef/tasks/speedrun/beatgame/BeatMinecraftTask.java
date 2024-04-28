@@ -166,7 +166,7 @@ public class BeatMinecraftTask extends Task {
             Items.EMERALD,
             Items.GOLD_NUGGET,
             Items.IRON_NUGGET,
-            Items.GRASS,
+            Items.SHORT_GRASS,
             Items.COBBLESTONE_WALL,
             Items.COBBLESTONE_STAIRS,
             Items.COBBLESTONE_SLAB,
