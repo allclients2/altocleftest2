@@ -19,6 +19,13 @@ You can look at the [changelog](changelog.md) if you are interested.
 
 Because I rewrote a good portion of the `BeatMinecraftTask` a lot of the config settings don't work. Although I plan to implement configs in the future of course.  
 
+### The preprocessor
+I am currently experimentaly using the [replay mod preprocessor](https://github.com/ReplayMod/preprocessor) to keep the mod updated across multiple versions at the same time.
+The thing that is holding me back right now, is that I am using [Marvions releases for baritone](https://github.com/MarvionKirito/baritone) to go along AltoClef, so I should be able to at least keep up with [his fork](https://github.com/MarvionKirito/altoclef) for now.
+
+...
+
+(Section not finished)
 ## How it works
 
 Take a look at this [Guide from the wiki](https://github.com/MiranCZ/altoclef/wiki/1:-Documentation:-Big-Picture)
