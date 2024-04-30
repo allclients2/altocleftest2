@@ -52,7 +52,7 @@ public class KillEnderDragonWithBedsTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         // do not block our view
-        mod.getBehaviour().avoidBlockPlacing((pos)->Math.abs(pos.getX())+Math.abs(pos.getZ()) <= 3 && (pos.getX() != 0 && pos.getZ() != 0));
+        mod.getBehaviour().avoidBlockPlacing((pos)->pos.getZ()==0&&Math.abs(pos.getX())<5);
     }
 
     @Override
