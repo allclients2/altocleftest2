@@ -4,12 +4,16 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.time.TimerGame;
+import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.Item;
+import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.LinkedList;
@@ -34,9 +38,14 @@ public class UnstuckChain extends SingleTaskChain {
                 && !mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos().down()).getBlock().equals(Blocks.WATER))
             return;
 
+        // everything should be fine
+        if (mod.getPlayer().isOnGround()) {
+            posHistory.clear();
+            return;
+        }
+
         // do NOT do anything if underwater
         if (mod.getPlayer().getAir() < mod.getPlayer().getMaxAir()) {
-            posHistory.clear();
             return;
         }
 
@@ -51,9 +60,34 @@ public class UnstuckChain extends SingleTaskChain {
         }
 
         isProbablyStuck = true;
-       // setTask(new SafeRandomShimmyTask());
-        mod.getInputControls().tryPress(Input.CLICK_LEFT);
+
         mod.getInputControls().tryPress(Input.JUMP);
+
+        boolean hasBlockBelow = false;
+        for (int i = 0; i < 3; i++) {
+            if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos().down(i)).getBlock() != Blocks.WATER) {
+                hasBlockBelow = true;
+            }
+        }
+
+        if (hasBlockBelow) {
+            if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock() != Blocks.WATER) {
+                setTask(new SafeRandomShimmyTask());
+                return;
+            }
+
+            mod.getSlotHandler().forceEquipItem(mod.getClientBaritoneSettings().acceptableThrowawayItems.value.toArray(new Item[0]));
+            LookHelper.lookAt(mod, mod.getPlayer().getSteppingPos().down());
+            mod.getInputControls().tryPress(Input.CLICK_RIGHT);
+        } else {
+            mod.getInputControls().tryPress(Input.MOVE_FORWARD);
+            mod.getInputControls().tryPress(Input.CLICK_LEFT);
+            if (MinecraftClient.getInstance().crosshairTarget instanceof BlockHitResult blockHitResult) {
+                LookHelper.lookAt(mod,blockHitResult.getBlockPos());
+            } else {
+                LookHelper.lookAt(mod, new Rotation(0, 90));
+            }
+        }
     }
 
     private void checkStuckInPowderedSnow(AltoClef mod) {
@@ -62,6 +96,17 @@ public class UnstuckChain extends SingleTaskChain {
         if (player.inPowderSnow) {
             isProbablyStuck = true;
             setTask(new DestroyBlockTask(mod.getBlockScanner().getNearestBlock(Blocks.POWDER_SNOW).get()));
+        }
+    }
+
+    private void checkStuckOnEndPortalFrame(AltoClef mod) {
+        if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock() == Blocks.END_PORTAL_FRAME) {
+            if (!mod.getFoodChain().isTryingToEat()) {
+                isProbablyStuck = true;
+
+                // for now let's just hope the other mechanisms will take care of cases where moving forward will get us in danger
+                mod.getInputControls().tryPress(Input.MOVE_FORWARD);
+            }
         }
     }
 
@@ -107,6 +152,7 @@ public class UnstuckChain extends SingleTaskChain {
         checkStuckInWater(mod);
         checkStuckInPowderedSnow(mod);
         checkEatingGlitch(mod);
+        checkStuckOnEndPortalFrame(mod);
 
 
         if (isProbablyStuck) {
