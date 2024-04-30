@@ -838,7 +838,7 @@ public class BeatMinecraftTask extends Task {
                 Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE).withShouldForce(true);
 
         gatherAllResource.withPriorityCalculator( (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItemAll(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)) {
+            if (mod.getItemStorage().hasItem(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)) {
                 gatherAllResource.maxCountSatisfied = true;
                 gatherAllResource.minCountSatisfied = true;
                 return Double.NEGATIVE_INFINITY;
@@ -846,6 +846,19 @@ public class BeatMinecraftTask extends Task {
 
             return 520;
         });
+
+        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
+            if (mod.getItemStorage().hasItem(Items.DIAMOND_SWORD,Items.IRON_SWORD)) return Double.NEGATIVE_INFINITY;
+
+            return 300;
+        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),Items.STONE_SWORD));
+
+
+        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
+            if (mod.getItemStorage().hasItem(Items.DIAMOND_AXE,Items.IRON_AXE)) return Double.NEGATIVE_INFINITY;
+
+            return 300;
+        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),Items.STONE_AXE));
 
         gatherResources.add(gatherAllResource);
     }
