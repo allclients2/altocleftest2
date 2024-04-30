@@ -53,9 +53,9 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         if (foodPotential > foodUnits) {
             if (foodPotential > foodUnits+20) return Double.NEGATIVE_INFINITY;
 
-            if (distance > 10) return Double.NEGATIVE_INFINITY;
+            if (distance > 10 && hay.isEmpty()) return Double.NEGATIVE_INFINITY;
 
-            return 17 / distance * (30 / (count / 2d));
+            return 17 / distance * (30 / (count / 2d))*multiplier;
         }
 
         if (foodPotential < 10) {
