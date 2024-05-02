@@ -14,12 +14,12 @@ import java.util.stream.Stream;
 
 public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
-    private final double _distanceToRun;
-    private final boolean _includeSkeletons;
+    private final double distanceToRun;
+    private final boolean includeSkeletons;
 
     public RunAwayFromHostilesTask(double distance, boolean includeSkeletons) {
-        _distanceToRun = distance;
-        _includeSkeletons = includeSkeletons;
+        distanceToRun = distance;
+        this.includeSkeletons = includeSkeletons;
     }
 
     public RunAwayFromHostilesTask(double distance) {
@@ -31,20 +31,20 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
-        return new GoalRunAwayFromHostiles(mod, _distanceToRun);
+        return new GoalRunAwayFromHostiles(mod, distanceToRun);
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof RunAwayFromHostilesTask task) {
-            return Math.abs(task._distanceToRun - _distanceToRun) < 1;
+            return Math.abs(task.distanceToRun - distanceToRun) < 1;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "NIGERUNDAYOO, SUMOOKEYY!";
+        return "NIGERUNDAYOO, SUMOOKEYY! distance="+ distanceToRun +", skeletons="+ includeSkeletons;
     }
 
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
@@ -55,10 +55,9 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
         @Override
         protected List<Entity> getEntities(AltoClef mod) {
-            List<Entity> result;
             Stream<Entity> stream = mod.getEntityTracker().getHostiles().stream();
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                if (!_includeSkeletons) {
+                if (!includeSkeletons) {
                     stream = stream.filter(hostile -> !(hostile instanceof SkeletonEntity));
                 }
                 return stream.collect(Collectors.toList());
