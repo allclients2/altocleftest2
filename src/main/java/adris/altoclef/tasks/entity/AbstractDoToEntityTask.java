@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
+import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -30,6 +31,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
     private final double maintainDistance;
     private final double combatGuardLowerRange;
     private final double combatGuardLowerFieldRadius;
+    private TimeoutWanderTask wanderTask;
 
     protected AbstractDoToEntityTask(double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         this.maintainDistance = maintainDistance;
@@ -125,10 +127,15 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
                 return new GetToEntityTask(entity, maintainDistance);
             }
         }
+        if (BeatMinecraftTask.isTaskRunning(mod,wanderTask)) {
+            return wanderTask;
+        }
+
         if (!mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
             return null;
         }
-        return new TimeoutWanderTask();
+        wanderTask = new TimeoutWanderTask();
+        return wanderTask;
     }
 
     @Override
