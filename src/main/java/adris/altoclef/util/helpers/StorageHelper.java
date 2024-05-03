@@ -191,8 +191,10 @@ public class StorageHelper {
     // Gets a slot with an item we can throw away
     public static Optional<Slot> getGarbageSlot(AltoClef mod) {
         // Throwaway items, but keep a few for building.
-        final List<Slot> throwawayBlockItems = new ArrayList<>();
-        int totalBlockThrowaways = 0;
+        Slot throwawayStackSlot = null;
+        int throwawayStackBlockCount = Integer.MAX_VALUE;
+
+        int totalBlockCount = 0;
         if (!mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod)).isEmpty()) {
             for (Slot slot : mod.getItemStorage().getSlotsWithItemPlayerInventory(false, mod.getModSettings().getThrowawayItems(mod))) {
                 // Our cursor slot is NOT a garbage slot
@@ -202,18 +204,22 @@ public class StorageHelper {
                 if (!ItemHelper.canThrowAwayStack(mod, stack))
                     continue;
                 if (stack.getItem() instanceof BlockItem) {
-                    totalBlockThrowaways += stack.getCount();
-                    throwawayBlockItems.add(slot);
+                    totalBlockCount += stack.getCount();
+
+                    if (stack.getCount() < throwawayStackBlockCount) {
+                        throwawayStackBlockCount = stack.getCount();
+                        throwawayStackSlot = slot;
+                    }
                 } else {
                     // Throw away this non-block immediately.
                     return Optional.of(slot);
                 }
             }
         }
-        if (!throwawayBlockItems.isEmpty() && totalBlockThrowaways > mod.getModSettings().getReservedBuildingBlockCount()) {
-            for (Slot throwawayBlockItem : throwawayBlockItems) {
-                return Optional.ofNullable(throwawayBlockItem);
-            }
+
+
+        if (throwawayStackSlot != null && totalBlockCount-throwawayStackBlockCount > mod.getModSettings().getReservedBuildingBlockCount()) {
+            return Optional.of(throwawayStackSlot);
         }
 
         // Try throwing away lower tier tools
