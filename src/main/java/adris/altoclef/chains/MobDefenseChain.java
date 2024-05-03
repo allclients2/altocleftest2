@@ -13,7 +13,6 @@ import adris.altoclef.tasks.speedrun.DragonBreathTracker;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.baritone.CachedProjectile;
 import adris.altoclef.util.helpers.*;
-import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
@@ -54,11 +53,12 @@ public class MobDefenseChain extends SingleTaskChain {
     private final DragonBreathTracker dragonBreathTracker = new DragonBreathTracker();
     private final KillAura killAura = new KillAura();
     private final HashMap<Entity, TimerGame> closeAnnoyingEntities = new HashMap<>();
-    private final MovementProgressChecker movementChecker = new MovementProgressChecker(6, 6.0, 0.5, 0.001, 2);
     private Entity targetEntity;
     private boolean doingFunkyStuff = false;
     private boolean wasPuttingOutFire = false;
     private CustomBaritoneGoalTask runAwayTask;
+    private float prevHealth = 20;
+    private boolean needsChangeOnAttack = false;
 
     private float cachedLastPriority;
 
@@ -100,6 +100,7 @@ public class MobDefenseChain extends SingleTaskChain {
     @Override
     public float getPriority(AltoClef mod) {
         cachedLastPriority = getPriorityInner(mod);
+        prevHealth = mod.getPlayer().getHealth();
         return cachedLastPriority;
     }
 
@@ -373,29 +374,26 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8) + (shield));
 
-                if (canDealWith >= numberOfProblematicEntities) {
+                if (needsChangeOnAttack && (mod.getPlayer().getHealth() < prevHealth || killAura.attackedLastTick)) {
+                    needsChangeOnAttack = false;
+                }
+
+                if (canDealWith >= numberOfProblematicEntities || needsChangeOnAttack) {
+                    // we just decided to attack, so we should either get it, or hit something before running away again
+                    if (!(mainTask instanceof KillEntitiesTask)) {
+                        needsChangeOnAttack = true;
+                    }
+
                     // We can deal with it.
                     runAwayTask = null;
 
                     setTask(new KillEntitiesTask(toDealWithList.get(0).getClass()));
                     return 65;
                 } else {
-
-                    for (Entity hostile : toDealWithList) {
-                        if (hostile.isInRange(mod.getPlayer(), 6) && toDealWithList.size() < 8 && !(hostile instanceof SkeletonEntity) && bestSword != null) {
-                            // We can't deal with it
-                            runAwayTask = new RunAwayFromHostilesTask(
-                                    // Decrease distance from the mob if we are stuck so that baritone gets away faster.
-                                    !movementChecker.check(mod) ? DANGER_KEEP_DISTANCE : 4, true);
-                            setTask(runAwayTask);
-                            return 80;
-                        } else if (hostile.isInRange(mod.getPlayer(), 6) && toDealWithList.size() > 8 && !(hostile instanceof SkeletonEntity) && bestSword != null) {
-                            runAwayTask = new RunAwayFromHostilesTask(6, true);
-                            setTask(runAwayTask);
-                            return 80;
-
-                        }
-                    }
+                    // We can't deal with it
+                    runAwayTask = new RunAwayFromHostilesTask(DANGER_KEEP_DISTANCE, true);
+                    setTask(runAwayTask);
+                    return 80;
                 }
             }
         }

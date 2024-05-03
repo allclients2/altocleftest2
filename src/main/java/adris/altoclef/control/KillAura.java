@@ -36,6 +36,7 @@ public class KillAura {
     boolean shielding = false;
     private double forceFieldRange = Double.POSITIVE_INFINITY;
     private Entity forceHit = null;
+    public boolean attackedLastTick = false;
 
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
@@ -61,6 +62,7 @@ public class KillAura {
     public void tickStart() {
         targets.clear();
         forceHit = null;
+        attackedLastTick = false;
     }
 
     public void applyAura(Entity entity) {
@@ -184,6 +186,7 @@ public class KillAura {
             }
             if (canAttack) {
                 if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
+                    attackedLastTick = true;
                     mod.getControllerExtras().attack(entity);
                 }
             }
