@@ -64,16 +64,6 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
 
-        // TODO: Scenario of
-        //      Command: Get 3 beds
-        //
-        //      We have 3 red wool
-        //      We have 6 white wool
-        //
-        //      The system should craft 1 red bed + 2 white beds
-        //      BUT since it needs 9 of the --SAME WOOL-- it keeps going.
-        //      You should MAP for each type how many can fit into --_sameResourcePerRecipe-- and grab from THAT list.
-
         /*
          * 0) Figure out the "same resource" item target
          * 1) Get the "same resource" item matches array
@@ -121,6 +111,7 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             CraftingRecipe samedRecipe = generateSamedRecipe(_recipe, majorityCraftItem, _sameMask);
             int toCraftTotal = majorityCraftCount + currentTargetCount;
             toCraftTotal = Math.min(toCraftTotal, _target.getTargetCount());
+            int toCraftTotal = majorityCraftCount;
             Item output = getSpecificItemCorrespondingToMajorityResource(majorityCraftItem);
             RecipeTarget recipeTarget = new RecipeTarget(output, toCraftTotal, samedRecipe);
             return _recipe.isBig() ? new CraftInTableTask(recipeTarget) : new CraftInInventoryTask(recipeTarget);
