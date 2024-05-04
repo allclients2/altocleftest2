@@ -112,7 +112,14 @@ public interface WorldHelper {
         return Dimension.END;
     }
 
-
+    /**
+     * WARNING: this method checks if the block at the given position is a SOLID BLOCK
+     * things like ice, dirtPaths, soulSand... don't count into this
+     * if you just want to check if a block is solid use `BlockState.isSolid()`
+     * (which includes more variety of blocks including the mentioned ones, signs, pressure plates...)
+     *
+     * better method for blocks that can be walked on should be created instead
+     */
     static boolean isSolidBlock(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }
