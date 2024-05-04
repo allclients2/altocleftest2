@@ -68,7 +68,7 @@ public class StoreInAnyContainerTask extends Task {
 
             // If it's a chest and the block above can't be broken, we can't open this one.
             boolean isChest = WorldHelper.isChest(mod, containerPos);
-            if (isChest && WorldHelper.isSolid(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up()))
+            if (isChest && WorldHelper.isSolidBlock(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up()))
                 return false;
 
             //if (!_acceptableContainer.test(containerPos))

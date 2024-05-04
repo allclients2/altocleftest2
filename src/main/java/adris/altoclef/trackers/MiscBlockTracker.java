@@ -48,7 +48,7 @@ public class MiscBlockTracker {
                         }
                     }
                     BlockPos below = check.down();
-                    if (WorldHelper.isSolid(mod, below)) {
+                    if (WorldHelper.isSolidBlock(mod, below)) {
                         lastNetherPortalsUsed.put(WorldHelper.getCurrentDimension(), check);
                         newDimensionTriggered = false;
                     }

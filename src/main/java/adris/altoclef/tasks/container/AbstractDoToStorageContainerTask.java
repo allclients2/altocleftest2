@@ -52,7 +52,7 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
             Block type = mod.getWorld().getBlockState(targetPos).getBlock();
             currentContainerType = ContainerType.getFromBlock(type);
         }
-        if (WorldHelper.isChest(mod, targetPos) && WorldHelper.isSolid(mod, targetPos.up()) && WorldHelper.canBreak(mod, targetPos.up())) {
+        if (WorldHelper.isChest(mod, targetPos) && WorldHelper.isSolidBlock(mod, targetPos.up()) && WorldHelper.canBreak(mod, targetPos.up())) {
             setDebugState("Clearing block above chest");
             return new DestroyBlockTask(targetPos.up());
         }

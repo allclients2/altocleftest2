@@ -358,7 +358,7 @@ public class EntityTracker extends Tracker {
                     Item droppedItem = ientity.getStack().getItem();
 
                     // Only cared about GROUNDED item entities
-                    if (ientity.isOnGround() || ientity.isTouchingWater() || WorldHelper.isSolid(mod, ientity.getBlockPos().down(2)) || WorldHelper.isSolid(mod, ientity.getBlockPos().down(3))) {
+                    if (ientity.isOnGround() || ientity.isTouchingWater() || WorldHelper.isSolidBlock(mod, ientity.getBlockPos().down(2)) || WorldHelper.isSolidBlock(mod, ientity.getBlockPos().down(3))) {
                         if (!itemDropLocations.containsKey(droppedItem)) {
                             itemDropLocations.put(droppedItem, new ArrayList<>());
                         }

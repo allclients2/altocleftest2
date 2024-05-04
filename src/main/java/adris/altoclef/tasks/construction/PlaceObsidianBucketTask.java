@@ -138,7 +138,7 @@ public class PlaceObsidianBucketTask extends Task {
 
         // Build cast frame if not already built
         if (_currentCastTarget != null) {
-            if (WorldHelper.isSolid(mod, _currentCastTarget)) {
+            if (WorldHelper.isSolidBlock(mod, _currentCastTarget)) {
                 _currentCastTarget = null;
             } else {
                 return new PlaceBlockTask(_currentCastTarget,
@@ -149,7 +149,7 @@ public class PlaceObsidianBucketTask extends Task {
 
         // Destroy block if needed
         if (_currentDestroyTarget != null) {
-            if (!WorldHelper.isSolid(mod, _currentDestroyTarget)) {
+            if (!WorldHelper.isSolidBlock(mod, _currentDestroyTarget)) {
                 _currentDestroyTarget = null;
             } else {
                 return new DestroyBlockTask(_currentDestroyTarget);
@@ -157,13 +157,13 @@ public class PlaceObsidianBucketTask extends Task {
         }
 
         // Build the cast frame if not already built
-        if (_currentCastTarget != null && WorldHelper.isSolid(mod, _currentCastTarget)) {
+        if (_currentCastTarget != null && WorldHelper.isSolidBlock(mod, _currentCastTarget)) {
             // Current cast frame already built.
             _currentCastTarget = null;
         }
         for (Vec3i castPosRelative : CAST_FRAME) {
             BlockPos castPos = _pos.add(castPosRelative);
-            if (!WorldHelper.isSolid(mod, castPos)) {
+            if (!WorldHelper.isSolidBlock(mod, castPos)) {
                 _currentCastTarget = castPos;
                 Debug.logInternal("Building cast frame...");
                 return null;
@@ -179,18 +179,18 @@ public class PlaceObsidianBucketTask extends Task {
                 Debug.logInternal("Positioning player before placing lava...");
                 return new GetToBlockTask(targetPos, false);
             }
-            if (WorldHelper.isSolid(mod, _pos)) {
+            if (WorldHelper.isSolidBlock(mod, _pos)) {
                 Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos;
                 return null;
             }
             // Clear the upper two as well, to make placing more reliable.
-            if (WorldHelper.isSolid(mod, _pos.up())) {
+            if (WorldHelper.isSolidBlock(mod, _pos.up())) {
                 Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos.up();
                 return null;
             }
-            if (WorldHelper.isSolid(mod, _pos.up(2))) {
+            if (WorldHelper.isSolidBlock(mod, _pos.up(2))) {
                 Debug.logInternal("Clearing space around lava...");
                 _currentDestroyTarget = _pos.up(2);
                 return null;
@@ -208,11 +208,11 @@ public class PlaceObsidianBucketTask extends Task {
                 Debug.logInternal("Positioning player before placing water...");
                 return new GetToBlockTask(targetPos, false);
             }
-            if (WorldHelper.isSolid(mod, waterCheck)) {
+            if (WorldHelper.isSolidBlock(mod, waterCheck)) {
                 _currentDestroyTarget = waterCheck;
                 return null;
             }
-            if (WorldHelper.isSolid(mod, waterCheck.up())) {
+            if (WorldHelper.isSolidBlock(mod, waterCheck.up())) {
                 _currentDestroyTarget = waterCheck.up();
                 return null;
             }

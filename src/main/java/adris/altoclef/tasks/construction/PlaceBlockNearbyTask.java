@@ -12,7 +12,6 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
-import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.IPlayerContext;
 import baritone.api.utils.input.Input;
@@ -20,7 +19,6 @@ import baritone.pathing.movement.MovementHelper;
 import net.minecraft.block.Block;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.ItemStack;
-import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -29,7 +27,6 @@ import net.minecraft.util.math.BlockPos;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
-import java.util.Optional;
 import java.util.function.Predicate;
 
 /**
@@ -254,7 +251,7 @@ public class PlaceBlockNearbyTask extends Task {
         BlockPos start = mod.getPlayer().getBlockPos().add(-range, -range, -range);
         BlockPos end = mod.getPlayer().getBlockPos().add(range, range, range);
         for (BlockPos blockPos : WorldHelper.scanRegion(mod, start, end)) {
-            boolean solid = WorldHelper.isSolid(mod, blockPos);
+            boolean solid = WorldHelper.isSolidBlock(mod, blockPos);
             boolean inside = WorldHelper.isInsidePlayer(mod, blockPos);
             // We can't break this block.
             if (solid && !WorldHelper.canBreak(mod, blockPos)) {
@@ -268,7 +265,7 @@ public class PlaceBlockNearbyTask extends Task {
             if (!WorldHelper.canReach(mod, blockPos) || !WorldHelper.canPlace(mod, blockPos)) {
                 continue;
             }
-            boolean hasBelow = WorldHelper.isSolid(mod, blockPos.down());
+            boolean hasBelow = WorldHelper.isSolidBlock(mod, blockPos.down());
             double distSq = blockPos.getSquaredDistance(mod.getPlayer().getPos());
 
             double score = distSq + (solid ? 4 : 0) + (hasBelow ? 0 : 10) + (inside ? 3 : 0);

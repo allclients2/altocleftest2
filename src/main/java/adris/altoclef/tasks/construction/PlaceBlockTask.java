@@ -169,7 +169,7 @@ public class PlaceBlockTask extends Task implements ITaskRequiresGrounded {
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
         if (useThrowaways) {
-            return WorldHelper.isSolid(mod, target);
+            return WorldHelper.isSolidBlock(mod, target);
         }
         BlockState state = mod.getWorld().getBlockState(target);
         return ArrayUtils.contains(toPlace, state.getBlock());

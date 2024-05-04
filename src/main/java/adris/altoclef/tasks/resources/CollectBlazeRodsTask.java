@@ -45,7 +45,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
         int MAX_HEIGHT = 11;
         for (BlockPos check = entity.getBlockPos(); entity.getBlockPos().getY() - check.getY() < MAX_HEIGHT; check = check.down()) {
             if (mod.getWorld().getBlockState(check).getBlock() == Blocks.LAVA) return true;
-            if (WorldHelper.isSolid(mod, check)) return false;
+            if (WorldHelper.isSolidBlock(mod, check)) return false;
         }
         return true;
     }

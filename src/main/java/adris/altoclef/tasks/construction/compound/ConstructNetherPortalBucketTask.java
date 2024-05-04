@@ -165,7 +165,7 @@ public class ConstructNetherPortalBucketTask extends Task {
         }
 
         if (currentDestroyTarget != null) {
-            if (!WorldHelper.isSolid(mod, currentDestroyTarget)) {
+            if (!WorldHelper.isSolidBlock(mod, currentDestroyTarget)) {
                 currentDestroyTarget = null;
             } else {
                 return new DestroyBlockTask(currentDestroyTarget);
@@ -386,7 +386,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                                 break moveAlongLine;
                             }
                             // Also check for at least 1 solid block for us to place on...
-                            if (dy <= 1 && !solidFound && WorldHelper.isSolid(mod, toCheck)) {
+                            if (dy <= 1 && !solidFound && WorldHelper.isSolidBlock(mod, toCheck)) {
                                 solidFound = true;
                             }
                         }

@@ -67,7 +67,7 @@ public class WorldSurvivalChain extends SingleTaskChain {
                 // Extinguish ourselves
                 if (mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
                     BlockPos targetWaterPos = mod.getPlayer().getBlockPos();
-                    if (WorldHelper.isSolid(mod, targetWaterPos.down()) && WorldHelper.canPlace(mod, targetWaterPos)) {
+                    if (WorldHelper.isSolidBlock(mod, targetWaterPos.down()) && WorldHelper.canPlace(mod, targetWaterPos)) {
                         Optional<Rotation> reach = LookHelper.getReach(targetWaterPos.down(), Direction.UP);
                         if (reach.isPresent()) {
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);

@@ -21,7 +21,6 @@ import net.minecraft.entity.Entity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.*;
-import net.minecraft.util.math.random.Random;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeKeys;
@@ -114,7 +113,7 @@ public interface WorldHelper {
     }
 
 
-    static boolean isSolid(AltoClef mod, BlockPos pos) {
+    static boolean isSolidBlock(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }
 
@@ -175,7 +174,7 @@ public interface WorldHelper {
     static int getGroundHeight(AltoClef mod, int x, int z) {
         for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
             BlockPos check = new BlockPos(x, y, z);
-            if (isSolid(mod, check)) return y;
+            if (isSolidBlock(mod, check)) return y;
         }
         return -1;
     }
@@ -245,7 +244,7 @@ public interface WorldHelper {
             if (MovementHelper.isWater(s))
                 return true;
             // We hit ground, depends
-            if (WorldHelper.isSolid(mod, check)) {
+            if (WorldHelper.isSolidBlock(mod, check)) {
                 return tooFarToFall;
             }
         }

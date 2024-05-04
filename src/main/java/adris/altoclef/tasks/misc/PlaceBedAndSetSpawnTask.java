@@ -325,7 +325,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
         for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
             BlockPos toPlace = currentBedRegion.add(baseOffs);
-            if (!WorldHelper.isSolid(mod, toPlace)) {
+            if (!WorldHelper.isSolidBlock(mod, toPlace)) {
                 currentStructure = toPlace;
                 break;
             }
@@ -336,7 +336,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             for (int dz = 0; dz < BED_CLEAR_SIZE.getZ(); ++dz) {
                 for (int dy = 0; dy < BED_CLEAR_SIZE.getY(); ++dy) {
                     BlockPos toClear = currentBedRegion.add(dx, dy, dz);
-                    if (WorldHelper.isSolid(mod, toClear)) {
+                    if (WorldHelper.isSolidBlock(mod, toClear)) {
                         currentBreak = toClear;
                         break outer;
                     }
@@ -345,7 +345,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
 
         if (currentStructure != null) {
-            if (WorldHelper.isSolid(mod, currentStructure)) {
+            if (WorldHelper.isSolidBlock(mod, currentStructure)) {
                 currentStructure = null;
             } else {
                 setDebugState("Placing structure for bed");
@@ -353,7 +353,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
             }
         }
         if (currentBreak != null) {
-            if (!WorldHelper.isSolid(mod, currentBreak)) {
+            if (!WorldHelper.isSolidBlock(mod, currentBreak)) {
                 currentBreak = null;
             } else {
                 setDebugState("Clearing region for bed");
@@ -614,7 +614,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
      */
     private boolean isGoodAsBorder(AltoClef mod, BlockPos pos) {
         // Check if the block is solid
-        boolean isSolid = WorldHelper.isSolid(mod, pos);
+        boolean isSolid = WorldHelper.isSolidBlock(mod, pos);
         Debug.logInternal("isSolid: " + isSolid);
 
         if (isSolid) {

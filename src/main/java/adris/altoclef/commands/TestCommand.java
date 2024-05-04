@@ -6,11 +6,6 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
-import adris.altoclef.tasks.resources.CollectBedTask;
-import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.slots.Slot;
-
-import java.util.Optional;
 
 public class TestCommand extends Command {
 

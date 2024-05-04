@@ -94,7 +94,7 @@ public class EnterNetherPortalTask extends Task {
                 return goodPortal.test(blockPos);
             }
             BlockPos below = blockPos.down();
-            boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockScanner().isBlockAtPosition(below, Blocks.NETHER_PORTAL);
+            boolean canStand = WorldHelper.isSolidBlock(mod, below) && !mod.getBlockScanner().isBlockAtPosition(below, Blocks.NETHER_PORTAL);
             return canStand && goodPortal.test(blockPos);
         };
 
