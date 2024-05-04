@@ -38,7 +38,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 public class PlaceBedAndSetSpawnTask extends Task {
 
-    private final TimerGame _regionScanTimer = new TimerGame(9);
+    private final TimerGame regionScanTimer = new TimerGame(9);
     private final Vec3i BED_CLEAR_SIZE = new Vec3i(3, 2, 3);
     private final Vec3i[] BED_BOTTOM_PLATFORM = new Vec3i[]{
             new Vec3i(0, -1, 0),
@@ -78,18 +78,18 @@ public class PlaceBedAndSetSpawnTask extends Task {
             BED_PLACE_POS.add(2, 0, -2)
     };
     private final Direction BED_PLACE_DIRECTION = Direction.UP;
-    private final TimerGame _bedInteractTimeout = new TimerGame(5);
-    private final TimerGame _inBedTimer = new TimerGame(1);
-    private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
-    private boolean _stayInBed;
-    private BlockPos _currentBedRegion;
-    private BlockPos _currentStructure, _currentBreak;
-    private boolean _spawnSet;
-    private Subscription<ChatMessageEvent> _respawnPointSetMessageCheck;
-    private Subscription<GameOverlayEvent> _respawnFailureMessageCheck;
-    private boolean _sleepAttemptMade;
-    private boolean _wasSleeping;
-    private BlockPos _bedForSpawnPoint;
+    private final TimerGame bedInteractTimeout = new TimerGame(5);
+    private final TimerGame inBedTimer = new TimerGame(1);
+    private final MovementProgressChecker progressChecker = new MovementProgressChecker();
+    private boolean stayInBed;
+    private BlockPos currentBedRegion;
+    private BlockPos currentStructure, currentBreak;
+    private boolean spawnSet;
+    private Subscription<ChatMessageEvent> respawnPointSetMessageCheck;
+    private Subscription<GameOverlayEvent> respawnFailureMessageCheck;
+    private boolean sleepAttemptMade;
+    private boolean wasSleeping;
+    private BlockPos bedForSpawnPoint;
 
     public PlaceBedAndSetSpawnTask() {
 
@@ -105,7 +105,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         Debug.logInternal("Stay in bed method called");
 
         // Set _stayInBed flag to true
-        this._stayInBed = true;
+        this.stayInBed = true;
         Debug.logInternal("Setting _stayInBed to true");
 
         // Return current instance
@@ -122,16 +122,16 @@ public class PlaceBedAndSetSpawnTask extends Task {
         mod.getBehaviour().push();
 
         // Reset progress checker
-        _progressChecker.reset();
+        progressChecker.reset();
 
         // Reset current bed region
-        _currentBedRegion = null;
+        currentBedRegion = null;
 
         // Avoid placing blocks near bed
         mod.getBehaviour().avoidBlockPlacing(pos -> {
-            if (_currentBedRegion != null) {
-                BlockPos start = _currentBedRegion;
-                BlockPos end = _currentBedRegion.add(BED_CLEAR_SIZE);
+            if (currentBedRegion != null) {
+                BlockPos start = currentBedRegion;
+                BlockPos end = currentBedRegion.add(BED_CLEAR_SIZE);
                 return start.getX() <= pos.getX() && pos.getX() < end.getX()
                         && start.getZ() <= pos.getZ() && pos.getZ() < end.getZ()
                         && start.getY() <= pos.getY() && pos.getY() < end.getY();
@@ -141,9 +141,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
         // Avoid breaking blocks near bed
         mod.getBehaviour().avoidBlockBreaking(pos -> {
-            if (_currentBedRegion != null) {
+            if (currentBedRegion != null) {
                 for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
-                    BlockPos base = _currentBedRegion.add(baseOffs);
+                    BlockPos base = currentBedRegion.add(baseOffs);
                     if (base.equals(pos)) return true;
                 }
             }
@@ -155,21 +155,21 @@ public class PlaceBedAndSetSpawnTask extends Task {
         });
 
         // Reset variables for sleep handling
-        _spawnSet = false;
-        _sleepAttemptMade = false;
-        _wasSleeping = false;
+        spawnSet = false;
+        sleepAttemptMade = false;
+        wasSleeping = false;
 
         // Subscribe to respawn point set message event
-        _respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
+        respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
             String msg = evt.toString();
             if (msg.contains("Respawn point set")) {
-                _spawnSet = true;
-                _inBedTimer.reset();
+                spawnSet = true;
+                inBedTimer.reset();
             }
         });
 
         // Subscribe to respawn failure message event
-        _respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
+        respawnFailureMessageCheck = EventBus.subscribe(GameOverlayEvent.class, evt -> {
             final String[] NEUTRAL_MESSAGES = new String[]{
                     "You can sleep only at night",
                     "You can only sleep at night",
@@ -177,24 +177,24 @@ public class PlaceBedAndSetSpawnTask extends Task {
             };
             for (String checkMessage : NEUTRAL_MESSAGES) {
                 if (evt.message.contains(checkMessage)) {
-                    if (!_sleepAttemptMade) {
-                        _bedInteractTimeout.reset();
+                    if (!sleepAttemptMade) {
+                        bedInteractTimeout.reset();
                     }
-                    _sleepAttemptMade = true;
+                    sleepAttemptMade = true;
                 }
             }
         });
 
         // Logging statements for debugging
         Debug.logInternal("Started onStart() method");
-        Debug.logInternal("Current bed region: " + _currentBedRegion);
-        Debug.logInternal("Spawn set: " + _spawnSet);
+        Debug.logInternal("Current bed region: " + currentBedRegion);
+        Debug.logInternal("Spawn set: " + spawnSet);
     }
 
     public void resetSleep() {
-        _spawnSet = false;
-        _sleepAttemptMade = false;
-        _wasSleeping = false;
+        spawnSet = false;
+        sleepAttemptMade = false;
+        wasSleeping = false;
     }
 
     @Override
@@ -206,14 +206,14 @@ public class PlaceBedAndSetSpawnTask extends Task {
         //      Find a 3x2x1 region and clear it
         //      Stand on the edge of the long (3) side
         //      Place on the middle block, reliably placing the bed.
-        if (!_progressChecker.check(mod) && _currentBedRegion != null) {
-            _progressChecker.reset();
+        if (!progressChecker.check(mod) && currentBedRegion != null) {
+            progressChecker.reset();
             Debug.logMessage("Searching new bed region.");
-            _currentBedRegion = null;
+            currentBedRegion = null;
         }
         if (WorldHelper.isInNetherPortal(mod)) {
             setDebugState("We are in nether portal. Wandering");
-            _currentBedRegion = null;
+            currentBedRegion = null;
             return new TimeoutWanderTask();
         }
         // We cannot do this anywhere but the overworld.
@@ -223,18 +223,18 @@ public class PlaceBedAndSetSpawnTask extends Task {
         }
         Screen screen = MinecraftClient.getInstance().currentScreen;
         if (screen instanceof SleepingChatScreen) {
-            _progressChecker.reset();
+            progressChecker.reset();
             setDebugState("Sleeping...");
-            _wasSleeping = true;
+            wasSleeping = true;
             //Debug.logMessage("Closing sleeping thing");
-            _spawnSet = true;
+            spawnSet = true;
             return null;
         }
 
-        if (_sleepAttemptMade) {
-            if (_bedInteractTimeout.elapsed()) {
+        if (sleepAttemptMade) {
+            if (bedInteractTimeout.elapsed()) {
                 Debug.logMessage("Failed to get \"Respawn point set\" message or sleeping, assuming that this bed already contains our spawn.");
-                _spawnSet = true;
+                spawnSet = true;
                 return null;
             }
         }
@@ -261,9 +261,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         }
                     }
                 }
-                _bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
-                if (_bedForSpawnPoint == null) {
-                    _bedForSpawnPoint = toSleepIn;
+                bedForSpawnPoint = WorldHelper.getBedHead(mod, toSleepIn);
+                if (bedForSpawnPoint == null) {
+                    bedForSpawnPoint = toSleepIn;
                 }
                 if (!closeEnough) {
                     try {
@@ -272,33 +272,33 @@ public class PlaceBedAndSetSpawnTask extends Task {
                         /*
                         BlockPos targetMove = toSleepIn.offset(side).offset(side); // Twice, juust to make sure...
                          */
-                        return new GetToBlockTask(_bedForSpawnPoint.add(side.getVector()));
+                        return new GetToBlockTask(bedForSpawnPoint.add(side.getVector()));
                     } catch (IllegalArgumentException e) {
                         // If bed is not loaded, this will happen. In that case just get to the bed first.
                     }
                 } else {
-                    _inBedTimer.reset();
+                    inBedTimer.reset();
                 }
                 if (closeEnough) {
-                    _inBedTimer.reset();
+                    inBedTimer.reset();
                 }
                 // Keep track of where our spawn point is
-                _progressChecker.reset();
-                return new InteractWithBlockTask(_bedForSpawnPoint);
+                progressChecker.reset();
+                return new InteractWithBlockTask(bedForSpawnPoint);
             }, ItemHelper.itemsToBlocks(ItemHelper.BED));
         }
 
         if (mod.getPlayer().isTouchingWater() && mod.getItemStorage().hasItem(ItemHelper.BED)) {
             setDebugState("We are in water. Wandering");
-            _currentBedRegion = null;
+            currentBedRegion = null;
             return new TimeoutWanderTask();
         }
 
-        if (_currentBedRegion != null) {
+        if (currentBedRegion != null) {
             for (Vec3i BedPlacePos : BED_PLACE_POS_OFFSET) {
-                Block getBlock = mod.getWorld().getBlockState(_currentBedRegion.add(BedPlacePos)).getBlock();
+                Block getBlock = mod.getWorld().getBlockState(currentBedRegion.add(BedPlacePos)).getBlock();
                 if (getBlock instanceof BedBlock) {
-                    mod.getBlockScanner().addBlock(getBlock, _currentBedRegion.add(BedPlacePos));
+                    mod.getBlockScanner().addBlock(getBlock, currentBedRegion.add(BedPlacePos));
                     break;
                 }
             }
@@ -309,14 +309,14 @@ public class PlaceBedAndSetSpawnTask extends Task {
             return TaskCatalogue.getItemTask("bed", 1);
         }
 
-        if (_currentBedRegion == null) {
-            if (_regionScanTimer.elapsed()) {
+        if (currentBedRegion == null) {
+            if (regionScanTimer.elapsed()) {
                 Debug.logMessage("Rescanning for nearby bed place position...");
-                _regionScanTimer.reset();
-                _currentBedRegion = this.locateBedRegion(mod, mod.getPlayer().getBlockPos());
+                regionScanTimer.reset();
+                currentBedRegion = this.locateBedRegion(mod, mod.getPlayer().getBlockPos());
             }
         }
-        if (_currentBedRegion == null) {
+        if (currentBedRegion == null) {
             setDebugState("Searching for spot to place bed, wandering...");
             return new TimeoutWanderTask();
         }
@@ -324,9 +324,9 @@ public class PlaceBedAndSetSpawnTask extends Task {
         // Clear and make bed foundation
 
         for (Vec3i baseOffs : BED_BOTTOM_PLATFORM) {
-            BlockPos toPlace = _currentBedRegion.add(baseOffs);
+            BlockPos toPlace = currentBedRegion.add(baseOffs);
             if (!WorldHelper.isSolid(mod, toPlace)) {
-                _currentStructure = toPlace;
+                currentStructure = toPlace;
                 break;
             }
         }
@@ -335,53 +335,53 @@ public class PlaceBedAndSetSpawnTask extends Task {
         for (int dx = 0; dx < BED_CLEAR_SIZE.getX(); ++dx) {
             for (int dz = 0; dz < BED_CLEAR_SIZE.getZ(); ++dz) {
                 for (int dy = 0; dy < BED_CLEAR_SIZE.getY(); ++dy) {
-                    BlockPos toClear = _currentBedRegion.add(dx, dy, dz);
+                    BlockPos toClear = currentBedRegion.add(dx, dy, dz);
                     if (WorldHelper.isSolid(mod, toClear)) {
-                        _currentBreak = toClear;
+                        currentBreak = toClear;
                         break outer;
                     }
                 }
             }
         }
 
-        if (_currentStructure != null) {
-            if (WorldHelper.isSolid(mod, _currentStructure)) {
-                _currentStructure = null;
+        if (currentStructure != null) {
+            if (WorldHelper.isSolid(mod, currentStructure)) {
+                currentStructure = null;
             } else {
                 setDebugState("Placing structure for bed");
-                return new PlaceStructureBlockTask(_currentStructure);
+                return new PlaceStructureBlockTask(currentStructure);
             }
         }
-        if (_currentBreak != null) {
-            if (!WorldHelper.isSolid(mod, _currentBreak)) {
-                _currentBreak = null;
+        if (currentBreak != null) {
+            if (!WorldHelper.isSolid(mod, currentBreak)) {
+                currentBreak = null;
             } else {
                 setDebugState("Clearing region for bed");
-                return new DestroyBlockTask(_currentBreak);
+                return new DestroyBlockTask(currentBreak);
             }
         }
 
-        BlockPos toStand = _currentBedRegion.add(BED_PLACE_STAND_POS);
+        BlockPos toStand = currentBedRegion.add(BED_PLACE_STAND_POS);
         // Our bed region is READY TO BE PLACED
         if (!mod.getPlayer().getBlockPos().equals(toStand)) {
             return new GetToBlockTask(toStand);
         }
 
-        BlockPos toPlace = _currentBedRegion.add(BED_PLACE_POS);
+        BlockPos toPlace = currentBedRegion.add(BED_PLACE_POS);
         if (mod.getWorld().getBlockState(toPlace.offset(BED_PLACE_DIRECTION)).getBlock() instanceof BedBlock) {
             setDebugState("Waiting to rescan + find bed that we just placed. Should be almost instant.");
-            _progressChecker.reset();
+            progressChecker.reset();
             return null;
         }
         setDebugState("Placing bed...");
 
         setDebugState("Filling in Portal");
-        if (!_progressChecker.check(mod)) {
+        if (!progressChecker.check(mod)) {
             mod.getClientBaritone().getPathingBehavior().cancelEverything();
             mod.getClientBaritone().getPathingBehavior().forceCancel();
             mod.getClientBaritone().getExploreProcess().onLostControl();
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-            _progressChecker.reset();
+            progressChecker.reset();
         }
 
         // Scoot backwards if we're trying to place and fail
@@ -407,10 +407,10 @@ public class PlaceBedAndSetSpawnTask extends Task {
         mod.getBehaviour().pop();
 
         // Unsubscribe from respawn point set message
-        EventBus.unsubscribe(_respawnPointSetMessageCheck);
+        EventBus.unsubscribe(respawnPointSetMessageCheck);
 
         // Unsubscribe from respawn failure message
-        EventBus.unsubscribe(_respawnFailureMessageCheck);
+        EventBus.unsubscribe(respawnFailureMessageCheck);
 
         // Logging statements for debugging
         Debug.logInternal("Tracking stopped for beds");
@@ -467,10 +467,10 @@ public class PlaceBedAndSetSpawnTask extends Task {
         boolean isSleeping = mod.getPlayer().isSleeping();
 
         // Check if timer has elapsed
-        boolean timerElapsed = _inBedTimer.elapsed();
+        boolean timerElapsed = inBedTimer.elapsed();
 
         // Check if spawnpoint is set, player is not sleeping, and timer has elapsed
-        boolean isFinished = _spawnSet && !isSleeping && timerElapsed;
+        boolean isFinished = spawnSet && !isSleeping && timerElapsed;
 
         // Log the values for debugging
         Debug.logInternal("isSleeping: " + isSleeping);
@@ -490,7 +490,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         Debug.logInternal("Fetching bed slept position");
 
         // Return the stored bed position
-        return _bedForSpawnPoint;
+        return bedForSpawnPoint;
     }
 
     /**
@@ -503,7 +503,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
         Debug.logInternal("Checking if spawn is set");
 
         // Return the value of the _spawnSet variable
-        return _spawnSet;
+        return spawnSet;
     }
 
     /**

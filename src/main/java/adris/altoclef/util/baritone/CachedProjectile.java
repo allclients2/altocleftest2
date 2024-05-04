@@ -6,25 +6,25 @@ import net.minecraft.util.math.Vec3d;
 import java.lang.reflect.Type;
 
 public class CachedProjectile {
-    private final TimerGame _lastCache = new TimerGame(2);
+    private final TimerGame lastCache = new TimerGame(2);
     public Vec3d velocity;
     public Vec3d position;
     public double gravity;
     public Type projectileType;
-    private Vec3d _cachedHit;
-    private boolean _cacheHeld = false;
+    private Vec3d cachedHit;
+    private boolean cacheHeld = false;
 
     public Vec3d getCachedHit() {
-        return _cachedHit;
+        return cachedHit;
     }
 
     public void setCacheHit(Vec3d cache) {
-        _cachedHit = cache;
-        _cacheHeld = true;
-        _lastCache.reset();
+        cachedHit = cache;
+        cacheHeld = true;
+        lastCache.reset();
     }
 
     public boolean needsToRecache() {
-        return !_cacheHeld || _lastCache.elapsed();
+        return !cacheHeld || lastCache.elapsed();
     }
 }

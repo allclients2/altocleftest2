@@ -27,23 +27,23 @@ import java.util.function.Predicate;
  */
 public class ContainerSubTracker extends Tracker {
 
-    private final HashMap<Dimension, HashMap<BlockPos, ContainerCache>> _containerCaches = new HashMap<>();
-    private boolean _containerOpen;
-    private BlockPos _lastBlockPosInteraction;
-    private Block _lastBlockInteraction;
-    private ContainerCache _enderChestCache;
-    private boolean _hasSentError;
+    private final HashMap<Dimension, HashMap<BlockPos, ContainerCache>> containerCaches = new HashMap<>();
+    private boolean containerOpen;
+    private BlockPos lastBlockPosInteraction;
+    private Block lastBlockInteraction;
+    private ContainerCache enderChestCache;
+    private boolean hasSentError;
 
     public ContainerSubTracker(TrackerManager manager) {
         super(manager);
         for (Dimension dimension : Dimension.values()) {
-            _containerCaches.put(dimension, new HashMap<>());
+            containerCaches.put(dimension, new HashMap<>());
         }
 
         // Listen for when we interact with a block
         EventBus.subscribe(BlockInteractEvent.class, evt -> {
             BlockPos blockPos = evt.hitResult.getBlockPos();
-            BlockState bs = _mod.getWorld().getBlockState(blockPos);
+            BlockState bs = mod.getWorld().getBlockState(blockPos);
             onBlockInteract(blockPos, bs.getBlock());
         });
         EventBus.subscribe(ScreenOpenEvent.class, evt -> {
@@ -64,13 +64,13 @@ public class ContainerSubTracker extends Tracker {
                 block instanceof ShulkerBoxBlock ||
                 block instanceof DispenserBlock ||
                 block instanceof BarrelBlock) {
-            _lastBlockPosInteraction = pos;
-            _lastBlockInteraction = block;
+            lastBlockPosInteraction = pos;
+            lastBlockInteraction = block;
         }
     }
 
     private void onScreenOpenFirstTick(final Screen screen) {
-        _containerOpen = screen instanceof FurnaceScreen
+        containerOpen = screen instanceof FurnaceScreen
                 || screen instanceof GenericContainerScreen
                 || screen instanceof SmokerScreen
                 || screen instanceof BlastFurnaceScreen
@@ -79,38 +79,38 @@ public class ContainerSubTracker extends Tracker {
     }
 
     private void onScreenClose() {
-        _containerOpen = false;
-        _lastBlockPosInteraction = null;
-        _lastBlockInteraction = null;
-        _hasSentError = false;
+        containerOpen = false;
+        lastBlockPosInteraction = null;
+        lastBlockInteraction = null;
+        hasSentError = false;
     }
 
     public void onServerTick() {
         if (MinecraftClient.getInstance().player == null)
             return;
         // If we haven't registered interacting with a block, try the currently "looking at" block
-        if (_containerOpen && _lastBlockPosInteraction == null && _lastBlockInteraction == null) {
+        if (containerOpen && lastBlockPosInteraction == null && lastBlockInteraction == null) {
             if (MinecraftClient.getInstance().crosshairTarget instanceof BlockHitResult bhit) {
                 Debug.logWarning("Screen open but no block interaction detected, using the block we're currently looking at.");
-                _lastBlockPosInteraction = bhit.getBlockPos();
-                _lastBlockInteraction = _mod.getWorld().getBlockState(_lastBlockPosInteraction).getBlock();
+                lastBlockPosInteraction = bhit.getBlockPos();
+                lastBlockInteraction = mod.getWorld().getBlockState(lastBlockPosInteraction).getBlock();
             }
         }
-        if (_containerOpen && _lastBlockPosInteraction != null && _lastBlockInteraction != null) {
-            BlockPos containerPos = _lastBlockPosInteraction;
+        if (containerOpen && lastBlockPosInteraction != null && lastBlockInteraction != null) {
+            BlockPos containerPos = lastBlockPosInteraction;
             ScreenHandler handler = MinecraftClient.getInstance().player.currentScreenHandler;
             if (handler == null)
                 return;
 
-            HashMap<BlockPos, ContainerCache> dimCache = _containerCaches.get(WorldHelper.getCurrentDimension());
+            HashMap<BlockPos, ContainerCache> dimCache = containerCaches.get(WorldHelper.getCurrentDimension());
 
             // Container Type Mismatch, reset.
             if (dimCache.containsKey(containerPos)) {
                 ContainerType currentType = dimCache.get(containerPos).getContainerType();
                 if (!ContainerType.screenHandlerMatches(currentType, handler)) {
-                    if (!_hasSentError) {
+                    if (!hasSentError) {
                         Debug.logMessage("Mismatched container screen at " + containerPos.toShortString() + ", will overwrite container data: " + handler.getType() + " ?=> " + currentType);
-                        _hasSentError = true;
+                        hasSentError = true;
                     }
                     dimCache.remove(containerPos);
                 }
@@ -118,13 +118,13 @@ public class ContainerSubTracker extends Tracker {
 
             // New container found
             if (!dimCache.containsKey(containerPos)) {
-                Block containerBlock = _lastBlockInteraction;
+                Block containerBlock = lastBlockInteraction;
                 ContainerType interactType = ContainerType.getFromBlock(containerBlock);
                 ContainerCache newCache = new ContainerCache(WorldHelper.getCurrentDimension(), containerPos, interactType);
                 dimCache.put(containerPos, newCache);
                 // Special ender chest cache
                 if (interactType == ContainerType.ENDER_CHEST) {
-                    _enderChestCache = newCache;
+                    enderChestCache = newCache;
                 }
             }
 
@@ -138,8 +138,8 @@ public class ContainerSubTracker extends Tracker {
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     private boolean isContainerCacheValid(Dimension dimension, ContainerCache cache) {
         BlockPos pos = cache.getBlockPos();
-        if (WorldHelper.getCurrentDimension() == dimension && _mod.getChunkTracker().isChunkLoaded(pos)) {
-            ContainerType actualType = ContainerType.getFromBlock(_mod.getWorld().getBlockState(pos).getBlock());
+        if (WorldHelper.getCurrentDimension() == dimension && mod.getChunkTracker().isChunkLoaded(pos)) {
+            ContainerType actualType = ContainerType.getFromBlock(mod.getWorld().getBlockState(pos).getBlock());
             if (actualType == ContainerType.EMPTY) {
                 return false;
             }
@@ -149,9 +149,9 @@ public class ContainerSubTracker extends Tracker {
     }
 
     public Optional<ContainerCache> getContainerAtPosition(Dimension dimension, BlockPos pos) {
-        Optional<ContainerCache> cache = Optional.ofNullable(_containerCaches.get(dimension).getOrDefault(pos, null));
+        Optional<ContainerCache> cache = Optional.ofNullable(containerCaches.get(dimension).getOrDefault(pos, null));
         if (cache.isPresent() && !isContainerCacheValid(dimension, cache.get())) {
-            _containerCaches.get(dimension).remove(pos);
+            containerCaches.get(dimension).remove(pos);
             return Optional.empty();
         }
         return cache;
@@ -162,14 +162,14 @@ public class ContainerSubTracker extends Tracker {
     }
 
     public Optional<ContainerCache> getEnderChestStorage() {
-        return Optional.ofNullable(_enderChestCache);
+        return Optional.ofNullable(enderChestCache);
     }
 
     public List<ContainerCache> getCachedContainers(Predicate<ContainerCache> accept) {
         List<ContainerCache> result = new ArrayList<>();
         List<Pair<Dimension, BlockPos>> toRemove = new ArrayList<>();
-        for (Dimension dim : _containerCaches.keySet()) {
-            HashMap<BlockPos, ContainerCache> map = _containerCaches.get(dim);
+        for (Dimension dim : containerCaches.keySet()) {
+            HashMap<BlockPos, ContainerCache> map = containerCaches.get(dim);
             for (ContainerCache cache : map.values()) {
                 if (!isContainerCacheValid(dim, cache)) {
                     toRemove.add(new Pair<>(dim, cache.getBlockPos()));
@@ -180,7 +180,7 @@ public class ContainerSubTracker extends Tracker {
             }
         }
         for (Pair<Dimension, BlockPos> remove : toRemove) {
-            _containerCaches.get(remove.getLeft()).remove(remove.getRight());
+            containerCaches.get(remove.getLeft()).remove(remove.getRight());
         }
         return result;
     }
@@ -197,7 +197,7 @@ public class ContainerSubTracker extends Tracker {
         List<BlockPos> toRemove = new ArrayList<>();
 
         ContainerCache bestCache = null;
-        for (ContainerCache cache : _containerCaches.get(dim).values()) {
+        for (ContainerCache cache : containerCaches.get(dim).values()) {
             if (!isContainerCacheValid(dim, cache)) {
                 toRemove.add(cache.getBlockPos());
                 continue;
@@ -212,7 +212,7 @@ public class ContainerSubTracker extends Tracker {
         }
         // Clear anything invalid
         for (BlockPos remove : toRemove) {
-            _containerCaches.get(dim).remove(remove);
+            containerCaches.get(dim).remove(remove);
         }
         return Optional.ofNullable(bestCache);
     }
@@ -231,7 +231,7 @@ public class ContainerSubTracker extends Tracker {
     }
 
     public boolean hasItem(Predicate<ContainerCache> accept, Item... items) {
-        for (HashMap<BlockPos, ContainerCache> map : _containerCaches.values()) {
+        for (HashMap<BlockPos, ContainerCache> map : containerCaches.values()) {
             for (ContainerCache cache : map.values()) {
                 if (cache.hasItem(items) && accept.test(cache))
                     return true;
@@ -245,7 +245,7 @@ public class ContainerSubTracker extends Tracker {
     }
 
     public BlockPos getLastBlockPosInteraction() {
-        return _lastBlockPosInteraction;
+        return lastBlockPosInteraction;
     }
 
     @Override
@@ -255,8 +255,8 @@ public class ContainerSubTracker extends Tracker {
 
     @Override
     protected void reset() {
-        for (Dimension key : _containerCaches.keySet()) {
-            _containerCaches.get(key).clear();
+        for (Dimension key : containerCaches.keySet()) {
+            containerCaches.get(key).clear();
         }
     }
 

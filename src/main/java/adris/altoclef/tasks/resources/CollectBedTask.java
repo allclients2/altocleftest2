@@ -15,12 +15,12 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
 
     public static final Block[] BEDS = ItemHelper.itemsToBlocks(ItemHelper.BED);
 
-    private final ItemTarget _visualBedTarget;
+    private final ItemTarget visualBedTarget;
 
     public CollectBedTask(Item[] beds, ItemTarget wool, int count) {
         // Top 3 are wool, must be the same.
         super(new ItemTarget(beds, count), colorfulItems -> colorfulItems.wool, colorfulItems -> colorfulItems.bed, createBedRecipe(wool), new boolean[]{true, true, true, false, false, false, false, false, false});
-        _visualBedTarget = new ItemTarget(beds, count);
+        visualBedTarget = new ItemTarget(beds, count);
     }
 
     public CollectBedTask(Item bed, String woolCatalogueName, int count) {
@@ -56,13 +56,13 @@ public class CollectBedTask extends CraftWithMatchingWoolTask {
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CollectBedTask task) {
-            return task._visualBedTarget.equals(_visualBedTarget);
+            return task.visualBedTarget.equals(visualBedTarget);
         }
         return false;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Crafting bed: " + _visualBedTarget;
+        return "Crafting bed: " + visualBedTarget;
     }
 }

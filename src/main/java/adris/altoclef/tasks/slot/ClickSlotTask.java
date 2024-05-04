@@ -7,16 +7,16 @@ import net.minecraft.screen.slot.SlotActionType;
 
 public class ClickSlotTask extends Task {
 
-    private final Slot _slot;
-    private final int _mouseButton;
-    private final SlotActionType _type;
+    private final Slot slot;
+    private final int mouseButton;
+    private final SlotActionType type;
 
     private boolean _clicked = false;
 
     public ClickSlotTask(Slot slot, int mouseButton, SlotActionType type) {
-        _slot = slot;
-        _mouseButton = mouseButton;
-        _type = type;
+        this.slot = slot;
+        this.mouseButton = mouseButton;
+        this.type = type;
     }
 
     public ClickSlotTask(Slot slot, SlotActionType type) {
@@ -39,7 +39,7 @@ public class ClickSlotTask extends Task {
     @Override
     protected Task onTick(AltoClef mod) {
         if (mod.getSlotHandler().canDoSlotAction()) {
-            mod.getSlotHandler().clickSlot(_slot, _mouseButton, _type);
+            mod.getSlotHandler().clickSlot(slot, mouseButton, type);
             mod.getSlotHandler().registerSlotAction();
             _clicked = true;
         }
@@ -54,14 +54,14 @@ public class ClickSlotTask extends Task {
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof ClickSlotTask task) {
-            return task._mouseButton == _mouseButton && task._type == _type && task._slot.equals(_slot);
+            return task.mouseButton == mouseButton && task.type == type && task.slot.equals(slot);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Clicking " + _slot.toString();
+        return "Clicking " + slot.toString();
     }
 
     @Override

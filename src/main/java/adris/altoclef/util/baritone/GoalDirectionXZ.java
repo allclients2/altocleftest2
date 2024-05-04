@@ -11,7 +11,7 @@ public class GoalDirectionXZ implements Goal {
     private final double dirx;
     private final double dirz;
 
-    private final double _sidePenalty;
+    private final double sidePenalty;
 
     public GoalDirectionXZ(Vec3d origin, Vec3d offset, double sidePenalty) {
         this.originx = origin.getX();
@@ -24,7 +24,7 @@ public class GoalDirectionXZ implements Goal {
         if (this.dirx == 0 && this.dirz == 0) {
             throw new IllegalArgumentException(offset + "");
         }
-        this._sidePenalty = sidePenalty;
+        this.sidePenalty = sidePenalty;
     }
 
     private static String maybeCensor(double value) {
@@ -44,7 +44,7 @@ public class GoalDirectionXZ implements Goal {
         double perpendicularDistance = ((dx - px) * (dx - px)) + ((dz - pz) * (dz - pz));
 
         return -correctDistance * BaritoneAPI.getSettings().costHeuristic.value
-                + perpendicularDistance * _sidePenalty;
+                + perpendicularDistance * sidePenalty;
     }
 
     public String toString() {

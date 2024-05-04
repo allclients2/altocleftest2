@@ -27,11 +27,11 @@ import java.util.function.Predicate;
  */
 public class BotBehaviour {
 
-    private final AltoClef _mod;
-    Deque<State> _states = new ArrayDeque<>();
+    private final AltoClef mod;
+    Deque<State> states = new ArrayDeque<>();
 
     public BotBehaviour(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
 
         // Start with one state.
         push();
@@ -223,38 +223,38 @@ public class BotBehaviour {
 
     /// Stack management
     public void push() {
-        if (_states.isEmpty()) {
-            _states.push(new State());
+        if (states.isEmpty()) {
+            states.push(new State());
         } else {
             // Make copy and push that
-            _states.push(new State(current()));
+            states.push(new State(current()));
         }
     }
 
     public void push(State customState) {
-        _states.push(customState);
+        states.push(customState);
     }
 
     public State pop() {
-        if (_states.isEmpty()) {
+        if (states.isEmpty()) {
             Debug.logError("State stack is empty. This shouldn't be happening.");
             return null;
         }
-        State popped = _states.pop();
-        if (_states.isEmpty()) {
+        State popped = states.pop();
+        if (states.isEmpty()) {
             Debug.logError("State stack is empty after pop. This shouldn't be happening.");
             return null;
         }
-        _states.peek().applyState();
+        states.peek().applyState();
         return popped;
     }
 
     private State current() {
-        if (_states.isEmpty()) {
+        if (states.isEmpty()) {
             Debug.logError("STATE EMPTY, UNEMPTIED!");
             push();
         }
-        return _states.peek();
+        return states.peek();
     }
 
     private class State {
@@ -300,9 +300,9 @@ public class BotBehaviour {
 
         public State(State toCopy) {
             // Read in current state
-            readState(_mod.getClientBaritoneSettings());
+            readState(mod.getClientBaritoneSettings());
 
-            readExtraState(_mod.getExtraBaritoneSettings());
+            readExtraState(mod.getExtraBaritoneSettings());
 
             readMinecraftState();
 
@@ -321,7 +321,7 @@ public class BotBehaviour {
          * Make the current state match our copy
          */
         public void applyState() {
-            applyState(_mod.getClientBaritoneSettings(), _mod.getExtraBaritoneSettings());
+            applyState(mod.getClientBaritoneSettings(), mod.getExtraBaritoneSettings());
         }
 
         /**

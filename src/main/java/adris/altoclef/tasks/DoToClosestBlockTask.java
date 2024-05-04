@@ -18,21 +18,21 @@ import java.util.function.Supplier;
  */
 public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos> {
 
-    private final Block[] _targetBlocks;
+    private final Block[] targetBlocks;
 
-    private final Supplier<Vec3d> _getOriginPos;
-    private final Function<Vec3d, Optional<BlockPos>> _getClosest;
+    private final Supplier<Vec3d> getOriginPos;
+    private final Function<Vec3d, Optional<BlockPos>> getClosest;
 
-    private final Function<BlockPos, Task> _getTargetTask;
+    private final Function<BlockPos, Task> getTargetTask;
 
-    private final Predicate<BlockPos> _isValid;
+    private final Predicate<BlockPos> isValid;
 
     public DoToClosestBlockTask(Supplier<Vec3d> getOriginSupplier, Function<BlockPos, Task> getTargetTask, Function<Vec3d, Optional<BlockPos>> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
-        _getOriginPos = getOriginSupplier;
-        _getTargetTask = getTargetTask;
-        _getClosest = getClosestBlock;
-        _isValid = isValid;
-        _targetBlocks = blocks;
+        getOriginPos = getOriginSupplier;
+        this.getTargetTask = getTargetTask;
+        getClosest = getClosestBlock;
+        this.isValid = isValid;
+        targetBlocks = blocks;
     }
 
     public DoToClosestBlockTask(Function<BlockPos, Task> getTargetTask, Function<Vec3d, Optional<BlockPos>> getClosestBlock, Predicate<BlockPos> isValid, Block... blocks) {
@@ -54,23 +54,23 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
 
     @Override
     protected Optional<BlockPos> getClosestTo(AltoClef mod, Vec3d pos) {
-        if (_getClosest != null) {
-            return _getClosest.apply(pos);
+        if (getClosest != null) {
+            return getClosest.apply(pos);
         }
-        return mod.getBlockScanner().getNearestBlock(pos, _isValid, _targetBlocks);
+        return mod.getBlockScanner().getNearestBlock(pos, isValid, targetBlocks);
     }
 
     @Override
     protected Vec3d getOriginPos(AltoClef mod) {
-        if (_getOriginPos != null) {
-            return _getOriginPos.get();
+        if (getOriginPos != null) {
+            return getOriginPos.get();
         }
         return mod.getPlayer().getPos();
     }
 
     @Override
     protected Task getGoalTask(BlockPos obj) {
-        return _getTargetTask.apply(obj);
+        return getTargetTask.apply(obj);
     }
 
     @Override
@@ -78,9 +78,9 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
         // Assume we're valid since we're in the same chunk.
         if (!mod.getChunkTracker().isChunkLoaded(obj)) return true;
         // Our valid predicate
-        if (_isValid != null && !_isValid.test(obj)) return false;
+        if (isValid != null && !isValid.test(obj)) return false;
         // Correct block
-        return mod.getBlockScanner().isBlockAtPosition(obj, _targetBlocks);
+        return mod.getBlockScanner().isBlockAtPosition(obj, targetBlocks);
     }
 
     @Override
@@ -96,7 +96,7 @@ public class DoToClosestBlockTask extends AbstractDoToClosestObjectTask<BlockPos
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof DoToClosestBlockTask task) {
-            return Arrays.equals(task._targetBlocks, _targetBlocks);
+            return Arrays.equals(task.targetBlocks, targetBlocks);
         }
         return false;
     }

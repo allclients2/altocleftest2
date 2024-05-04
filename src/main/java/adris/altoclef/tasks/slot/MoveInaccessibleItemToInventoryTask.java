@@ -15,10 +15,10 @@ import java.util.Optional;
 
 public class MoveInaccessibleItemToInventoryTask extends Task {
 
-    private final ItemTarget _target;
+    private final ItemTarget target;
 
     public MoveInaccessibleItemToInventoryTask(ItemTarget target) {
-        _target = target;
+        this.target = target;
     }
 
     @Override
@@ -56,10 +56,10 @@ public class MoveInaccessibleItemToInventoryTask extends Task {
             return null;
         }
 
-        Optional<Slot> slotToMove = StorageHelper.getFilledInventorySlotInaccessibleToContainer(mod, _target);
+        Optional<Slot> slotToMove = StorageHelper.getFilledInventorySlotInaccessibleToContainer(mod, target);
         if (slotToMove.isPresent()) {
             // Force cursor slot if we have one.
-            if (_target.matches(StorageHelper.getItemStackInCursorSlot().getItem())) {
+            if (target.matches(StorageHelper.getItemStackInCursorSlot().getItem())) {
                 slotToMove = Optional.of(CursorSlot.SLOT);
             }
             // issue is a full cursor slot when trying to clear out bad items.
@@ -98,13 +98,13 @@ public class MoveInaccessibleItemToInventoryTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof MoveInaccessibleItemToInventoryTask task) {
-            return Objects.equals(task._target, _target);
+            return Objects.equals(task.target, target);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Making item accessible: " + _target;
+        return "Making item accessible: " + target;
     }
 }

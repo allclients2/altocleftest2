@@ -24,14 +24,14 @@ import java.util.function.Predicate;
  */
 public class ItemStorageTracker extends Tracker {
 
-    private final InventorySubTracker _inventory;
-    private final ContainerSubTracker _containers;
+    private final InventorySubTracker inventory;
+    private final ContainerSubTracker containers;
 
     public ItemStorageTracker(AltoClef mod, TrackerManager manager, Consumer<ContainerSubTracker> containerTrackerConsumer) {
         super(manager);
-        _inventory = new InventorySubTracker(manager);
-        _containers = new ContainerSubTracker(manager);
-        containerTrackerConsumer.accept(_containers);
+        inventory = new InventorySubTracker(manager);
+        containers = new ContainerSubTracker(manager);
+        containerTrackerConsumer.accept(containers);
     }
 
     private static Slot[] getCurrentConversionSlots() {
@@ -62,7 +62,7 @@ public class ItemStorageTracker extends Tracker {
             }
             return 0;
         }).reduce(0, Integer::sum);
-        return _inventory.getItemCount(true, false, items) + inConversionSlots;
+        return inventory.getItemCount(true, false, items) + inConversionSlots;
     }
 
     public int getItemCount(ItemTarget... targets) {
@@ -73,7 +73,7 @@ public class ItemStorageTracker extends Tracker {
      * Gets the number of items visible on the screen in any slot
      */
     public int getItemCountScreen(Item... items) {
-        return _inventory.getItemCount(true, true, items);
+        return inventory.getItemCount(true, true, items);
     }
 
     /**
@@ -83,14 +83,14 @@ public class ItemStorageTracker extends Tracker {
      * NOT count items in a crafting/furnace slot!
      */
     public int getItemCountInventoryOnly(Item... items) {
-        return _inventory.getItemCount(true, false, items);
+        return inventory.getItemCount(true, false, items);
     }
 
     /**
      * Gets the number of items only in the currently open container, NOT the player's inventory.
      */
     public int getItemCountContainer(Item... items) {
-        return _inventory.getItemCount(false, true, items);
+        return inventory.getItemCount(false, true, items);
     }
 
     /**
@@ -101,7 +101,7 @@ public class ItemStorageTracker extends Tracker {
         return Arrays.stream(getCurrentConversionSlots()).anyMatch(slot -> {
             ItemStack stack = StorageHelper.getItemStackInSlot(slot);
             return ArrayUtils.contains(items, stack.getItem());
-        }) || _inventory.hasItem(true, items);
+        }) || inventory.hasItem(true, items);
     }
 
     public boolean hasItemInOffhand(Item item) {
@@ -121,7 +121,7 @@ public class ItemStorageTracker extends Tracker {
      * Returns whether an item is visible on the screen in any slot
      */
     public boolean hasItemScreen(Item... items) {
-        return _inventory.hasItem(false, items);
+        return inventory.hasItem(false, items);
     }
 
     /**
@@ -131,28 +131,28 @@ public class ItemStorageTracker extends Tracker {
      * NOT count items in a crafting/furnace slot!
      */
     public boolean hasItemInventoryOnly(Item... items) {
-        return _inventory.hasItem(true, items);
+        return inventory.hasItem(true, items);
     }
 
     /**
      * Returns all slots containing any item given.
      */
     public List<Slot> getSlotsWithItemScreen(Item... items) {
-        return _inventory.getSlotsWithItems(true, true, items);
+        return inventory.getSlotsWithItems(true, true, items);
     }
 
     /**
      * Returns all slots NOT in the player inventory containing any item given.
      */
     public List<Slot> getSlotsWithItemContainer(Item... items) {
-        return _inventory.getSlotsWithItems(false, true, items);
+        return inventory.getSlotsWithItems(false, true, items);
     }
 
     /**
      * Returns all slots in our player inventory containing any item given.
      */
     public List<Slot> getSlotsWithItemPlayerInventory(boolean includeCraftArmorOffhand, Item... items) {
-        List<Slot> results = _inventory.getSlotsWithItems(true, false, items);
+        List<Slot> results = inventory.getSlotsWithItems(true, false, items);
         // Check other slots
         if (includeCraftArmorOffhand) {
             HashSet<Item> toCheck = new HashSet<>(Arrays.asList(items));
@@ -166,7 +166,7 @@ public class ItemStorageTracker extends Tracker {
     }
 
     public List<ItemStack> getItemStacksPlayerInventory(boolean includeCursorSlot) {
-        return _inventory.getInventoryStacks(includeCursorSlot);
+        return inventory.getInventoryStacks(includeCursorSlot);
     }
 
     /**
@@ -176,7 +176,7 @@ public class ItemStorageTracker extends Tracker {
      * @param acceptPartial If true, is OK with fitting PART of the stack. If false, requires 100% of the stack to fit.
      */
     public List<Slot> getSlotsThatCanFitInPlayerInventory(ItemStack stack, boolean acceptPartial) {
-        return _inventory.getSlotsThatCanFit(true, false, stack, acceptPartial);
+        return inventory.getSlotsThatCanFit(true, false, stack, acceptPartial);
     }
 
     public Optional<Slot> getSlotThatCanFitInPlayerInventory(ItemStack stack, boolean acceptPartial) {
@@ -196,7 +196,7 @@ public class ItemStorageTracker extends Tracker {
      * @param acceptPartial If true, is OK with fitting PART of the stack. If false, requires 100% of the stack to fit.
      */
     public List<Slot> getSlotsThatCanFitInOpenContainer(ItemStack stack, boolean acceptPartial) {
-        return _inventory.getSlotsThatCanFit(false, true, stack, acceptPartial);
+        return inventory.getSlotsThatCanFit(false, true, stack, acceptPartial);
     }
 
     public Optional<Slot> getSlotThatCanFitInOpenContainer(ItemStack stack, boolean acceptPartial) {
@@ -216,15 +216,15 @@ public class ItemStorageTracker extends Tracker {
      * @param acceptPartial If true, is OK with fitting PART of the stack. If false, requires 100% of the stack to fit.
      */
     public List<Slot> getSlotsThatCanFitScreen(ItemStack stack, boolean acceptPartial) {
-        return _inventory.getSlotsThatCanFit(true, true, stack, acceptPartial);
+        return inventory.getSlotsThatCanFit(true, true, stack, acceptPartial);
     }
 
     public boolean hasEmptyInventorySlot() {
-        return _inventory.hasEmptySlot(true);
+        return inventory.hasEmptySlot(true);
     }
 
     public void registerSlotAction() {
-        _inventory.setDirty();
+        inventory.setDirty();
     }
 
     /**
@@ -232,18 +232,18 @@ public class ItemStorageTracker extends Tracker {
      * you don't like.
      */
     public boolean hasItemContainer(Predicate<ContainerCache> accept, Item... items) {
-        return _containers.hasItem(accept, items);
+        return containers.hasItem(accept, items);
     }
 
     /**
      * Returns whether an item is present in ANY container, no matter how far.
      */
     public boolean hasItemContainer(Item... items) {
-        return _containers.hasItem(items);
+        return containers.hasItem(items);
     }
 
     public Optional<ContainerCache> getContainerAtPosition(BlockPos pos) {
-        return _containers.getContainerAtPosition(pos);
+        return containers.getContainerAtPosition(pos);
     }
 
     public boolean isContainerCached(BlockPos pos) {
@@ -251,15 +251,15 @@ public class ItemStorageTracker extends Tracker {
     }
 
     public Optional<ContainerCache> getEnderChestStorage() {
-        return _containers.getEnderChestStorage();
+        return containers.getEnderChestStorage();
     }
 
     public List<ContainerCache> getCachedContainers(Predicate<ContainerCache> accept) {
-        return _containers.getCachedContainers(accept);
+        return containers.getCachedContainers(accept);
     }
 
     public List<ContainerCache> getCachedContainers(ContainerType... types) {
-        return _containers.getCachedContainers(types);
+        return containers.getCachedContainers(types);
     }
 
     public List<ContainerCache> getCachedContainers() {
@@ -267,11 +267,11 @@ public class ItemStorageTracker extends Tracker {
     }
 
     public Optional<ContainerCache> getContainerClosestTo(Vec3d pos, Predicate<ContainerCache> accept) {
-        return _containers.getClosestTo(pos, accept);
+        return containers.getClosestTo(pos, accept);
     }
 
     public Optional<ContainerCache> getContainerClosestTo(Vec3d pos, ContainerType... types) {
-        return _containers.getClosestTo(pos, types);
+        return containers.getClosestTo(pos, types);
     }
 
     public Optional<ContainerCache> getContainerClosestTo(Vec3d pos) {
@@ -279,27 +279,27 @@ public class ItemStorageTracker extends Tracker {
     }
 
     public List<ContainerCache> getContainersWithItem(Item... items) {
-        return _containers.getContainersWithItem(items);
+        return containers.getContainersWithItem(items);
     }
 
     public Optional<ContainerCache> getClosestContainerWithItem(Vec3d pos, Item... items) {
-        return _containers.getClosestWithItem(pos, items);
+        return containers.getClosestWithItem(pos, items);
     }
 
     public Optional<BlockPos> getLastBlockPosInteraction() {
-        return Optional.ofNullable(_containers.getLastBlockPosInteraction());
+        return Optional.ofNullable(containers.getLastBlockPosInteraction());
     }
 
     @Override
     protected void updateState() {
-        _inventory.updateState();
-        _containers.updateState();
+        inventory.updateState();
+        containers.updateState();
     }
 
     @Override
     protected void reset() {
-        _inventory.reset();
-        _containers.reset();
+        inventory.reset();
+        containers.reset();
     }
 }
 

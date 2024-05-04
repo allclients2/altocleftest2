@@ -12,11 +12,11 @@ import adris.altoclef.util.time.Stopwatch;
 // This basically replaces our old Task Runner.
 public class UserTaskChain extends SingleTaskChain {
 
-    private final Stopwatch _taskStopwatch = new Stopwatch();
-    private Runnable _currentOnFinish = null;
+    private final Stopwatch taskStopwatch = new Stopwatch();
+    private Runnable currentOnFinish = null;
 
-    private boolean _runningIdleTask;
-    private boolean _nextTaskIdleFlag;
+    private boolean runningIdleTask;
+    private boolean nextTaskIdleFlag;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -71,16 +71,16 @@ public class UserTaskChain extends SingleTaskChain {
     }
 
     public void runTask(AltoClef mod, Task task, Runnable onFinish) {
-        _runningIdleTask = _nextTaskIdleFlag;
-        _nextTaskIdleFlag = false;
+        runningIdleTask = nextTaskIdleFlag;
+        nextTaskIdleFlag = false;
 
-        _currentOnFinish = onFinish;
+        currentOnFinish = onFinish;
 
-        if (!_runningIdleTask) {
+        if (!runningIdleTask) {
             Debug.logMessage("User Task Set: " + task.toString());
         }
         mod.getTaskRunner().enable();
-        _taskStopwatch.begin();
+        taskStopwatch.begin();
         setTask(task);
 
         if (mod.getModSettings().failedToLoad()) {
@@ -98,33 +98,33 @@ public class UserTaskChain extends SingleTaskChain {
             // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
-        double seconds = _taskStopwatch.time();
+        double seconds = taskStopwatch.time();
         Task oldTask = mainTask;
         mainTask = null;
-        if (_currentOnFinish != null) {
-            _currentOnFinish.run();
+        if (currentOnFinish != null) {
+            currentOnFinish.run();
         }
         // our `onFinish` might have triggered more tasks.
         boolean actuallyDone = mainTask == null;
         if (actuallyDone) {
-            if (!_runningIdleTask) {
+            if (!runningIdleTask) {
                 Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
                 EventBus.publish(new TaskFinishedEvent(seconds, oldTask));
             }
             if (shouldIdle) {
                 AltoClef.getCommandExecutor().executeWithPrefix(mod.getModSettings().getIdleCommand());
                 signalNextTaskToBeIdleTask();
-                _runningIdleTask = true;
+                runningIdleTask = true;
             }
         }
     }
 
     public boolean isRunningIdleTask() {
-        return isActive() && _runningIdleTask;
+        return isActive() && runningIdleTask;
     }
 
     // The next task will be an idle task.
     public void signalNextTaskToBeIdleTask() {
-        _nextTaskIdleFlag = true;
+        nextTaskIdleFlag = true;
     }
 }

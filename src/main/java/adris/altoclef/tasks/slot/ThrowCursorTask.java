@@ -6,7 +6,7 @@ import adris.altoclef.util.slots.Slot;
 
 public class ThrowCursorTask extends Task {
 
-    private final Task _throwTask = new ClickSlotTask(Slot.UNDEFINED);
+    private final Task throwTask = new ClickSlotTask(Slot.UNDEFINED);
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -14,7 +14,7 @@ public class ThrowCursorTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        return _throwTask;
+        return throwTask;
     }
 
     @Override
@@ -34,6 +34,6 @@ public class ThrowCursorTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _throwTask.isFinished(mod);
+        return throwTask.isFinished(mod);
     }
 }

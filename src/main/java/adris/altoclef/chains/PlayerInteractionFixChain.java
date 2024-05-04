@@ -12,9 +12,7 @@ import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
-import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.gui.screen.DeathScreen;
@@ -22,22 +20,20 @@ import net.minecraft.client.gui.screen.GameMenuScreen;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.item.Items;
-import net.minecraft.item.PickaxeItem;
 import net.minecraft.screen.slot.SlotActionType;
 
 import java.util.Optional;
 
 public class PlayerInteractionFixChain extends TaskChain {
-    private final TimerGame _stackHeldTimeout = new TimerGame(1);
-    private final TimerGame _generalDuctTapeSwapTimeout = new TimerGame(30);
-    private final TimerGame _shiftDepressTimeout = new TimerGame(10);
-    private final TimerGame _betterToolTimer = new TimerGame(0);
-    private final TimerGame _mouseMovingButScreenOpenTimeout = new TimerGame(1);
-    private ItemStack _lastHandStack = null;
+    private final TimerGame stackHeldTimeout = new TimerGame(1);
+    private final TimerGame generalDuctTapeSwapTimeout = new TimerGame(30);
+    private final TimerGame shiftDepressTimeout = new TimerGame(10);
+    private final TimerGame betterToolTimer = new TimerGame(0);
+    private final TimerGame mouseMovingButScreenOpenTimeout = new TimerGame(1);
+    private ItemStack lastHandStack = null;
 
-    private Screen _lastScreen;
-    private Rotation _lastLookRotation;
+    private Screen lastScreen;
+    private Rotation lastLookRotation;
 
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
@@ -62,9 +58,9 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
-        if (mod.getUserTaskChain().isActive() && _betterToolTimer.elapsed()) {
+        if (mod.getUserTaskChain().isActive() && betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
-            _betterToolTimer.reset();
+            betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockState state = mod.getWorld().getBlockState(mod.getControllerExtras().getBreakingBlockPos());
                 Optional<Slot> bestToolSlot = StorageHelper.getBestToolSlot(mod, state);
@@ -90,19 +86,19 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         // Unpress shift (it gets stuck for some reason???)
         if (mod.getInputControls().isHeldDown(Input.SNEAK)) {
-            if (_shiftDepressTimeout.elapsed()) {
+            if (shiftDepressTimeout.elapsed()) {
                 mod.getInputControls().release(Input.SNEAK);
             }
         } else {
-            _shiftDepressTimeout.reset();
+            shiftDepressTimeout.reset();
         }
 
         // Refresh inventory
-        if (_generalDuctTapeSwapTimeout.elapsed()) {
+        if (generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getControllerExtras().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");
                 mod.getSlotHandler().refreshInventory();
-                _generalDuctTapeSwapTimeout.reset();
+                generalDuctTapeSwapTimeout.reset();
                 return Float.NEGATIVE_INFINITY;
             }
         }
@@ -111,19 +107,19 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck
-            if (_lastHandStack == null || !ItemStack.areEqual(currentStack, _lastHandStack)) {
+            if (lastHandStack == null || !ItemStack.areEqual(currentStack, lastHandStack)) {
                 // We're holding a new item in our stack!
-                _stackHeldTimeout.reset();
-                _lastHandStack = currentStack.copy();
+                stackHeldTimeout.reset();
+                lastHandStack = currentStack.copy();
             }
         } else {
-            _stackHeldTimeout.reset();
-            _lastHandStack = null;
+            stackHeldTimeout.reset();
+            lastHandStack = null;
         }
 
         // If we have something in our hand for a period of time...
-        if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false);
+        if (lastHandStack != null && stackHeldTimeout.elapsed()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(lastHandStack, false);
             if (moveTo.isPresent()) {
                 mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
                 return Float.NEGATIVE_INFINITY;
@@ -176,27 +172,27 @@ public class PlayerInteractionFixChain extends TaskChain {
             return false;
         // Only check look if we've had the same screen open for a while
         Screen openScreen = MinecraftClient.getInstance().currentScreen;
-        if (openScreen != _lastScreen) {
-            _mouseMovingButScreenOpenTimeout.reset();
+        if (openScreen != lastScreen) {
+            mouseMovingButScreenOpenTimeout.reset();
         }
         // We're in the player screen/a screen we DON'T want to cancel out of
         if (openScreen == null || openScreen instanceof ChatScreen || openScreen instanceof GameMenuScreen || openScreen instanceof DeathScreen) {
-            _mouseMovingButScreenOpenTimeout.reset();
+            mouseMovingButScreenOpenTimeout.reset();
             return false;
         }
         // Check for rotation change
         Rotation look = LookHelper.getLookRotation();
-        if (_lastLookRotation != null && _mouseMovingButScreenOpenTimeout.elapsed()) {
-            Rotation delta = look.subtract(_lastLookRotation);
+        if (lastLookRotation != null && mouseMovingButScreenOpenTimeout.elapsed()) {
+            Rotation delta = look.subtract(lastLookRotation);
             if (Math.abs(delta.getYaw()) > 0.1f || Math.abs(delta.getPitch()) > 0.1f) {
-                _lastLookRotation = look;
+                lastLookRotation = look;
                 return true;
             }
             // do NOT update our last look rotation, just because we want to measure long term rotation.
         } else {
-            _lastLookRotation = look;
+            lastLookRotation = look;
         }
-        _lastScreen = openScreen;
+        lastScreen = openScreen;
         return false;
     }
 

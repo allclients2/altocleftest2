@@ -15,7 +15,6 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Streams;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroup;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
@@ -40,7 +39,7 @@ public class Settings implements IFailableConfigFile {
     // Internal only.
     // If settings failed to load, this will be set to warn the user.
     @JsonIgnore
-    private transient boolean _failedToLoad = false;
+    private transient boolean failedToLoad = false;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     ////////** BEGIN SETTINGS w/ COMMENTS **//////////////////////////////////////////////////
@@ -627,11 +626,11 @@ public class Settings implements IFailableConfigFile {
 
     @Override
     public void onFailLoad() {
-        _failedToLoad = true;
+        failedToLoad = true;
     }
 
     @Override
     public boolean failedToLoad() {
-        return _failedToLoad;
+        return failedToLoad;
     }
 }

@@ -731,8 +731,8 @@ public class BeatMinecraftTask extends Task {
     }
 
     private void addCollectFoodTask(AltoClef mod) {
-        List<Item> food = new LinkedList<>(ItemHelper._cookableFoodMap.values());
-        food.addAll(ItemHelper._cookableFoodMap.keySet());
+        List<Item> food = new LinkedList<>(ItemHelper.cookableFoodMap.values());
+        food.addAll(ItemHelper.cookableFoodMap.keySet());
         food.addAll(List.of(Items.WHEAT, Items.BREAD));
 
         gatherResources.add(new GatherResource(999, 999_999, new CollectFoodPriorityCalculator(mod, config.foodUnits),

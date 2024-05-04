@@ -41,7 +41,7 @@ public class MineAndCollectTask extends ResourceTask {
         super(itemTargets);
         _requirement = requirement;
         _blocksToMine = blocksToMine;
-        _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
+        _subtask = new MineOrCollectTask(_blocksToMine, this.itemTargets);
     }
 
     public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {

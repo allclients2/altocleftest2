@@ -11,37 +11,37 @@ import java.util.List;
 
 public abstract class GoalRunAwayFromEntities implements Goal {
 
-    private final AltoClef _mod;
-    private final double _distance;
-    private final boolean _xzOnly;
+    private final AltoClef mod;
+    private final double distance;
+    private final boolean xzOnly;
 
     // Higher: We will move more directly away from each entity
     // Too high: We will refuse to take alternative, faster paths and will dig straight away.
     // Lower: We will in general move far away from an entity, allowing the ocassional closer traversal.
     // Too low: We will just run straight into the entity to go past it.
-    private final double _penaltyFactor;
+    private final double penaltyFactor;
 
     public GoalRunAwayFromEntities(AltoClef mod, double distance, boolean xzOnly, double penaltyFactor) {
-        _mod = mod;
-        _distance = distance;
-        _xzOnly = xzOnly;
-        _penaltyFactor = penaltyFactor;
+        this.mod = mod;
+        this.distance = distance;
+        this.xzOnly = xzOnly;
+        this.penaltyFactor = penaltyFactor;
     }
 
     @Override
     public boolean isInGoal(int x, int y, int z) {
-        List<Entity> entities = getEntities(_mod);
+        List<Entity> entities = getEntities(mod);
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             if (!entities.isEmpty()) {
                 for (Entity entity : entities) {
                     if (entity == null || !entity.isAlive()) continue;
                     double sqDistance;
-                    if (_xzOnly) {
+                    if (xzOnly) {
                         sqDistance = entity.getPos().subtract(x, y, z).multiply(1, 0, 1).lengthSquared();
                     } else {
                         sqDistance = entity.squaredDistanceTo(x, y, z);
                     }
-                    if (sqDistance < _distance * _distance) return false;
+                    if (sqDistance < distance * distance) return false;
                 }
             }
         }
@@ -52,7 +52,7 @@ public abstract class GoalRunAwayFromEntities implements Goal {
     public double heuristic(int x, int y, int z) {
         // The lower the cost, the better.
         double costSum = 0;
-        List<Entity> entities = getEntities(_mod);
+        List<Entity> entities = getEntities(mod);
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             int max = 10; // If we have 100 players, this will never calculate.
             int counter = 0;
@@ -74,7 +74,7 @@ public abstract class GoalRunAwayFromEntities implements Goal {
             if (counter > 0) {
                 costSum /= counter;
             }
-            return costSum * _penaltyFactor;
+            return costSum * penaltyFactor;
         }
     }
 
@@ -83,7 +83,7 @@ public abstract class GoalRunAwayFromEntities implements Goal {
     // Virtual
     protected double getCostOfEntity(Entity entity, int x, int y, int z) {
         double heuristic = 0;
-        if (!_xzOnly) {
+        if (!xzOnly) {
             heuristic += GoalYLevel.calculate(entity.getBlockPos().getY(), y);
         }
         heuristic += GoalXZ.calculate(entity.getBlockPos().getX() - x, entity.getBlockPos().getZ() - z);

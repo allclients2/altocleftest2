@@ -11,12 +11,12 @@ import net.minecraft.util.math.BlockPos;
 
 public class ExampleTask extends Task {
 
-    private final int _numberOfStonePickaxesToGrab;
-    private final BlockPos _whereToPlaceCobblestone;
+    private final int numberOfStonePickaxesToGrab;
+    private final BlockPos whereToPlaceCobblestone;
 
     public ExampleTask(int numberOfStonePickaxesToGrab, BlockPos whereToPlaceCobblestone) {
-        _numberOfStonePickaxesToGrab = numberOfStonePickaxesToGrab;
-        _whereToPlaceCobblestone = whereToPlaceCobblestone;
+        this.numberOfStonePickaxesToGrab = numberOfStonePickaxesToGrab;
+        this.whereToPlaceCobblestone = whereToPlaceCobblestone;
     }
 
     @Override
@@ -34,21 +34,21 @@ public class ExampleTask extends Task {
          * Then, place the block.
          */
 
-        if (mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) < _numberOfStonePickaxesToGrab) {
-            return TaskCatalogue.getItemTask(Items.STONE_PICKAXE, _numberOfStonePickaxesToGrab);
+        if (mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) < numberOfStonePickaxesToGrab) {
+            return TaskCatalogue.getItemTask(Items.STONE_PICKAXE, numberOfStonePickaxesToGrab);
         }
 
         if (!mod.getItemStorage().hasItem(Items.COBBLESTONE)) {
             return TaskCatalogue.getItemTask(Items.COBBLESTONE, 1);
         }
 
-        if (mod.getChunkTracker().isChunkLoaded(_whereToPlaceCobblestone)) {
-            if (mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() != Blocks.COBBLESTONE) {
-                return new PlaceBlockTask(_whereToPlaceCobblestone, Blocks.COBBLESTONE); ///new PlaceStructureBlockTask(_whereToPlaceCobblestone);
+        if (mod.getChunkTracker().isChunkLoaded(whereToPlaceCobblestone)) {
+            if (mod.getWorld().getBlockState(whereToPlaceCobblestone).getBlock() != Blocks.COBBLESTONE) {
+                return new PlaceBlockTask(whereToPlaceCobblestone, Blocks.COBBLESTONE); ///new PlaceStructureBlockTask(_whereToPlaceCobblestone);
             }
             return null;
         } else {
-            return new GetToBlockTask(_whereToPlaceCobblestone);
+            return new GetToBlockTask(whereToPlaceCobblestone);
         }
     }
 
@@ -59,16 +59,16 @@ public class ExampleTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) >= _numberOfStonePickaxesToGrab &&
-                mod.getWorld().getBlockState(_whereToPlaceCobblestone).getBlock() == Blocks.COBBLESTONE;
+        return mod.getItemStorage().getItemCount(Items.STONE_PICKAXE) >= numberOfStonePickaxesToGrab &&
+                mod.getWorld().getBlockState(whereToPlaceCobblestone).getBlock() == Blocks.COBBLESTONE;
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof ExampleTask) {
             ExampleTask task = (ExampleTask) other;
-            return task._numberOfStonePickaxesToGrab == _numberOfStonePickaxesToGrab
-                    && task._whereToPlaceCobblestone.equals(_whereToPlaceCobblestone);
+            return task.numberOfStonePickaxesToGrab == numberOfStonePickaxesToGrab
+                    && task.whereToPlaceCobblestone.equals(whereToPlaceCobblestone);
         }
         return false;
     }

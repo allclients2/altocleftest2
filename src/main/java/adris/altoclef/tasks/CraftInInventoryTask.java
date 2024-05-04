@@ -68,8 +68,8 @@ public class CraftInInventoryTask extends ResourceTask {
         if (StorageHelper.isPlayerInventoryOpen()) {
             if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
                 Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
-                if (_itemTargets != null) {
-                    for (ItemTarget target : _itemTargets) {
+                if (itemTargets != null) {
+                    for (ItemTarget target : itemTargets) {
                         if (target.matches(outputItem)) {
                             return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
                         }
@@ -78,7 +78,7 @@ public class CraftInInventoryTask extends ResourceTask {
             }
         }
 
-        ItemTarget toGet = _itemTargets[0];
+        ItemTarget toGet = itemTargets[0];
         Item toGetItem = toGet.getMatches()[0];
         if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, _target)) {
             // Collect recipe materials

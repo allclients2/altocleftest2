@@ -27,9 +27,9 @@ import java.util.Optional;
 
 public class WorldSurvivalChain extends SingleTaskChain {
 
-    private final TimerGame _wasInLavaTimer = new TimerGame(1);
-    private boolean _wasAvoidingDrowning;
-    private TimerGame _portalStuckTimer = new TimerGame(5);
+    private final TimerGame wasInLavaTimer = new TimerGame(1);
+    private final TimerGame portalStuckTimer = new TimerGame(5);
+    private boolean wasAvoidingDrowning;
 
     private BlockPos _extinguishWaterPosition;
 
@@ -99,10 +99,10 @@ public class WorldSurvivalChain extends SingleTaskChain {
             mod.getExtraBaritoneSettings().setInteractionPaused(true);
         } else {
             // We're no longer stuck, but we might want to move AWAY from our stuck position.
-            _portalStuckTimer.reset();
+            portalStuckTimer.reset();
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
-        if (_portalStuckTimer.elapsed()) {
+        if (portalStuckTimer.elapsed()) {
             // We're stuck inside a portal, so get out.
             // Don't allow breaking while we're inside the portal.
             setTask(new SafeRandomShimmyTask());
@@ -122,13 +122,13 @@ public class WorldSurvivalChain extends SingleTaskChain {
                     mod.getInputControls().hold(Input.JUMP);
                     //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, true);
                     avoidedDrowning = true;
-                    _wasAvoidingDrowning = true;
+                    wasAvoidingDrowning = true;
                 }
             }
         }
         // Stop swimming up if we just swam.
-        if (_wasAvoidingDrowning && !avoidedDrowning) {
-            _wasAvoidingDrowning = false;
+        if (wasAvoidingDrowning && !avoidedDrowning) {
+            wasAvoidingDrowning = false;
             mod.getInputControls().release(Input.JUMP);
             //mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.JUMP, false);
         }
@@ -136,10 +136,10 @@ public class WorldSurvivalChain extends SingleTaskChain {
 
     private boolean isInLavaOhShit(AltoClef mod) {
         if (mod.getPlayer().isInLava() && !mod.getPlayer().hasStatusEffect(StatusEffects.FIRE_RESISTANCE)) {
-            _wasInLavaTimer.reset();
+            wasInLavaTimer.reset();
             return true;
         }
-        return mod.getPlayer().isOnFire() && !_wasInLavaTimer.elapsed();
+        return mod.getPlayer().isOnFire() && !wasInLavaTimer.elapsed();
     }
 
     private boolean isInFire(AltoClef mod) {

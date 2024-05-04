@@ -14,17 +14,17 @@ public class GoalDodgeProjectiles implements Goal {
 
     private static final double Y_SCALE = 0.3f;
 
-    private final AltoClef _mod;
+    private final AltoClef mod;
 
-    private final double _distanceHorizontal;
-    private final double _distanceVertical;
+    private final double distanceHorizontal;
+    private final double distanceVertical;
 
-    private final List<CachedProjectile> _cachedProjectiles = new ArrayList<>();
+    private final List<CachedProjectile> cachedProjectiles = new ArrayList<>();
 
     public GoalDodgeProjectiles(AltoClef mod, double distanceHorizontal, double distanceVertical) {
-        _mod = mod;
-        _distanceHorizontal = distanceHorizontal;
-        _distanceVertical = distanceVertical;
+        this.mod = mod;
+        this.distanceHorizontal = distanceHorizontal;
+        this.distanceVertical = distanceVertical;
     }
 
     private static boolean isInvalidProjectile(CachedProjectile projectile) {
@@ -97,10 +97,10 @@ public class GoalDodgeProjectiles implements Goal {
         Vec3d delta = to.subtract(hit);
         double horizontalSquared = delta.x * delta.x + delta.z * delta.z;
         double vertical = Math.abs(delta.y);
-        return horizontalSquared < _distanceHorizontal * _distanceHorizontal && vertical < _distanceVertical;
+        return horizontalSquared < distanceHorizontal * distanceHorizontal && vertical < distanceVertical;
     }
 
     private List<CachedProjectile> getProjectiles() {
-        return _mod.getEntityTracker().getProjectiles();
+        return mod.getEntityTracker().getProjectiles();
     }
 }

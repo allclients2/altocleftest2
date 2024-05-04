@@ -12,7 +12,7 @@ import java.util.Optional;
 
 public class ExampleTask2 extends Task {
 
-    private BlockPos _target = null;
+    private BlockPos target = null;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -35,8 +35,8 @@ public class ExampleTask2 extends Task {
          * Stand on top of its last leaf
          */
 
-        if (_target != null) {
-            return new GetToBlockTask(_target);
+        if (target != null) {
+            return new GetToBlockTask(target);
         }
 
         if (mod.getBlockScanner().anyFound(Blocks.OAK_LOG)) {
@@ -48,7 +48,7 @@ public class ExampleTask2 extends Task {
                         mod.getWorld().getBlockState(check).getBlock() == Blocks.OAK_LEAVES) {
                     check = check.up();
                 }
-                _target = check;
+                target = check;
             }
             return null;
         }
@@ -68,8 +68,8 @@ public class ExampleTask2 extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (_target != null) {
-            return mod.getPlayer().getBlockPos().equals(_target);
+        if (target != null) {
+            return mod.getPlayer().getBlockPos().equals(target);
         }
         return super.isFinished(mod);
     }

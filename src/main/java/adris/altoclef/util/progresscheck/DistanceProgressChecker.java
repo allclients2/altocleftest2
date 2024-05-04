@@ -4,16 +4,16 @@ import net.minecraft.util.math.Vec3d;
 
 public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
-    private final IProgressChecker<Double> _distanceChecker;
-    private final boolean _reduceDistance;
-    private Vec3d _start;
-    private Vec3d _prevPos;
+    private final IProgressChecker<Double> distanceChecker;
+    private final boolean reduceDistance;
+    private Vec3d start;
+    private Vec3d prevPos;
 
     public DistanceProgressChecker(IProgressChecker<Double> distanceChecker, boolean reduceDistance) {
-        _distanceChecker = distanceChecker;
-        _reduceDistance = reduceDistance;
+        this.distanceChecker = distanceChecker;
+        this.reduceDistance = reduceDistance;
         if (reduceDistance) {
-            _distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
+            this.distanceChecker.setProgress(Double.NEGATIVE_INFINITY);
         }
         reset();
     }
@@ -28,26 +28,26 @@ public class DistanceProgressChecker implements IProgressChecker<Vec3d> {
 
     @Override
     public void setProgress(Vec3d position) {
-        if (_start == null) {
-            _start = position;
+        if (start == null) {
+            start = position;
             return;
         }
-        double delta = position.distanceTo(_start);
+        double delta = position.distanceTo(start);
         // If we want to reduce distance, penalize distance.
-        if (_reduceDistance) delta *= -1;
-        _prevPos = position;
-        _distanceChecker.setProgress(delta);
+        if (reduceDistance) delta *= -1;
+        prevPos = position;
+        distanceChecker.setProgress(delta);
     }
 
     @Override
     public boolean failed() {
-        return _distanceChecker.failed();
+        return distanceChecker.failed();
     }
 
     @Override
     public void reset() {
-        _start = null;//_prevPos;
-        _distanceChecker.setProgress(0.0);
-        _distanceChecker.reset();
+        start = null;//_prevPos;
+        distanceChecker.setProgress(0.0);
+        distanceChecker.reset();
     }
 }
