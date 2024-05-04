@@ -29,7 +29,7 @@ public class ScanCommand extends Command {
         Block block = null;
 
         for (Field field : declaredFields) {
-            System.out.println(field);
+            field.setAccessible(true);
             try {
                 if (field.getName().equalsIgnoreCase(blockStr)) {
                     block = (Block) field.get(Blocks.class);
@@ -37,7 +37,7 @@ public class ScanCommand extends Command {
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
-
+            field.setAccessible(false);
         }
 
         if (block == null) {
