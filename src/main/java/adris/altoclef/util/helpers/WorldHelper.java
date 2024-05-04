@@ -118,11 +118,6 @@ public interface WorldHelper {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }
 
-    static boolean isIce(AltoClef mod, BlockPos pos) {
-        Block block = mod.getWorld().getBlockState(pos).getBlock();
-        return block.equals(Blocks.ICE) || block.equals(Blocks.BLUE_ICE) || block.equals(Blocks.FROSTED_ICE) || block.equals(Blocks.PACKED_ICE);
-    }
-
     /**
      * Get the "head" of a block with a bed, if the block is a bed.
      */
