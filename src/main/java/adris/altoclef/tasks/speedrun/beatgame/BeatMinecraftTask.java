@@ -2440,13 +2440,6 @@ public class BeatMinecraftTask extends Task {
                         task = TaskCatalogue.getItemTask(toGather.toCollect[0], toGather.maxCount);
                     }
 
-                    Predicate<Task> isCraftingTableTask = craftingTask -> {
-                        if (craftingTask instanceof DoStuffInContainerTask cont) {
-                            return cont.getContainerTarget().matches(Items.CRAFTING_TABLE);
-                        }
-                        return false;
-                    };
-
                     if (lastTask instanceof SmeltInFurnaceTask && !(task instanceof SmeltInFurnaceTask) && !mod.getItemStorage().hasItem(Items.FURNACE)) {
                         pickupFurnace = true;
                         lastGather = null;
@@ -2459,7 +2452,7 @@ public class BeatMinecraftTask extends Task {
                         lastTask = null;
                         StorageHelper.closeScreen();
                         return null;
-                    } else if (lastTask != null && task != null && lastTask.thisOrChildSatisfies(isCraftingTableTask) && !toGather.needsCraftingOnStart(mod)) {
+                    } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
                         pickupCrafting = true;
                         lastGather = null;
                         lastTask = null;
