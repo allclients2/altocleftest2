@@ -8,7 +8,9 @@ import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
@@ -99,7 +101,10 @@ public class UnstuckChain extends SingleTaskChain {
     }
 
     private void checkStuckOnEndPortalFrame(AltoClef mod) {
-        if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock() == Blocks.END_PORTAL_FRAME) {
+        BlockState state = mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos());
+
+        // if we are standing on an end portal frame that is NOT filled, get off otherwise we will get stuck
+        if (state.getBlock() == Blocks.END_PORTAL_FRAME && !state.get(EndPortalFrameBlock.EYE)) {
             if (!mod.getFoodChain().isTryingToEat()) {
                 isProbablyStuck = true;
 
