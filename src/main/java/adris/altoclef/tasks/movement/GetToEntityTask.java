@@ -107,11 +107,9 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        /*
         if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
             _progress.reset();
         }
-        */
         if (WorldHelper.isInNetherPortal(mod)) {
             if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
                 setDebugState("Getting out from nether portal");
