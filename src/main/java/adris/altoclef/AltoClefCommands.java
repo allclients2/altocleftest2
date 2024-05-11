@@ -38,6 +38,7 @@ public class AltoClefCommands {
                 new CoverWithSandCommand(),
                 new CoverWithBlocksCommand(),
                 new FlytoCommand(),
+                new BranchMineCommand(),
                 new SelfCareCommand()
                 //new TestMoveInventoryCommand(),
                 //    new TestSwapInventoryCommand()
