@@ -44,7 +44,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     @Override
     protected String toDebugString() {
-        return "NIGERUNDAYOO, SUMOOKEYY!";
+        return "Hell nah, I'm out of here.";
     }
 
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {

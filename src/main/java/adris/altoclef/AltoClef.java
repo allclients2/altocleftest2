@@ -276,8 +276,10 @@ public class AltoClef implements ModInitializer {
 
         // Reduces a bit of far rendering to save FPS
         getClientBaritoneSettings().fadePath.value = false;
+
         // Don't let baritone scan dropped items, we handle that ourselves.
         getClientBaritoneSettings().mineScanDroppedItems.value = false;
+
         // Don't let baritone wait for drops, we handle that ourselves.
         getClientBaritoneSettings().mineDropLoiterDurationMSThanksLouca.value = 0L;
 

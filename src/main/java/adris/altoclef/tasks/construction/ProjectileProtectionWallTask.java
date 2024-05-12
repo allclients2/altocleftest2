@@ -155,7 +155,10 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         BlockPos neighbour;
         Direction side = getPlaceSide(blockPos);
 
-        if (side == null && recursion < 6) { //patch
+        if (side == null) {
+            if (recursion < 6) { //patch
+                return false;
+            }
         	place(blockPos.down(), hand, slot, recursion + 1); //stackoverflow errr?
         	return false;
         } else {
