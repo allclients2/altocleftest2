@@ -42,7 +42,7 @@ public class BranchMineCommand extends Command {
     };
 
 	public BranchMineCommand() throws CommandException {
-        super("branchMine", "Create a branch mine from the current position in direction bot is currently looking at", new Arg(ItemList.class, _dropToOre.keySet().toString()));
+        super("branchmine", "Create a branch mine from the current position in direction bot is currently looking at", new Arg(ItemList.class, _dropToOre.keySet().toString()));
 	}
 	
 	private static void OnResourceDoesNotExist(AltoClef mod, String resource) {
