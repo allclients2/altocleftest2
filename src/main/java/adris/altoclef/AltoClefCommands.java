@@ -37,6 +37,7 @@ public class AltoClefCommands {
                 new ListCommand(),
                 new CoverWithSandCommand(),
                 new CoverWithBlocksCommand(),
+                new BuildCommand(),
                 new FlytoCommand(),
                 new BranchMineCommand(),
                 new SelfCareCommand()

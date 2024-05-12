@@ -12,6 +12,9 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+    flatDir {
+        dirs '../baritone/dist'
+    }
     mavenCentral()
     maven {
         name = "MarvionKiritoRepo"
@@ -20,9 +23,6 @@ repositories {
     maven {
         name = 'babbaj-repo'
         url = 'https://babbaj.github.io/maven/'
-    }
-    flatDir {
-        dirs '../baritone/dist'
     }
 }
 
@@ -61,8 +61,8 @@ dependencies {
     }
     */
 
-    modImplementation "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1-LOCAL"
-    include "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1-LOCAL"
+    modImplementation "cabaletta:baritone-unoptimized-fabric:1.20.4-AC2-alpha1"
+    include "cabaletta:baritone-unoptimized-fabric:1.20.4-AC2-alpha1"
 
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')

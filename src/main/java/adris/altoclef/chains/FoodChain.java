@@ -251,7 +251,7 @@ public class FoodChain extends SingleTaskChain {
         return false;
     }
 
-    private Pair<Integer, Optional<Item>> calculateFood(AltoClef mod) {
+    public Pair<Integer, Optional<Item>> calculateFood(AltoClef mod) {
         Item bestFood = null;
         double bestFoodScore = Double.NEGATIVE_INFINITY;
         int foodTotal = 0;

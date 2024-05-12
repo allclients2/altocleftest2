@@ -328,6 +328,8 @@ public class Settings implements IFailableConfigFile {
             // Overworld junk
             Items.DRIPSTONE_BLOCK,
             Items.ROOTED_DIRT,
+            Items.RAW_COPPER,
+            Items.WHEAT_SEEDS,
             Items.GRAVEL,
             Items.SAND,
             Items.DIORITE,

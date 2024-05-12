@@ -133,7 +133,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         //Don't spend too much time on finding an optimized path. Doesn't really matter.
         //But also don't be really dumb and try to cross an ocean. (it tried to do so when it was set at 21.0)
-        mod.getClientBaritoneSettings().costHeuristic.value = 6.5;
+        mod.getClientBaritoneSettings().costHeuristic.value = 5.5;
+        mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 16.0;
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
 
         _timer.reset();
@@ -267,6 +268,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     protected void onStop(AltoClef mod, Task interruptTask) {
         //Reset
         mod.getClientBaritoneSettings().costHeuristic.value = mod.DefaultCostHeuristic;
+        mod.getClientBaritoneSettings().walkOnWaterOnePenalty.reset();
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 0.0;
 
         mod.getClientBaritone().getPathingBehavior().forceCancel();
@@ -293,7 +295,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         }
 
         if (mod.getPlayer() != null && mod.getPlayer().getPos() != null && (mod.getPlayer().isOnGround() ||
-                mod.getPlayer().isTouchingWater())) {
+                mod.getPlayer().isTouchingWater()) && _origin != null) {
             double sqDist = mod.getPlayer().getPos().squaredDistanceTo(_origin);
             double toWander = _distanceToWander + _wanderDistanceExtension;
             return sqDist > toWander * toWander;

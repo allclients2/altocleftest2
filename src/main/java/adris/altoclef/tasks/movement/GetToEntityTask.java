@@ -98,6 +98,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 2.5;
         mod.getClientBaritoneSettings().blockPlacementPenalty.value = 20.0;
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         _progress.reset();
@@ -177,6 +178,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getPathingBehavior().forceCancel();
+        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 0.0;
         mod.getClientBaritoneSettings().blockPlacementPenalty.value = 0.0;
     }
 

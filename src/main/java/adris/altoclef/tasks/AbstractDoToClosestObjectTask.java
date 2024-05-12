@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Vec3d;
 
@@ -21,6 +22,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
     private T _currentlyPursuing = null;
     private boolean _wasWandering;
     private Task _goalTask = null;
+    private TimerGame _lastpursuitinit = new TimerGame(1.0);
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
 
@@ -79,7 +81,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                 // We don't have a closest object
                 _currentlyPursuing = newClosest;
             } else {
-                if (isMovingToClosestPos(mod)) {
+                if (isMovingToClosestPos(mod) && _lastpursuitinit.elapsed()) { //patch
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
                     double closestDistanceSqr = getPos(mod, _currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
@@ -110,6 +112,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                         // Our new object does not have a heuristic, TRY IT OUT!
                         _currentlyPursuing = newClosest;
                     }
+                    _lastpursuitinit.reset();
                 } else {
                     setDebugState("Waiting for move task to kick in...");
                     // We should keep moving towards our object until we get some new info.
