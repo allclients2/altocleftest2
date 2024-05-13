@@ -2,6 +2,7 @@
 .idea/
 .vs/
 baritone/
+run/
 
 *.iml
 *.ipr
