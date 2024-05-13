@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.ClientConnectionAccessor;
 import adris.altoclef.mixins.EntityAccessor;
+import adris.altoclef.multiversion.MethodWrapper;
 import adris.altoclef.util.Dimension;
 import baritone.api.BaritoneAPI;
 import baritone.pathing.movement.CalculationContext;
@@ -113,8 +114,15 @@ public interface WorldHelper {
         return Dimension.END;
     }
 
-
-    static boolean isSolid(AltoClef mod, BlockPos pos) {
+    /**
+     * WARNING: this method checks if the block at the given position is a SOLID BLOCK
+     * things like ice, dirtPaths, soulSand... don't count into this
+     * if you just want to check if a block is solid use `BlockState.isSolid()`
+     * (which includes more variety of blocks including the mentioned ones, signs, pressure plates...)
+     *
+     * better method for blocks that can be walked on should be created instead
+     */
+    static boolean isSolidBlock(AltoClef mod, BlockPos pos) {
         return mod.getWorld().getBlockState(pos).isSolidBlock(mod.getWorld(), pos);
     }
 
@@ -130,7 +138,7 @@ public interface WorldHelper {
         Iterable<Entity> entities = mod.getWorld().getEntities();
         for (Entity entity : entities) {
             if (entity instanceof HostileEntity) {
-                if (!mod.getBlockTracker().unreachable(pos)) {
+                if (!mod.getBlockScanner().isUnreachable(pos)) {
                     if (
                             mod.getPlayer().squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) > 4 &&
                                     pos.isWithinDistance(entity.getPos(), 30)) {
@@ -199,13 +207,13 @@ public interface WorldHelper {
     static int getGroundHeight(AltoClef mod, int x, int z) {
         for (int y = WORLD_CEILING_Y; y >= WORLD_FLOOR_Y; --y) {
             BlockPos check = new BlockPos(x, y, z);
-            if (isSolid(mod, check)) return y;
+            if (isSolidBlock(mod, check)) return y;
         }
         return -1;
     }
 
     static BlockPos getADesertTemple(AltoClef mod) {
-        List<BlockPos> stonePressurePlates = mod.getBlockTracker().getKnownLocations(Blocks.STONE_PRESSURE_PLATE);
+        List<BlockPos> stonePressurePlates = mod.getBlockScanner().getKnownLocations(Blocks.STONE_PRESSURE_PLATE);
         if (!stonePressurePlates.isEmpty()) {
             for (BlockPos pos : stonePressurePlates) {
                 if (mod.getWorld().getBlockState(pos).getBlock() == Blocks.STONE_PRESSURE_PLATE && // Duct tape
@@ -269,7 +277,7 @@ public interface WorldHelper {
             if (MovementHelper.isWater(s))
                 return true;
             // We hit ground, depends
-            if (WorldHelper.isSolid(mod, check)) {
+            if (WorldHelper.isSolidBlock(mod, check)) {
                 return tooFarToFall;
             }
         }
@@ -293,7 +301,7 @@ public interface WorldHelper {
                 }
             }
         }
-        return !mod.getBlockTracker().unreachable(pos);
+        return !mod.getBlockScanner().isUnreachable(pos);
     }
 
     static boolean isOcean(RegistryEntry<Biome> b) {
@@ -309,7 +317,7 @@ public interface WorldHelper {
     }
 
     static boolean isAir(AltoClef mod, BlockPos pos) {
-        return mod.getBlockTracker().blockIsValid(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
+        return mod.getBlockScanner().isBlockAtPosition(pos, Blocks.AIR, Blocks.CAVE_AIR, Blocks.VOID_AIR);
         //return state.isAir() || isAir(state.getBlock());
     }
 
@@ -394,7 +402,7 @@ public interface WorldHelper {
         if (state.getBlock() instanceof SpawnerBlock) {
             BlockEntity be = mod.getWorld().getBlockEntity(pos);
             if (be instanceof MobSpawnerBlockEntity blockEntity) {
-                return blockEntity.getLogic().getRenderedEntity(mod.getWorld(), pos);
+                return MethodWrapper.getRenderedEntity(blockEntity.getLogic(), mod.getWorld(),pos);
             }
         }
         return null;
@@ -428,19 +436,38 @@ public interface WorldHelper {
     }
 
     static boolean canSleep() {
-        int time = 0;
         ClientWorld world = MinecraftClient.getInstance().world;
         if (world != null) {
             // You can sleep during thunderstorms
             if (world.isThundering() && world.isRaining())
                 return true;
-            time = (int) (world.getTimeOfDay() % 24000);
+
+            int time = getTimeOfDay();
+            // https://minecraft.fandom.com/wiki/Daylight_cycle
+            return 12542 <= time && time <= 23992;
         }
-        // https://minecraft.fandom.com/wiki/Daylight_cycle
-        return 12542 <= time && time <= 23992;
+
+        return false;
     }
 
-    public static boolean isSurroundedByHostiles(AltoClef mod) {
+    static int getTimeOfDay() {
+        ClientWorld world = MinecraftClient.getInstance().world;
+        if (world != null) {
+            // You can sleep during thunderstorms
+            return (int) (world.getTimeOfDay() % 24000);
+        }
+        return 0;
+    }
+
+    static boolean isVulnerable(AltoClef mod) {
+        int armor = mod.getPlayer().getArmor();
+        float health = mod.getPlayer().getHealth();
+        if (armor <= 15 && health < 3) return true;
+        if (armor < 10 && health < 10) return true;
+        return armor < 5 && health < 18;
+    }
+
+    static boolean isSurroundedByHostiles(AltoClef mod) {
         List<Entity> hostiles = mod.getEntityTracker().getHostiles();
         return isSurrounded(mod, hostiles);
     }
@@ -463,10 +490,7 @@ public interface WorldHelper {
             double angle = calculateAngle(playerPos, entityPos);
 
             // Check if the angle is unique
-            boolean isUnique = true;
-            if (uniqueSides.contains(getHorizontalDirectionFromYaw(angle))) {
-                isUnique = false;
-            }
+            boolean isUnique = !uniqueSides.contains(getHorizontalDirectionFromYaw(angle));
 
             // If the angle is unique, increment the uniqueSides count
             if (isUnique) {
@@ -506,4 +530,6 @@ public interface WorldHelper {
             return Direction.SOUTH;
         }
     }
+
+
 }

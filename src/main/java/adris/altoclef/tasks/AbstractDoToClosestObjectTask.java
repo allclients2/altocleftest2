@@ -5,7 +5,6 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.time.TimerGame;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.HashMap;
@@ -18,10 +17,10 @@ import java.util.Optional;
  */
 public abstract class AbstractDoToClosestObjectTask<T> extends Task {
 
-    private final HashMap<T, CachedHeuristic> _heuristicMap = new HashMap<>();
-    private T _currentlyPursuing = null;
-    private boolean _wasWandering;
-    private Task _goalTask = null;
+    private final HashMap<T, CachedHeuristic> heuristicMap = new HashMap<>();
+    private T currentlyPursuing = null;
+    private boolean wasWandering;
+    private Task goalTask = null;
     private TimerGame _lastpursuitinit = new TimerGame(1.0);
 
     protected abstract Vec3d getPos(AltoClef mod, T obj);
@@ -40,13 +39,13 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
     }
 
     public void resetSearch() {
-        _currentlyPursuing = null;
-        _heuristicMap.clear();
-        _goalTask = null;
+        currentlyPursuing = null;
+        heuristicMap.clear();
+        goalTask = null;
     }
 
     public boolean wasWandering() {
-        return _wasWandering;
+        return wasWandering;
     }
 
     private double getCurrentCalculatedHeuristic(AltoClef mod) {
@@ -54,55 +53,51 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
         return ticksRemainingOp.orElse(Double.POSITIVE_INFINITY);
     }
 
-    private boolean isMovingToClosestPos(AltoClef mod) {
-        return _goalTask != null;// && _goalTask.isActive() && !_goalTask.isFinished(mod);
-    }
-
     @Override
     protected Task onTick(AltoClef mod) {
 
-        _wasWandering = false;
+        wasWandering = false;
 
         // Reset our pursuit if our pursuing object no longer is pursuable.
-        if (_currentlyPursuing != null && !isValid(mod, _currentlyPursuing)) {
+        if (currentlyPursuing != null && !isValid(mod, currentlyPursuing)) {
             // This is probably a good idea, no?
-            _heuristicMap.remove(_currentlyPursuing);
-            _currentlyPursuing = null;
+            heuristicMap.remove(currentlyPursuing);
+            currentlyPursuing = null;
         }
 
         // Get closest object
         Optional<T> checkNewClosest = getClosestTo(mod, getOriginPos(mod));
 
         // Receive closest object and position
-        if (checkNewClosest.isPresent() && !checkNewClosest.get().equals(_currentlyPursuing)) {
+        if (checkNewClosest.isPresent() && !checkNewClosest.get().equals(currentlyPursuing)) {
             T newClosest = checkNewClosest.get();
             // Different closest object
-            if (_currentlyPursuing == null) {
+            if (currentlyPursuing == null) {
                 // We don't have a closest object
-                _currentlyPursuing = newClosest;
+                currentlyPursuing = newClosest;
             } else {
-                if (isMovingToClosestPos(mod) && _lastpursuitinit.elapsed()) { //patch
+                if (goalTask != null /*isMovingToClosestPos(mod)*/) {
                     setDebugState("Moving towards closest...");
                     double currentHeuristic = getCurrentCalculatedHeuristic(mod);
-                    double closestDistanceSqr = getPos(mod, _currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
+                    double closestDistanceSqr = getPos(mod, currentlyPursuing).squaredDistanceTo(mod.getPlayer().getPos());
                     int lastTick = WorldHelper.getTicks();
 
-                    if (!_heuristicMap.containsKey(_currentlyPursuing)) {
-                        _heuristicMap.put(_currentlyPursuing, new CachedHeuristic());
+                    if (!heuristicMap.containsKey(currentlyPursuing)) {
+                        heuristicMap.put(currentlyPursuing, new CachedHeuristic());
                     }
-                    CachedHeuristic h = _heuristicMap.get(_currentlyPursuing);
+                    CachedHeuristic h = heuristicMap.get(currentlyPursuing);
                     h.updateHeuristic(currentHeuristic);
                     h.updateDistance(closestDistanceSqr);
                     h.setTickAttempted(lastTick);
-                    if (_heuristicMap.containsKey(newClosest)) {
+                    if (heuristicMap.containsKey(newClosest)) {
                         // Our new object has a past potential heuristic calculated, if it's better try it out.
-                        CachedHeuristic maybeReAttempt = _heuristicMap.get(newClosest);
+                        CachedHeuristic maybeReAttempt = heuristicMap.get(newClosest);
                         double maybeClosestDistance = getPos(mod, newClosest).squaredDistanceTo(mod.getPlayer().getPos());
                         // Get considerably closer (divide distance by 2)
                         if (maybeReAttempt.getHeuristicValue() < h.getHeuristicValue() || maybeClosestDistance < maybeReAttempt.getClosestDistanceSqr() / 4) {
                             setDebugState("Retrying old heuristic!");
                             // The currently closest previously calculated heuristic is better, move towards it!
-                            _currentlyPursuing = newClosest;
+                            currentlyPursuing = newClosest;
                             // In theory, this next line shouldn't need to be run,
                             // but it's CRITICAL to making this work for some reason
                             maybeReAttempt.updateDistance(maybeClosestDistance);
@@ -110,7 +105,7 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
                     } else {
                         setDebugState("Trying out NEW pursuit");
                         // Our new object does not have a heuristic, TRY IT OUT!
-                        _currentlyPursuing = newClosest;
+                        currentlyPursuing = newClosest;
                     }
                     _lastpursuitinit.reset();
                 } else {
@@ -120,17 +115,17 @@ public abstract class AbstractDoToClosestObjectTask<T> extends Task {
             }
         }
 
-        if (_currentlyPursuing != null) {
-            _goalTask = getGoalTask(_currentlyPursuing);
-            return _goalTask;
+        if (currentlyPursuing != null) {
+            goalTask = getGoalTask(currentlyPursuing);
+            return goalTask;
         } else {
-            _goalTask = null;
+            goalTask = null;
         }
 
-        //noinspection ConstantConditions
-        if (checkNewClosest.isEmpty() && _currentlyPursuing == null && MinecraftClient.getInstance().getCurrentFps() > 5) { //More temporary patches
+
+        if (checkNewClosest.isEmpty()) {
             setDebugState("Waiting for calculations I think (wandering)");
-            _wasWandering = true;
+            wasWandering = true;
             return getWanderTask(mod);
         }
 

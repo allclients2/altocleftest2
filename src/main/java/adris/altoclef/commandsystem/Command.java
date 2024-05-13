@@ -6,32 +6,32 @@ import adris.altoclef.Debug;
 public abstract class Command {
 
     private final ArgParser parser;
-    private final String _name;
-    private final String _description;
-    private AltoClef _mod;
-    private Runnable _onFinish = null;
+    private final String name;
+    private final String description;
+    private AltoClef mod;
+    private Runnable onFinish = null;
 
     public Command(String name, String description, ArgBase... args) {
-        _name = name;
-        _description = description;
+        this.name = name;
+        this.description = description;
         parser = new ArgParser(args);
     }
 
     public void run(AltoClef mod, String line, Runnable onFinish) throws CommandException {
-        _onFinish = onFinish;
-        _mod = mod;
+        this.onFinish = onFinish;
+        this.mod = mod;
         parser.loadArgs(line, true);
         call(mod, parser);
     }
 
     protected void finish() {
-        if (_onFinish != null)
+        if (onFinish != null)
             //noinspection unchecked
-            _onFinish.run();
+            onFinish.run();
     }
 
     public String getHelpRepresentation() {
-        StringBuilder sb = new StringBuilder(_name);
+        StringBuilder sb = new StringBuilder(name);
         for (ArgBase arg : parser.getArgs()) {
             sb.append(" ");
             sb.append(arg.getHelpRepresentation());
@@ -50,10 +50,10 @@ public abstract class Command {
     protected abstract void call(AltoClef mod, ArgParser parser) throws CommandException;
 
     public String getName() {
-        return _name;
+        return name;
     }
 
     public String getDescription() {
-        return _description;
+        return description;
     }
 }

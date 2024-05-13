@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ArgParser {
-    private final ArgBase[] _args;
+    private final ArgBase[] args;
     int argCounter;
     int unitCounter;
     String[] argUnits;
 
     public ArgParser(ArgBase... args) {
-        this._args = args;
+        this.args = args;
         argCounter = 0;
         unitCounter = 0;
     }
@@ -74,18 +74,18 @@ public class ArgParser {
     // Get the next argument.
     public <T> T get(Class<T> type) throws CommandException {
 
-        if (argCounter >= _args.length) {
+        if (argCounter >= args.length) {
             throw new CommandException("You tried grabbing more arguments than you had... Bad move.");
         }
-        ArgBase arg = _args[argCounter];
-        if (!arg.isArbitrarilyLong() && argUnits.length > _args.length) {
-            throw new CommandException(String.format("Too many arguments provided %d. The maximum is %d.", argUnits.length, _args.length));
+        ArgBase arg = args[argCounter];
+        if (!arg.isArbitrarilyLong() && argUnits.length > args.length) {
+            throw new CommandException(String.format("Too many arguments provided %d. The maximum is %d.", argUnits.length, args.length));
         }
 
         // Current values from arrays
         ++argCounter;
         if (arg.isArray()) {
-            argCounter = _args.length;
+            argCounter = args.length;
         }
 
         // If this can be default and we don't have enough (unit) args provided to use this arg, use the default value instead of reading from our arg list.
@@ -112,7 +112,7 @@ public class ArgParser {
     }
 
     public ArgBase[] getArgs() {
-        return _args;
+        return args;
     }
 
     // Dear god kill this system already

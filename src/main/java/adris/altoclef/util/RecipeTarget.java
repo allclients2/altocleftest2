@@ -6,33 +6,35 @@ import java.util.Objects;
 
 public class RecipeTarget {
 
-    private final CraftingRecipe _recipe;
-    private final Item _item;
-    private final int _targetCount;
+    private final CraftingRecipe recipe;
+    private final Item item;
+    private final int targetCount;
 
     public RecipeTarget(Item item, int targetCount, CraftingRecipe recipe) {
-        _item = item;
-        _targetCount = targetCount;
-        _recipe = recipe;
+        this.item = item;
+        this.targetCount = targetCount;
+        this.recipe = recipe;
     }
 
     public CraftingRecipe getRecipe() {
-        return _recipe;
+        return recipe;
     }
 
     public Item getOutputItem() {
-        return _item;
+        return item;
     }
 
     public int getTargetCount() {
-        return _targetCount;
+        return targetCount;
     }
 
     @Override
     public String toString() {
-        return "RecipeTarget{" +
-                "_recipe=" + _recipe +
-                ", _item=" + _item + " x " + _targetCount +
+        if (targetCount == 1)
+            return "Recipe{"+item+"}";
+
+        return "Recipe{" +
+                item + " x " + targetCount +
                 '}';
     }
 
@@ -41,11 +43,11 @@ public class RecipeTarget {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         RecipeTarget that = (RecipeTarget) o;
-        return _targetCount == that._targetCount && _recipe.equals(that._recipe) && Objects.equals(_item, that._item);
+        return targetCount == that.targetCount && recipe.equals(that.recipe) && Objects.equals(item, that.item);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(_recipe, _item);
+        return Objects.hash(recipe, item);
     }
 }

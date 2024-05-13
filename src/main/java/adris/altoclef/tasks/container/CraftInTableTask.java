@@ -35,20 +35,20 @@ import java.util.*;
  */
 public class CraftInTableTask extends ResourceTask {
 
-    private final RecipeTarget[] _targets;
+    private final RecipeTarget[] targets;
 
-    private final DoCraftInTableTask _craftTask;
+    private final DoCraftInTableTask craftTask;
 
     public CraftInTableTask(RecipeTarget[] targets) {
         super(extractItemTargets(targets));
-        _targets = targets;
-        _craftTask = new DoCraftInTableTask(_targets);
+        this.targets = targets;
+        craftTask = new DoCraftInTableTask(this.targets);
     }
 
     public CraftInTableTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
         super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
-        _targets = new RecipeTarget[]{target};
-        _craftTask = new DoCraftInTableTask(_targets, collect, ignoreUncataloguedSlots);
+        targets = new RecipeTarget[]{target};
+        craftTask = new DoCraftInTableTask(targets, collect, ignoreUncataloguedSlots);
     }
 
     public CraftInTableTask(RecipeTarget target) {
@@ -98,7 +98,7 @@ public class CraftInTableTask extends ResourceTask {
      */
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        return _craftTask;
+        return craftTask;
     }
 
     /**
@@ -148,7 +148,7 @@ public class CraftInTableTask extends ResourceTask {
         // Check if the other task is an instance of CraftInTableTask
         if (other instanceof CraftInTableTask task) {
             // Compare the craftTask of the two tasks
-            return _craftTask.isEqual(task._craftTask);
+            return craftTask.isEqual(task.craftTask);
         }
         // The other task is not a CraftInTableTask, return false
         return false;
@@ -163,7 +163,7 @@ public class CraftInTableTask extends ResourceTask {
      */
     @Override
     protected String toDebugStringName() {
-        return (_craftTask != null) ? _craftTask.toDebugString() : null;
+        return (craftTask != null) ? craftTask.toDebugString() : null;
     }
 
     /**
@@ -172,7 +172,7 @@ public class CraftInTableTask extends ResourceTask {
      * @return The recipe targets.
      */
     public RecipeTarget[] getRecipeTargets() {
-        return Arrays.copyOf(_targets, _targets.length);
+        return Arrays.copyOf(targets, targets.length);
     }
 }
 
@@ -241,6 +241,9 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
         // Reset the collect task
         _collectTask.reset();
+
+        // Add protected items to the behaviour
+        mod.getBehaviour().addProtectedItems(getMaterialsArray());
     }
 
     /**
@@ -295,11 +298,8 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
      */
     @Override
     protected Task onTick(AltoClef mod) {
-        // Add protected items to the behaviour
-        mod.getBehaviour().addProtectedItems(getMaterialsArray());
-
         // Avoid breaking crafting tables
-        List<BlockPos> craftingTablePositions = mod.getBlockTracker().getKnownLocations(Blocks.CRAFTING_TABLE);
+        List<BlockPos> craftingTablePositions = mod.getBlockScanner().getKnownLocations(Blocks.CRAFTING_TABLE);
         for (BlockPos craftingTablePos : craftingTablePositions) {
             mod.getBehaviour().avoidBlockBreaking(craftingTablePos);
         }
@@ -436,7 +436,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
     @Override
     protected double getCostToMakeNew(AltoClef mod) {
         // Get the nearest crafting table.
-        Optional<BlockPos> closestCraftingTable = mod.getBlockTracker().getNearestTracking(Blocks.CRAFTING_TABLE);
+        Optional<BlockPos> closestCraftingTable = mod.getBlockScanner().getNearestBlock(Blocks.CRAFTING_TABLE);
 
         // If a crafting table is within 40 blocks of the player, return positive infinity.
         if (closestCraftingTable.isPresent() && closestCraftingTable.get().isWithinDistance(mod.getPlayer().getPos(), 40)) {

@@ -18,14 +18,14 @@ import java.util.function.Function;
 
 public class MoveItemToSlotTask extends Task {
 
-    private final ItemTarget _toMove;
-    private final Slot _destination;
-    private final Function<AltoClef, List<Slot>> _getMovableSlots;
+    private final ItemTarget toMove;
+    private final Slot destination;
+    private final Function<AltoClef, List<Slot>> getMovableSlots;
 
     public MoveItemToSlotTask(ItemTarget toMove, Slot destination, Function<AltoClef, List<Slot>> getMovableSlots) {
-        _toMove = toMove;
-        _destination = destination;
-        _getMovableSlots = getMovableSlots;
+        this.toMove = toMove;
+        this.destination = destination;
+        this.getMovableSlots = getMovableSlots;
     }
 
     @Override
@@ -45,10 +45,10 @@ public class MoveItemToSlotTask extends Task {
             // - If held slot has > items than target count
             //      Right click on destination slot (one turn)
             ItemStack currentHeld = StorageHelper.getItemStackInCursorSlot();
-            ItemStack atTarget = StorageHelper.getItemStackInSlot(_destination);
+            ItemStack atTarget = StorageHelper.getItemStackInSlot(destination);
 
             // Items that CAN be moved to that slot.
-            Item[] validItems = _toMove.getMatches();//Arrays.stream(_toMove.getMatches()).filter(item -> mod.getItemStorage().getItemCount(item) >= _toMove.getTargetCount()).toArray(Item[]::new);
+            Item[] validItems = toMove.getMatches();//Arrays.stream(_toMove.getMatches()).filter(item -> mod.getItemStorage().getItemCount(item) >= _toMove.getTargetCount()).toArray(Item[]::new);
 
             // We need to deal with our cursor stack OR put an item there (to move).
             boolean wrongItemHeld = !Arrays.asList(validItems).contains(currentHeld.getItem());
@@ -66,7 +66,8 @@ public class MoveItemToSlotTask extends Task {
                     }
                 }
                 if (toPlace.isEmpty()) {
-                    Debug.logError("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    Debug.logWarning("Called MoveItemToSlotTask when item/not enough item is available! valid items: " + StlHelper.toString(validItems, Item::getTranslationKey));
+                    this.stop(mod);
                     return null;
                 }
                 mod.getSlotHandler().clickSlot(toPlace.get(), 0, SlotActionType.PICKUP);
@@ -74,12 +75,12 @@ public class MoveItemToSlotTask extends Task {
             }
 
             int currentlyPlaced = Arrays.asList(validItems).contains(atTarget.getItem()) ? atTarget.getCount() : 0;
-            if (currentHeld.getCount() + currentlyPlaced <= _toMove.getTargetCount()) {
+            if (currentHeld.getCount() + currentlyPlaced <= toMove.getTargetCount()) {
                 // Just place all of 'em
-                mod.getSlotHandler().clickSlot(_destination, 0, SlotActionType.PICKUP);
+                mod.getSlotHandler().clickSlot(destination, 0, SlotActionType.PICKUP);
             } else {
                 // Place one at a time.
-                mod.getSlotHandler().clickSlot(_destination, 1, SlotActionType.PICKUP);
+                mod.getSlotHandler().clickSlot(destination, 1, SlotActionType.PICKUP);
             }
             return null;
         }
@@ -93,30 +94,30 @@ public class MoveItemToSlotTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        ItemStack atDestination = StorageHelper.getItemStackInSlot(_destination);
-        return (_toMove.matches(atDestination.getItem()) && atDestination.getCount() >= _toMove.getTargetCount());
+        ItemStack atDestination = StorageHelper.getItemStackInSlot(destination);
+        return (toMove.matches(atDestination.getItem()) && atDestination.getCount() >= toMove.getTargetCount());
     }
 
     @Override
     protected boolean isEqual(Task obj) {
         if (obj instanceof MoveItemToSlotTask task) {
-            return task._toMove.equals(_toMove) && task._destination.equals(_destination);
+            return task.toMove.equals(toMove) && task.destination.equals(destination);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Moving " + _toMove + " to " + _destination;
+        return "Moving " + toMove + " to " + destination;
     }
 
     private Optional<Slot> getBestSlotToPickUp(AltoClef mod, Item[] validItems) {
         Slot bestMatch = null;
-        if (!_getMovableSlots.apply(mod).isEmpty()) {
-            for (Slot slot : _getMovableSlots.apply(mod)) {
+        if (!getMovableSlots.apply(mod).isEmpty()) {
+            for (Slot slot : getMovableSlots.apply(mod)) {
                 if (Slot.isCursor(slot))
                     continue;
-                if (!_toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
+                if (!toMove.matches(StorageHelper.getItemStackInSlot(slot).getItem()))
                     continue;
                 if (bestMatch == null) {
                     bestMatch = slot;
@@ -124,8 +125,8 @@ public class MoveItemToSlotTask extends Task {
                 }
                 int countBest = StorageHelper.getItemStackInSlot(bestMatch).getCount();
                 int countCheck = StorageHelper.getItemStackInSlot(slot).getCount();
-                if ((countBest < _toMove.getTargetCount() && countCheck > countBest)
-                        || (countBest >= _toMove.getTargetCount() && countCheck >= _toMove.getTargetCount() && countCheck > countBest)) {
+                if ((countBest < toMove.getTargetCount() && countCheck > countBest)
+                        || (countBest >= toMove.getTargetCount() && countCheck >= toMove.getTargetCount() && countCheck > countBest)) {
                     // If we don't have enough, go for largest
                     // If we have too much, go for smallest over the limit.
                     bestMatch = slot;

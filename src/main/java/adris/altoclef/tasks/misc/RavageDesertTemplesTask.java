@@ -8,7 +8,6 @@ import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -36,9 +35,9 @@ public class RavageDesertTemplesTask extends Task {
             Items.DIAMOND_HORSE_ARMOR,
             Items.ENCHANTED_GOLDEN_APPLE
     };
-    private BlockPos _currentTemple;
-    private Task _lootTask;
-    private Task _pickaxeTask;
+    private BlockPos currentTemple;
+    private Task lootTask;
+    private Task pickaxeTask;
 
     public RavageDesertTemplesTask() {
 
@@ -47,36 +46,34 @@ public class RavageDesertTemplesTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.STONE_PRESSURE_PLATE);
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_pickaxeTask != null && !_pickaxeTask.isFinished(mod)) {
+        if (pickaxeTask != null && !pickaxeTask.isFinished(mod)) {
             setDebugState("Need to get pickaxes first");
-            return _pickaxeTask;
+            return pickaxeTask;
         }
-        if (_lootTask != null && !_lootTask.isFinished(mod)) {
+        if (lootTask != null && !lootTask.isFinished(mod)) {
             setDebugState("Looting found temple");
-            return _lootTask;
+            return lootTask;
         }
         if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
             setDebugState("Need to get pickaxes first");
-            _pickaxeTask = new CataloguedResourceTask(new ItemTarget(Items.WOODEN_PICKAXE, 2));
-            return _pickaxeTask;
+            pickaxeTask = new CataloguedResourceTask(new ItemTarget(Items.WOODEN_PICKAXE, 2));
+            return pickaxeTask;
         }
-        _currentTemple = WorldHelper.getADesertTemple(mod);
-        if (_currentTemple != null) {
-            _lootTask = new LootDesertTempleTask(_currentTemple, List.of(LOOT));
+        currentTemple = WorldHelper.getADesertTemple(mod);
+        if (currentTemple != null) {
+            lootTask = new LootDesertTempleTask(currentTemple, List.of(LOOT));
             setDebugState("Looting found temple");
-            return _lootTask;
+            return lootTask;
         }
         return new SearchWithinBiomeTask(BiomeKeys.DESERT);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task task) {
-        mod.getBlockTracker().stopTracking(Blocks.STONE_PRESSURE_PLATE);
         mod.getBehaviour().pop();
     }
 

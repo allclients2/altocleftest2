@@ -23,10 +23,10 @@ import java.util.Optional;
 
 public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCraftingGrid {
 
-    private final RecipeTarget _target;
+    private final RecipeTarget target;
 
     public CraftGenericWithRecipeBooksTask(RecipeTarget target) {
-        _target = target;
+        this.target = target;
     }
 
     /**
@@ -95,9 +95,9 @@ public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCr
         ItemStack output = StorageHelper.getItemStackInSlot(outputSlot);
 
         // Check if the output item matches the target item and the target count has not been reached
-        if (_target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(_target.getOutputItem()) < _target.getTargetCount()) {
+        if (target.getOutputItem() == output.getItem() && mod.getItemStorage().getItemCount(target.getOutputItem()) < target.getTargetCount()) {
             // Return a task to receive the crafting output slot
-            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
+            return new ReceiveCraftingOutputSlotTask(outputSlot, target.getTargetCount());
         }
 
         // Check if the cursor stack is not empty
@@ -135,7 +135,7 @@ public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCr
             }
         }
 
-        Optional<RecipeEntry<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(_target.getRecipe(), _target.getOutputItem());
+        Optional<RecipeEntry<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(target.getRecipe(), target.getOutputItem());
         if (recipeToSend.isPresent()) {
             if (mod.getSlotHandler().canDoSlotAction()) {
                 ClientPlayerEntity player = MinecraftClient.getInstance().player;
@@ -173,7 +173,7 @@ public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCr
             CraftGenericWithRecipeBooksTask task = (CraftGenericWithRecipeBooksTask) other;
 
             // Check if the target of the other task is equal to the target of this task
-            boolean isEqual = task._target.equals(_target);
+            boolean isEqual = task.target.equals(target);
 
             // Log a message if the targets are not equal
             if (!isEqual) {
@@ -199,6 +199,6 @@ public class CraftGenericWithRecipeBooksTask extends Task implements ITaskUsesCr
     @Override
     protected String toDebugString() {
         // Return the debug string.
-        return getClass().getSimpleName() + " (w/ RECIPE): " + _target;
+        return getClass().getSimpleName() + " (w/ RECIPE): " + target;
     }
 }

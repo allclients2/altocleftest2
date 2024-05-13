@@ -7,69 +7,82 @@ import java.util.ArrayList;
 
 public class TaskRunner {
 
-    private final ArrayList<TaskChain> _chains = new ArrayList<>();
-    private final AltoClef _mod;
-    private boolean _active;
+    private final ArrayList<TaskChain> chains = new ArrayList<>();
+    private final AltoClef mod;
+    private boolean active;
 
-    private TaskChain _cachedCurrentTaskChain = null;
+    private TaskChain cachedCurrentTaskChain = null;
+
+    public String statusReport = " (no chain running) ";
 
     public TaskRunner(AltoClef mod) {
-        _mod = mod;
-        _active = false;
+        this.mod = mod;
+        active = false;
     }
 
     public void tick() {
-        if (!_active || !AltoClef.inGame()) return;
+        if (!active || !AltoClef.inGame()) {
+            statusReport = " (no chain running) ";
+            return;
+        }
+
         // Get highest priority chain and run
         TaskChain maxChain = null;
         float maxPriority = Float.NEGATIVE_INFINITY;
-        for (TaskChain chain : _chains) {
+        for (TaskChain chain : chains) {
             if (!chain.isActive()) continue;
-            float priority = chain.getPriority(_mod);
+            float priority = chain.getPriority(mod);
             if (priority > maxPriority) {
                 maxPriority = priority;
                 maxChain = chain;
             }
         }
-        if (_cachedCurrentTaskChain != null && maxChain != _cachedCurrentTaskChain) {
-            _cachedCurrentTaskChain.onInterrupt(_mod, maxChain);
+        if (cachedCurrentTaskChain != null && maxChain != cachedCurrentTaskChain) {
+            cachedCurrentTaskChain.onInterrupt(mod, maxChain);
         }
-        _cachedCurrentTaskChain = maxChain;
+        cachedCurrentTaskChain = maxChain;
         if (maxChain != null) {
-            maxChain.tick(_mod);
+            statusReport = "Chain: "+maxChain.getName() + ", priority: "+maxPriority;
+            maxChain.tick(mod);
+        } else {
+            statusReport = " (no chain running) ";
         }
     }
 
     public void addTaskChain(TaskChain chain) {
-        _chains.add(chain);
+        chains.add(chain);
     }
 
     public void enable() {
-        if (!_active) {
-            _mod.getBehaviour().push();
-            _mod.getBehaviour().setPauseOnLostFocus(false);
+        if (!active) {
+            mod.getBehaviour().push();
+            mod.getBehaviour().setPauseOnLostFocus(false);
         }
-        _active = true;
+        active = true;
     }
 
     public void disable() {
-        if (_active) {
-            _mod.getBehaviour().pop();
+        if (active) {
+            mod.getBehaviour().pop();
         }
-        for (TaskChain chain : _chains) {
-            chain.stop(_mod);
+        for (TaskChain chain : chains) {
+            chain.stop(mod);
         }
-        _active = false;
+        active = false;
 
         Debug.logMessage("Stopped");
     }
 
+    public boolean isActive() {
+        return active;
+    }
+
     public TaskChain getCurrentTaskChain() {
-        return _cachedCurrentTaskChain;
+        return cachedCurrentTaskChain;
     }
 
     // Kinda jank ngl
     public AltoClef getMod() {
-        return _mod;
+        return mod;
     }
 }

@@ -59,7 +59,7 @@ public class SmithingSquasher extends TypeSquasher<UpgradeInSmithingTableTask> {
 
         @Override
         protected Task onResourceTick(AltoClef mod) {
-            List<ItemTarget> resultingTargets = Arrays.asList(_itemTargets);
+            List<ItemTarget> resultingTargets = Arrays.asList(itemTargets);
 
             // Subtract required counts if we're in a smithing table, so putting items in the table doesn't remove them.
             boolean inSmithingTable = (mod.getPlayer().currentScreenHandler instanceof SmithingScreenHandler);

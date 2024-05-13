@@ -53,7 +53,7 @@ public class CollectWoolTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(_wools));
+
     }
 
     @Override
@@ -65,7 +65,7 @@ public class CollectWoolTask extends ResourceTask {
 
         // If we find a wool block, break it.
         Block[] woolBlocks = ItemHelper.itemsToBlocks(_wools);
-        if (mod.getBlockTracker().anyFound(woolBlocks)) {
+        if (mod.getBlockScanner().anyFound(woolBlocks)) {
             return new MineAndCollectTask(new ItemTarget(_wools), woolBlocks, MiningRequirement.HAND);
         }
 
@@ -94,7 +94,7 @@ public class CollectWoolTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(_wools));
+
     }
 
     @Override

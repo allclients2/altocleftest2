@@ -15,11 +15,11 @@ import java.util.Optional;
 
 public class CollectMilkTask extends ResourceTask {
 
-    private final int _count;
+    private final int count;
 
     public CollectMilkTask(int targetCount) {
         super(Items.MILK_BUCKET, targetCount);
-        _count = targetCount;
+        count = targetCount;
     }
 
     @Override
@@ -56,7 +56,7 @@ public class CollectMilkTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " milk buckets.";
+        return "Collecting " + count + " milk buckets.";
     }
 
     static class MilkCowTask extends AbstractDoToEntityTask {

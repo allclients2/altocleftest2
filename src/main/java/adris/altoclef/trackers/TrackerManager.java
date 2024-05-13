@@ -35,7 +35,7 @@ public class TrackerManager {
     }
 
     public void addTracker(Tracker tracker) {
-        tracker._mod = _mod;
+        tracker.mod = _mod;
         _trackers.add(tracker);
     }
 }

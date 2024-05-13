@@ -4,22 +4,22 @@ import java.util.function.Consumer;
 
 // A wrapper object for event subscription
 public class Subscription<T> {
-    private final Consumer<T> _callback;
-    private boolean _shouldDelete;
+    private final Consumer<T> callback;
+    private boolean shouldDelete;
 
     public Subscription(Consumer<T> callback) {
-        _callback = callback;
+        this.callback = callback;
     }
 
     public void accept(T event) {
-        _callback.accept(event);
+        callback.accept(event);
     }
 
     public void delete() {
-        _shouldDelete = true;
+        shouldDelete = true;
     }
 
     public boolean shouldDelete() {
-        return _shouldDelete;
+        return shouldDelete;
     }
 }

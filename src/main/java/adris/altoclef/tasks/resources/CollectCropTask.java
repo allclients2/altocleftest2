@@ -67,7 +67,7 @@ public class CollectCropTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(_cropBlock);
+
     }
 
     @Override
@@ -122,7 +122,7 @@ public class CollectCropTask extends ResourceTask {
         };
 
         // Dimension
-        if (isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(validCrop, _cropBlock)) {
+        if (isInWrongDimension(mod) && !mod.getBlockScanner().anyFound(validCrop, _cropBlock)) {
             return getToCorrectDimensionTask(mod);
         }
 
@@ -140,7 +140,7 @@ public class CollectCropTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_cropBlock);
+
     }
 
     @Override

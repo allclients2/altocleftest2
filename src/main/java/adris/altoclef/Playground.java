@@ -1,9 +1,7 @@
 package adris.altoclef;
 
-import adris.altoclef.butler.WhisperChecker;
 import adris.altoclef.tasks.CraftGenericManuallyTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
-import adris.altoclef.tasks.construction.PlaceSignTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructIronGolemTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
@@ -24,10 +22,6 @@ import adris.altoclef.tasks.resources.TradeWithPiglinsTask;
 import adris.altoclef.tasks.speedrun.KillEnderDragonTask;
 import adris.altoclef.tasks.speedrun.KillEnderDragonWithBedsTask;
 import adris.altoclef.tasks.speedrun.WaitForDragonAndPearlTask;
-import adris.altoclef.tasks.stupid.BeeMovieTask;
-import adris.altoclef.tasks.stupid.ReplaceBlocksTask;
-import adris.altoclef.tasks.stupid.SCP173Task;
-import adris.altoclef.tasks.stupid.TerminatorTask;
 import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
@@ -128,12 +122,6 @@ public class Playground {
                 // None specified
                 Debug.logWarning("Please specify a test (ex. stacked, bed, terminate)");
                 break;
-            case "sign":
-                mod.runUserTask(new PlaceSignTask("Hello there!"));
-                break;
-            case "sign2":
-                mod.runUserTask(new PlaceSignTask(new BlockPos(10, 3, 10), "Hello there!"));
-                break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3), true));
                 break;
@@ -155,15 +143,6 @@ public class Playground {
                 //mod.runUserTask(new PlaceStructureBlockTask(new BlockPos(472, 24, -324)));
                 break;
             }
-            case "deadmeme":
-                File file = new File("test.txt");
-                try {
-                    FileReader reader = new FileReader(file);
-                    mod.runUserTask(new BeeMovieTask("bruh", mod.getPlayer().getBlockPos(), reader));
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
             case "stacked":
                 // It should only need:
                 // 24 (armor) + 3*3 (pick) + 2 = 35 diamonds
@@ -190,9 +169,6 @@ public class Playground {
                 break;
             case "temples":
                 mod.runUserTask(new RavageDesertTemplesTask());
-                break;
-            case "outer":
-                mod.runUserTask(new GetToOuterEndIslandsTask());
                 break;
             case "smelt":
                 ItemTarget target = new ItemTarget("iron_ingot", 4);
@@ -298,17 +274,6 @@ public class Playground {
             case "stronghold":
                 mod.runUserTask(new GoToStrongholdPortalTask(12));
                 break;
-            case "terminate":
-                mod.runUserTask(new TerminatorTask(mod.getPlayer().getBlockPos(), 900));
-                break;
-            case "replace":
-                // Creates a mini valley of crafting tables.
-                BlockPos from = mod.getPlayer().getBlockPos().add(new Vec3i(-100, -20, -100));
-                BlockPos to = mod.getPlayer().getBlockPos().add(new Vec3i(100, 255, 100));
-                Block[] toFind = new Block[]{Blocks.GRASS_BLOCK};// Blocks.COBBLESTONE};
-                ItemTarget toReplace = new ItemTarget("crafting_table");//"stone");
-                mod.runUserTask(new ReplaceBlocksTask(toReplace, from, to, toFind));
-                break;
             case "bed":
                 mod.runUserTask(new PlaceBedAndSetSpawnTask());
                 break;
@@ -323,9 +288,6 @@ public class Playground {
                 break;
             case "chest":
                 mod.runUserTask(new StoreInAnyContainerTask(true, new ItemTarget(Items.DIAMOND, 3)));
-                break;
-            case "173":
-                mod.runUserTask(new SCP173Task());
                 break;
             case "example":
                 mod.runUserTask(new ExampleTask2());
@@ -351,21 +313,6 @@ public class Playground {
                 GhastEntity ghast = ghasts.get(0);
                 mod.runUserTask(new ShootArrowSimpleProjectileTask(ghast));
                 break;
-            case "whisper": {
-                File check = new File("whisper.txt");
-                try {
-                    FileInputStream fis = new FileInputStream(check);
-                    Scanner sc = new Scanner(fis);
-                    String me = sc.nextLine(),
-                            template = sc.nextLine(),
-                            message = sc.nextLine();
-                    WhisperChecker.MessageResult result = WhisperChecker.tryParse(me, template, message);
-                    Debug.logMessage("Got message: " + result);
-                } catch (FileNotFoundException e) {
-                    e.printStackTrace();
-                }
-                break;
-            }
             default:
                 mod.logWarning("Test not found: \"" + arg + "\".");
                 break;

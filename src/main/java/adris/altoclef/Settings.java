@@ -39,7 +39,7 @@ public class Settings implements IFailableConfigFile {
     // Internal only.
     // If settings failed to load, this will be set to warn the user.
     @JsonIgnore
-    private transient boolean _failedToLoad = false;
+    private transient boolean failedToLoad = false;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     ////////** BEGIN SETTINGS w/ COMMENTS **//////////////////////////////////////////////////
@@ -72,7 +72,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If true, will show a timer.
      */
-    private boolean showTimer = false;
+    private boolean showTimer = true;
 
 
     /**
@@ -400,10 +400,7 @@ public class Settings implements IFailableConfigFile {
             Stream.of(ItemHelper.SHULKER_BOXES)
     ).toList();
 
-    /**
-     * If true, a blast furnace will be used in smelting if an item to smelt is applicable.
-     */
-    private boolean useBlastFurnace = true;
+
 
     /**
      * If true, will only accept items found in `supportedFuels` as fuel when smelting.
@@ -637,9 +634,6 @@ public class Settings implements IFailableConfigFile {
         return limitFuelsToSupportedFuels;
     }
 
-    public boolean shouldUseBlastFurnace() {
-        return useBlastFurnace;
-    }
 
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
@@ -673,11 +667,11 @@ public class Settings implements IFailableConfigFile {
 
     @Override
     public void onFailLoad() {
-        _failedToLoad = true;
+        failedToLoad = true;
     }
 
     @Override
     public boolean failedToLoad() {
-        return _failedToLoad;
+        return failedToLoad;
     }
 }

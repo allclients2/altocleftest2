@@ -8,7 +8,7 @@ import adris.altoclef.commandsystem.CommandException;
  */
 public class AltoClefCommands {
 
-    public AltoClefCommands() throws CommandException {
+    public static void init() throws CommandException {
         // List commands here
         AltoClef.getCommandExecutor().registerNewCommand(
                 new HelpCommand(),
@@ -25,6 +25,7 @@ public class AltoClefCommands {
                 new InventoryCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),
+                new SetGammaCommand(),
                 new TestCommand(),
                 new FoodCommand(),
                 new MeatCommand(),
@@ -33,7 +34,6 @@ public class AltoClefCommands {
                 new MarvionCommand(),
                 new PunkCommand(),
                 new HeroCommand(),
-                new SetGammaCommand(),
                 new ListCommand(),
                 new CoverWithSandCommand(),
                 new CoverWithBlocksCommand(),

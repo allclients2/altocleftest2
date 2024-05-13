@@ -23,7 +23,11 @@ public class BlockModifiedByPlayerMixin {
             method = "onBreak",
             at = @At("HEAD")
     )
-    public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfoReturnable<BlockState> ci) {
+    //#if MC>12002
+    public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfoReturnable<BlockState> cir) {
+    //#else
+    //$$ public void onBlockBroken(World world, BlockPos pos, BlockState state, PlayerEntity player, CallbackInfo ci) {
+    //#endif
         if (player.getWorld() == world) {
             BlockBrokenEvent evt = new BlockBrokenEvent();
             evt.blockPos = pos;
@@ -31,16 +35,6 @@ public class BlockModifiedByPlayerMixin {
             evt.player = player;
             EventBus.publish(evt);
         }
-    }
-
-    @Inject(
-            method = "onPlaced",
-            at = @At("HEAD")
-    )
-    public void onBlockPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack, CallbackInfo ci) {
-        // This one is weirdly unreliable.
-        //Debug.logInternal("[TEMP] global place");
-        //StaticMixinHookups.onBlockPlaced(world, pos, state, placer, itemStack);
     }
 
 }

@@ -7,15 +7,15 @@ import java.util.Arrays;
 
 public class CraftingRecipe {
 
-    private ItemTarget[] _slots;
+    private ItemTarget[] slots;
 
-    private int _width, _height;
+    private int width, height;
 
-    private boolean _shapeless;
+    private boolean shapeless;
 
-    private String _shortName;
+    private String shortName;
 
-    private int _outputCount;
+    private int outputCount;
 
     // Every item in this list MUST match.
     // Used for beds where the wood can be anything
@@ -44,18 +44,18 @@ public class CraftingRecipe {
         }
 
         CraftingRecipe result = new CraftingRecipe();
-        result._shortName = shortName;
+        result.shortName = shortName;
         // Remove null
-        result._slots = Arrays.stream(slots).map(target -> target == null ? ItemTarget.EMPTY : target).toArray(ItemTarget[]::new);
-        result._outputCount = outputCount;
+        result.slots = Arrays.stream(slots).map(target -> target == null ? ItemTarget.EMPTY : target).toArray(ItemTarget[]::new);
+        result.outputCount = outputCount;
         if (slots.length == 4) {
-            result._width = 2;
-            result._height = 2;
+            result.width = 2;
+            result.height = 2;
         } else {
-            result._width = 3;
-            result._height = 3;
+            result.width = 3;
+            result.height = 3;
         }
-        result._shapeless = false;
+        result.shapeless = false;
 
         return result;
     }
@@ -79,50 +79,50 @@ public class CraftingRecipe {
     }
 
     public ItemTarget getSlot(int index) {
-        ItemTarget result = _slots[index];
+        ItemTarget result = slots[index];
         return result != null ? result : ItemTarget.EMPTY;
     }
 
     public int getSlotCount() {
-        return _slots.length;
+        return slots.length;
     }
 
     public ItemTarget[] getSlots() {
-        return _slots;
+        return slots;
     }
 
     public int getWidth() {
-        return _width;
+        return width;
     }
 
     public int getHeight() {
-        return _height;
+        return height;
     }
 
     public boolean isShapeless() {
-        return _shapeless;
+        return shapeless;
     }
 
     public boolean isBig() {
-        return _slots.length > 4;
+        return slots.length > 4;
     }
 
     public int outputCount() {
-        return _outputCount;
+        return outputCount;
     }
 
     @Override
     public boolean equals(Object o) {
         if (o instanceof CraftingRecipe other) {
-            if (other._shapeless != _shapeless) return false;
-            if (other._outputCount != _outputCount) return false;
-            if (other._height != _height) return false;
-            if (other._width != _width) return false;
+            if (other.shapeless != shapeless) return false;
+            if (other.outputCount != outputCount) return false;
+            if (other.height != height) return false;
+            if (other.width != width) return false;
             //if (other._mustMatch.size() != _mustMatch.size()) return false;
-            if (other._slots.length != _slots.length) return false;
-            for (int i = 0; i < _slots.length; ++i) {
-                if ((other._slots[i] == null) != (_slots[i] == null)) return false;
-                if (other._slots[i] != null && !other._slots[i].equals(_slots[i])) return false;
+            if (other.slots.length != slots.length) return false;
+            for (int i = 0; i < slots.length; ++i) {
+                if ((other.slots[i] == null) != (slots[i] == null)) return false;
+                if (other.slots[i] != null && !other.slots[i].equals(slots[i])) return false;
             }
             return true;
         }
@@ -132,13 +132,13 @@ public class CraftingRecipe {
     @Override
     public String toString() {
         String name = "CraftingRecipe{";
-        if (_shortName != null) {
-            name += "craft " + _shortName;
+        if (shortName != null) {
+            name += "craft " + shortName;
         } else {
-            name += "_slots=" + Arrays.toString(_slots) +
-                    ", _width=" + _width +
-                    ", _height=" + _height +
-                    ", _shapeless=" + _shapeless;
+            name += "_slots=" + Arrays.toString(slots) +
+                    ", _width=" + width +
+                    ", _height=" + height +
+                    ", _shapeless=" + shapeless;
         }
         name += "}";
         return name;

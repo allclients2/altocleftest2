@@ -15,24 +15,24 @@ import java.util.*;
 public class CataloguedResourceTask extends ResourceTask {
 
 
-    private final TaskSquasher _squasher;
-    private final ItemTarget[] _targets;
-    private final List<ResourceTask> _tasksToComplete;
+    private final TaskSquasher squasher;
+    private final ItemTarget[] targets;
+    private final List<ResourceTask> tasksToComplete;
 
     public CataloguedResourceTask(boolean squash, ItemTarget... targets) {
         super(targets);
-        _squasher = new TaskSquasher();
-        _targets = targets;
-        _tasksToComplete = new ArrayList<>(targets.length);
+        squasher = new TaskSquasher();
+        this.targets = targets;
+        tasksToComplete = new ArrayList<>(targets.length);
 
         for (ItemTarget target : targets) {
             if (target != null) {
-                _tasksToComplete.add(TaskCatalogue.getItemTask(target));
+                tasksToComplete.add(TaskCatalogue.getItemTask(target));
             }
         }
 
         if (squash) {
-            squashTasks(_tasksToComplete);
+            squashTasks(tasksToComplete);
         }
     }
 
@@ -47,7 +47,7 @@ public class CataloguedResourceTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        for (ResourceTask task : _tasksToComplete) {
+        for (ResourceTask task : tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
                 // If we failed to meet this task's targets, do the task.
                 if (!StorageHelper.itemTargetsMetInventory(mod, target)) return task;
@@ -58,7 +58,7 @@ public class CataloguedResourceTask extends ResourceTask {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        for (ResourceTask task : _tasksToComplete) {
+        for (ResourceTask task : tasksToComplete) {
             for (ItemTarget target : task.getItemTargets()) {
                 if (!StorageHelper.itemTargetsMetInventory(mod, target)) return false;
             }
@@ -81,20 +81,20 @@ public class CataloguedResourceTask extends ResourceTask {
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CataloguedResourceTask task) {
-            return Arrays.equals(task._targets, _targets);
+            return Arrays.equals(task.targets, targets);
         }
         return false;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Get catalogued: " + ArrayUtils.toString(_targets);
+        return "Get catalogued: " + ArrayUtils.toString(targets);
     }
 
     private void squashTasks(List<ResourceTask> tasks) {
-        _squasher.addTasks(tasks);
+        squasher.addTasks(tasks);
         tasks.clear();
-        tasks.addAll(_squasher.getSquashed());
+        tasks.addAll(squasher.getSquashed());
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

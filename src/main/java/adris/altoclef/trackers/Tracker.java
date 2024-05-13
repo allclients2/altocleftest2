@@ -4,27 +4,27 @@ import adris.altoclef.AltoClef;
 
 public abstract class Tracker {
 
-    protected AltoClef _mod;
+    protected AltoClef mod;
     // Needs to update
-    private boolean _dirty = true;
+    private boolean dirty = true;
 
     public Tracker(TrackerManager manager) {
         manager.addTracker(this);
     }
 
     public void setDirty() {
-        _dirty = true;
+        dirty = true;
     }
 
     // Virtual
     protected boolean isDirty() {
-        return _dirty;
+        return dirty;
     }
 
     protected void ensureUpdated() {
         if (isDirty()) {
             updateState();
-            _dirty = false;
+            dirty = false;
         }
     }
 

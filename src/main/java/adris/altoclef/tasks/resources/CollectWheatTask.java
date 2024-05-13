@@ -28,7 +28,7 @@ public class CollectWheatTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.HAY_BLOCK);
+
     }
 
     @Override
@@ -39,7 +39,7 @@ public class CollectWheatTask extends ResourceTask {
             setDebugState("Crafting wheat");
             return new CraftInInventoryTask(new RecipeTarget(Items.WHEAT, _count, CraftingRecipe.newShapedRecipe("wheat", new ItemTarget[]{new ItemTarget(Items.HAY_BLOCK, 1), null, null, null}, 9)));
         }
-        if (mod.getBlockTracker().anyFound(Blocks.HAY_BLOCK) || mod.getEntityTracker().itemDropped(Items.HAY_BLOCK)) {
+        if (mod.getBlockScanner().anyFound(Blocks.HAY_BLOCK) || mod.getEntityTracker().itemDropped(Items.HAY_BLOCK)) {
             return new MineAndCollectTask(Items.HAY_BLOCK, 99999999, new Block[]{Blocks.HAY_BLOCK}, MiningRequirement.HAND);
         }
         // Collect wheat
@@ -48,7 +48,7 @@ public class CollectWheatTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.HAY_BLOCK);
+
     }
 
     @Override

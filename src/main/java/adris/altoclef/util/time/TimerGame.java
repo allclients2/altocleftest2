@@ -9,7 +9,7 @@ import net.minecraft.network.ClientConnection;
 // Simple timer
 public class TimerGame extends BaseTimer {
 
-    private ClientConnection _lastConnection;
+    private ClientConnection lastConnection;
 
     public TimerGame(double intervalSeconds) {
         super(intervalSeconds);
@@ -31,13 +31,13 @@ public class TimerGame extends BaseTimer {
         if (MinecraftClient.getInstance().getNetworkHandler() != null) {
             currentConnection = MinecraftClient.getInstance().getNetworkHandler().getConnection();
         }
-        if (currentConnection != _lastConnection) {
-            if (_lastConnection != null) {
-                double prevTimeTotal = getTime(_lastConnection);
+        if (currentConnection != lastConnection) {
+            if (lastConnection != null) {
+                double prevTimeTotal = getTime(lastConnection);
                 Debug.logInternal("(TimerGame: New connection detected, offsetting by " + prevTimeTotal + " seconds)");
                 setPrevTimeForce(getPrevTime() - prevTimeTotal);
             }
-            _lastConnection = currentConnection;
+            lastConnection = currentConnection;
         }
         // Use ticks for timing. 20TPS is normal, if we go slower that's fine.
         // Adding a "mod" argument here would be hell across the board. Not happening.

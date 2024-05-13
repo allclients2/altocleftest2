@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.util.Collection;
 
 public abstract class AbstractVectorSerializer<T> extends StdSerializer<T> {
-    public AbstractVectorSerializer() {
+    protected AbstractVectorSerializer() {
         this(null);
     }
 
-    public AbstractVectorSerializer(Class<T> vc) {
+    protected AbstractVectorSerializer(Class<T> vc) {
         super(vc);
     }
 

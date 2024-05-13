@@ -47,7 +47,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected void onResourceStart(AltoClef mod) {
         _fullCheckFailed = false;
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
-        if (!cursorStack.isEmpty()) {
+        if (!cursorStack.isEmpty() && !StorageHelper.isBigCraftingOpen()) {
             Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
             moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));
             if (ItemHelper.canThrowAwayStack(mod, cursorStack)) {
@@ -68,8 +68,8 @@ public class CraftInInventoryTask extends ResourceTask {
         if (StorageHelper.isPlayerInventoryOpen()) {
             if (StorageHelper.getItemStackInCursorSlot().isEmpty()) {
                 Item outputItem = StorageHelper.getItemStackInSlot(PlayerSlot.CRAFT_OUTPUT_SLOT).getItem();
-                if (_itemTargets != null) {
-                    for (ItemTarget target : _itemTargets) {
+                if (itemTargets != null) {
+                    for (ItemTarget target : itemTargets) {
                         if (target.matches(outputItem)) {
                             return new ReceiveCraftingOutputSlotTask(PlayerSlot.CRAFT_OUTPUT_SLOT, target.getTargetCount());
                         }
@@ -78,7 +78,7 @@ public class CraftInInventoryTask extends ResourceTask {
             }
         }
 
-        ItemTarget toGet = _itemTargets[0];
+        ItemTarget toGet = itemTargets[0];
         Item toGetItem = toGet.getMatches()[0];
         if (_collect && !StorageHelper.hasRecipeMaterialsOrTarget(mod, _target)) {
             // Collect recipe materials
@@ -112,6 +112,12 @@ public class CraftInInventoryTask extends ResourceTask {
                 }
             }
         }
+    }
+
+    // TODO check if this doesnt break something... but generally this shouldnt pickup items
+    @Override
+    protected double getPickupRange(AltoClef mod) {
+        return 0;
     }
 
     @Override

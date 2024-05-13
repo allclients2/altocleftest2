@@ -1,7 +1,5 @@
 package adris.altoclef.mixins;
 
-// ActionResult ClientPlayerInteractionManager.interactBlock(ClientPlayerEntity player, ClientWorld world, Hand hand, BlockHitResult hitResult);
-
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.BlockInteractEvent;
 import net.minecraft.client.network.ClientPlayerEntity;

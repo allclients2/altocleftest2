@@ -21,11 +21,11 @@ import java.util.Optional;
 @SuppressWarnings("UnnecessaryLocalVariable")
 public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverridesGrounded {
 
-    private final TimerGame _tryCollectWaterTimer = new TimerGame(4);
-    private final TimerGame _pickupRepeatTimer = new TimerGame(0.25);
-    private MLGBucketTask _lastMLG = null;
-    private boolean _wasPickingUp = false;
-    private boolean _doingChorusFruit = false;
+    private final TimerGame tryCollectWaterTimer = new TimerGame(4);
+    private final TimerGame pickupRepeatTimer = new TimerGame(0.25);
+    private MLGBucketTask lastMLG = null;
+    private boolean wasPickingUp = false;
+    private boolean doingChorusFruit = false;
 
     public MLGBucketFallChain(TaskRunner runner) {
         super(runner);
@@ -39,16 +39,16 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     @Override
     public float getPriority(AltoClef mod) {
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
-        if (isFallingOhNo(mod)) {
-            _tryCollectWaterTimer.reset();
+        if (isFalling(mod)) {
+            tryCollectWaterTimer.reset();
             setTask(new MLGBucketTask());
-            _lastMLG = (MLGBucketTask) _mainTask;
+            lastMLG = (MLGBucketTask) mainTask;
             return 100;
-        } else if (!_tryCollectWaterTimer.elapsed()) { // Why -0.5? Cause it's slower than -0.7.
+        } else if (!tryCollectWaterTimer.elapsed()) { // Why -0.5? Cause it's slower than -0.7.
             // We just placed water, try to collect it.
             if (mod.getItemStorage().hasItem(Items.BUCKET) && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                if (_lastMLG != null) {
-                    BlockPos placed = _lastMLG.getWaterPlacedPos();
+                if (lastMLG != null) {
+                    BlockPos placed = lastMLG.getWaterPlacedPos();
                     boolean isPlacedWater;
                     try {
                         isPlacedWater = mod.getWorld().getBlockState(placed).getBlock() == Blocks.WATER;
@@ -66,14 +66,14 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                             mod.getClientBaritone().getLookBehavior().updateTarget(reach.get(), true);
                             if (mod.getClientBaritone().getPlayerContext().isLookingAt(toInteract)) {
                                 if (mod.getSlotHandler().forceEquipItem(Items.BUCKET)) {
-                                    if (_pickupRepeatTimer.elapsed()) {
+                                    if (pickupRepeatTimer.elapsed()) {
                                         // Pick up
-                                        _pickupRepeatTimer.reset();
+                                        pickupRepeatTimer.reset();
                                         mod.getInputControls().tryPress(Input.CLICK_RIGHT);
-                                        _wasPickingUp = true;
-                                    } else if (_wasPickingUp) {
+                                        wasPickingUp = true;
+                                    } else if (wasPickingUp) {
                                         // Stop picking up, wait and try again.
-                                        _wasPickingUp = false;
+                                        wasPickingUp = false;
                                     }
                                 }
                             }
@@ -87,25 +87,25 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
                 }
             }
         }
-        if (_wasPickingUp) {
-            _wasPickingUp = false;
-            _lastMLG = null;
+        if (wasPickingUp) {
+            wasPickingUp = false;
+            lastMLG = null;
         }
         if (mod.getPlayer().hasStatusEffect(StatusEffects.LEVITATION) &&
                 !mod.getPlayer().getItemCooldownManager().isCoolingDown(Items.CHORUS_FRUIT) &&
                 mod.getPlayer().getActiveStatusEffects().get(StatusEffects.LEVITATION).getDuration() <= 70 &&
                 mod.getItemStorage().hasItemInventoryOnly(Items.CHORUS_FRUIT) &&
                 !mod.getItemStorage().hasItemInventoryOnly(Items.WATER_BUCKET)) {
-            _doingChorusFruit = true;
+            doingChorusFruit = true;
             mod.getSlotHandler().forceEquipItem(Items.CHORUS_FRUIT);
             mod.getInputControls().hold(Input.CLICK_RIGHT);
             mod.getExtraBaritoneSettings().setInteractionPaused(true);
-        } else if (_doingChorusFruit) {
-            _doingChorusFruit = false;
+        } else if (doingChorusFruit) {
+            doingChorusFruit = false;
             mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
         }
-        _lastMLG = null;
+        lastMLG = null;
         return Float.NEGATIVE_INFINITY;
     }
 
@@ -121,14 +121,14 @@ public class MLGBucketFallChain extends SingleTaskChain implements ITaskOverride
     }
 
     public boolean doneMLG() {
-        return _lastMLG == null;
+        return lastMLG == null;
     }
 
     public boolean isChorusFruiting() {
-        return _doingChorusFruit;
+        return doingChorusFruit;
     }
 
-    public boolean isFallingOhNo(AltoClef mod) {
+    public boolean isFalling(AltoClef mod) {
         if (!mod.getModSettings().shouldAutoMLGBucket()) {
             return false;
         }

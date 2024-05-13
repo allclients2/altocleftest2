@@ -41,7 +41,7 @@ public class MineAndCollectTask extends ResourceTask {
         super(itemTargets);
         _requirement = requirement;
         _blocksToMine = blocksToMine;
-        _subtask = new MineOrCollectTask(_blocksToMine, _itemTargets);
+        _subtask = new MineOrCollectTask(_blocksToMine, this.itemTargets);
     }
 
     public MineAndCollectTask(ItemTarget[] blocksToMine, MiningRequirement requirement) {
@@ -72,7 +72,6 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(_blocksToMine);
 
         // We're mining, so don't throw away pickaxes.
         mod.getBehaviour().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
@@ -97,7 +96,7 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         // Wrong dimension check.
-        if (_subtask.wasWandering() && isInWrongDimension(mod) && !mod.getBlockTracker().anyFound(_blocksToMine)) {
+        if (_subtask.wasWandering() && isInWrongDimension(mod) && !mod.getBlockScanner().anyFound(_blocksToMine)) {
             return getToCorrectDimensionTask(mod);
         }
 
@@ -106,7 +105,6 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(_blocksToMine);
         mod.getBehaviour().pop();
     }
 
@@ -179,9 +177,9 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
-            Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
+            Optional<BlockPos> closestBlock = mod.getBlockScanner().getNearestBlock(pos, check -> {
                 if (_blacklist.contains(check)) return false;
-                if (mod.getBlockTracker().unreachable(check)) return false;
+                if (mod.getBlockScanner().isUnreachable(check)) return false;
                 return WorldHelper.canBreak(mod, check);
             }, _blocks);
 
@@ -190,8 +188,8 @@ public class MineAndCollectTask extends ResourceTask {
                 closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
             }
 
-            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos);
-            double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 10; // + 5 to make the bot stop mining a bit less
+            double blockSq = closestBlock.map(blockPos -> blockPos.getSquaredDistance(pos)).orElse(Double.POSITIVE_INFINITY);
+            double dropSq = closestDrop.map(itemEntity -> itemEntity.squaredDistanceTo(pos) + 10).orElse(Double.POSITIVE_INFINITY); // + 5 to make the bot stop mining a bit less
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
@@ -218,7 +216,7 @@ public class MineAndCollectTask extends ResourceTask {
             if (_miningPos != null && !_progressChecker.check(mod)) {
                 mod.getClientBaritone().getPathingBehavior().forceCancel();
                 Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
-                mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
+                mod.getBlockScanner().requestBlockUnreachable(_miningPos, 2);
                 _blacklist.add(_miningPos);
                 _miningPos = null;
                 _progressChecker.reset();
@@ -245,7 +243,7 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected boolean isValid(AltoClef mod, Object obj) {
             if (obj instanceof BlockPos b) {
-                return mod.getBlockTracker().blockIsValid(b, _blocks) && WorldHelper.canBreak(mod, b);
+                return mod.getBlockScanner().isBlockAtPosition(b, _blocks) && WorldHelper.canBreak(mod, b);
             }
             if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();

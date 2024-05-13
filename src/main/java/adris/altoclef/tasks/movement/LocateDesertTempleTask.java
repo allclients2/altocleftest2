@@ -13,8 +13,6 @@ public class LocateDesertTempleTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        // Track desert pyramid blocks
-        mod.getBlockTracker().trackBlock(Blocks.STONE_PRESSURE_PLATE);
     }
 
     @Override
@@ -32,7 +30,6 @@ public class LocateDesertTempleTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.STONE_PRESSURE_PLATE);
     }
 
     @Override

@@ -29,6 +29,10 @@ public interface StlHelper {
     }
 
     static <T> String toString(T[] thing, Function<T, String> toStringFunc) {
-        return toString(Arrays.asList(thing), toStringFunc);
+        try {
+            return toString(Arrays.asList(thing), toStringFunc);
+        } catch (NullPointerException ignored) {
+            return "<null>";
+        }
     }
 }

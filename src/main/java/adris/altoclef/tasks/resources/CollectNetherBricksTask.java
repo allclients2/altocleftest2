@@ -28,7 +28,7 @@ public class CollectNetherBricksTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.NETHER_BRICKS);
+
     }
 
     @Override
@@ -40,7 +40,7 @@ public class CollectNetherBricksTask extends ResourceTask {
          * Otherwise craft them from the "nether_brick" item.
          */
 
-        if (mod.getBlockTracker().anyFound(Blocks.NETHER_BRICKS)) {
+        if (mod.getBlockScanner().anyFound(Blocks.NETHER_BRICKS)) {
             return new MineAndCollectTask(Items.NETHER_BRICKS, _count, new Block[]{Blocks.NETHER_BRICKS}, MiningRequirement.WOOD);
         }
 
@@ -50,7 +50,7 @@ public class CollectNetherBricksTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.NETHER_BRICKS);
+
     }
 
     @Override

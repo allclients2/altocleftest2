@@ -34,10 +34,10 @@ import java.util.function.Function;
 @SuppressWarnings({"rawtypes"})
 public class TaskCatalogue {
 
-    private static final HashMap<String, Item[]> _nameToItemMatches = new HashMap<>();
-    private static final HashMap<String, CataloguedResource> _nameToResourceTask = new HashMap<>();
-    private static final HashMap<Item, CataloguedResource> _itemToResourceTask = new HashMap<>();
-    private static final HashSet<Item> _resourcesObtainable = new HashSet<>();
+    private static final HashMap<String, Item[]> nameToItemMatches = new HashMap<>();
+    private static final HashMap<String, CataloguedResource> nameToResourceTask = new HashMap<>();
+    private static final HashMap<Item, CataloguedResource> itemToResourceTask = new HashMap<>();
+    private static final HashSet<Item> resourcesObtainable = new HashSet<>();
 
     static {
         /// DEFINE RESOURCE TASKS HERE
@@ -154,7 +154,7 @@ public class TaskCatalogue {
             }
             mine("bamboo", Blocks.BAMBOO, Items.BAMBOO);
             shear("vine", Blocks.VINE, Items.VINE).dontMineIfPresent();
-            shear("grass", Blocks.GRASS_BLOCK, Items.GRASS_BLOCK).dontMineIfPresent();
+            shear("grass", Blocks.SHORT_GRASS, Items.SHORT_GRASS).dontMineIfPresent();
             shear("lily_pad", Blocks.LILY_PAD, Items.LILY_PAD).dontMineIfPresent();
             shear("tall_grass", Blocks.TALL_GRASS, Items.TALL_GRASS).dontMineIfPresent();
             shear("fern", Blocks.FERN, Items.FERN).dontMineIfPresent();
@@ -644,19 +644,19 @@ public class TaskCatalogue {
         }
 
         result.forceDimension(Dimension.OVERWORLD);
-        if (_nameToResourceTask.containsKey(name)) {
+        if (nameToResourceTask.containsKey(name)) {
             throw new IllegalStateException("Tried cataloguing " + name + " twice!");
         }
-        _nameToResourceTask.put(name, result);
-        _nameToItemMatches.put(name, matches);
-        _resourcesObtainable.addAll(Arrays.asList(matches));
+        nameToResourceTask.put(name, result);
+        nameToItemMatches.put(name, matches);
+        resourcesObtainable.addAll(Arrays.asList(matches));
 
         // If this resource is just one item, consider it collectable.
         if (matches.length == 1) {
-            if (_itemToResourceTask.containsKey(matches[0])) {
+            if (itemToResourceTask.containsKey(matches[0])) {
                 throw new IllegalStateException("Tried cataloguing " + matches[0].getTranslationKey() + " twice!");
             }
-            _itemToResourceTask.put(matches[0], result);
+            itemToResourceTask.put(matches[0], result);
         }
 
         return result;
@@ -664,14 +664,14 @@ public class TaskCatalogue {
 
     // This is here so that we can use strings for item targets (optionally) and stuff like that.
     public static Item[] getItemMatches(String name) {
-        if (!_nameToItemMatches.containsKey(name)) {
+        if (!nameToItemMatches.containsKey(name)) {
             return new Item[0];
         }
-        return _nameToItemMatches.get(name);
+        return nameToItemMatches.get(name);
     }
 
     public static boolean isObtainable(Item item) {
-        return _resourcesObtainable.contains(item);
+        return resourcesObtainable.contains(item);
     }
 
     public static ItemTarget getItemTarget(String name, int count) {
@@ -690,7 +690,7 @@ public class TaskCatalogue {
             return null;
         }
 
-        return _nameToResourceTask.get(name).getResource(count);
+        return nameToResourceTask.get(name).getResource(count);
     }
 
     public static ResourceTask getItemTask(Item item, int count) {
@@ -700,7 +700,7 @@ public class TaskCatalogue {
             return null;
         }
 
-        return _itemToResourceTask.get(item).getResource(count);
+        return itemToResourceTask.get(item).getResource(count);
     }
 
     public static ResourceTask getItemTask(ItemTarget target) {
@@ -714,15 +714,15 @@ public class TaskCatalogue {
     }
 
     public static boolean taskExists(String name) {
-        return _nameToResourceTask.containsKey(name);
+        return nameToResourceTask.containsKey(name);
     }
 
     public static boolean taskExists(Item item) {
-        return _itemToResourceTask.containsKey(item);
+        return itemToResourceTask.containsKey(item);
     }
 
     public static Collection<String> resourceNames() {
-        return _nameToResourceTask.keySet();
+        return nameToResourceTask.keySet();
     }
 
     private static CataloguedResource simple(String name, Item[] matches, Function<Integer, ResourceTask> getTask) {
@@ -900,11 +900,11 @@ public class TaskCatalogue {
     }
 
     private static void alias(String newName, String original) {
-        if (!_nameToResourceTask.containsKey(original) || !_nameToItemMatches.containsKey(original)) {
+        if (!nameToResourceTask.containsKey(original) || !nameToItemMatches.containsKey(original)) {
             Debug.logWarning("Invalid resource: " + original + ". Will not create alias.");
         } else {
-            _nameToResourceTask.put(newName, _nameToResourceTask.get(original));
-            _nameToItemMatches.put(newName, _nameToItemMatches.get(original));
+            nameToResourceTask.put(newName, nameToResourceTask.get(original));
+            nameToItemMatches.put(newName, nameToItemMatches.get(original));
         }
     }
 

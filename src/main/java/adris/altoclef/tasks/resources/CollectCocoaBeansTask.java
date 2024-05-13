@@ -32,7 +32,6 @@ public class CollectCocoaBeansTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.COCOA);
     }
 
     @Override
@@ -54,7 +53,7 @@ public class CollectCocoaBeansTask extends ResourceTask {
         };
 
         // Break mature cocoa blocks
-        if (mod.getBlockTracker().anyFound(validCocoa, Blocks.COCOA)) {
+        if (mod.getBlockScanner().anyFound(validCocoa, Blocks.COCOA)) {
             setDebugState("Breaking cocoa blocks");
             return new DoToClosestBlockTask(DestroyBlockTask::new, validCocoa, Blocks.COCOA);
         }
@@ -71,7 +70,6 @@ public class CollectCocoaBeansTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.COCOA);
     }
 
     @Override

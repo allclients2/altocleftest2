@@ -22,31 +22,31 @@ import java.util.function.Predicate;
 
 public class SlotHandler {
 
-    private final AltoClef _mod;
+    private final AltoClef mod;
 
-    private final TimerGame _slotActionTimer = new TimerGame(0);
-    private boolean _overrideTimerOnce = false;
+    private final TimerGame slotActionTimer = new TimerGame(0);
+    private boolean overrideTimerOnce = false;
 
     public SlotHandler(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
     }
 
     private void forceAllowNextSlotAction() {
-        _overrideTimerOnce = true;
+        overrideTimerOnce = true;
     }
 
     public boolean canDoSlotAction() {
-        if (_overrideTimerOnce) {
-            _overrideTimerOnce = false;
+        if (overrideTimerOnce) {
+            overrideTimerOnce = false;
             return true;
         }
-        _slotActionTimer.setInterval(_mod.getModSettings().getContainerItemMoveDelay());
-        return _slotActionTimer.elapsed();
+        slotActionTimer.setInterval(mod.getModSettings().getContainerItemMoveDelay());
+        return slotActionTimer.elapsed();
     }
 
     public void registerSlotAction() {
-        _mod.getItemStorage().registerSlotAction();
-        _slotActionTimer.reset();
+        mod.getItemStorage().registerSlotAction();
+        slotActionTimer.reset();
     }
 
 
@@ -77,7 +77,7 @@ public class SlotHandler {
         int syncId = player.currentScreenHandler.syncId;
 
         try {
-            _mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
+            mod.getController().clickSlot(syncId, windowSlot, mouseButton, type, player);
         } catch (Exception e) {
             Debug.logWarning("Slot Click Error (ignored)");
             e.printStackTrace();
@@ -88,13 +88,13 @@ public class SlotHandler {
         if (StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT).getItem() == toEquip) {
             return;
         }
-        List<Slot> currentItemSlot = _mod.getItemStorage().getSlotsWithItemPlayerInventory(false,
+        List<Slot> currentItemSlot = mod.getItemStorage().getSlotsWithItemPlayerInventory(false,
                 toEquip);
         for (Slot CurrentItemSlot : currentItemSlot) {
             if (!Slot.isCursor(CurrentItemSlot)) {
-                _mod.getSlotHandler().clickSlot(CurrentItemSlot, 0, SlotActionType.PICKUP);
+                mod.getSlotHandler().clickSlot(CurrentItemSlot, 0, SlotActionType.PICKUP);
             } else {
-                _mod.getSlotHandler().clickSlot(PlayerSlot.OFFHAND_SLOT, 0, SlotActionType.PICKUP);
+                mod.getSlotHandler().clickSlot(PlayerSlot.OFFHAND_SLOT, 0, SlotActionType.PICKUP);
             }
         }
     }
@@ -105,13 +105,13 @@ public class SlotHandler {
         if (StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem() == toEquip) return true;
 
         // Always equip to the second slot. First + last is occupied by baritone.
-        _mod.getPlayer().getInventory().selectedSlot = 1;
+        mod.getPlayer().getInventory().selectedSlot = 1;
 
         // If our item is in our cursor, simply move it to the hotbar.
         boolean inCursor = StorageHelper.getItemStackInSlot(CursorSlot.SLOT).getItem() == toEquip;
 
-        List<Slot> itemSlots = _mod.getItemStorage().getSlotsWithItemScreen(toEquip);
-        if (itemSlots.size() != 0) {
+        List<Slot> itemSlots = mod.getItemStorage().getSlotsWithItemScreen(toEquip);
+        if (!itemSlots.isEmpty()) {
             for (Slot ItemSlots : itemSlots) {
                 int hotbar = 1;
                 //_mod.getPlayer().getInventory().swapSlotWithHotbar();
@@ -166,7 +166,7 @@ public class SlotHandler {
         ItemStack cursor = StorageHelper.getItemStackInSlot(CursorSlot.SLOT);
         if (isBad.test(cursor)) {
             // Throw away cursor slot OR move
-            Optional<Slot> fittableSlots = _mod.getItemStorage().getSlotThatCanFitInPlayerInventory(equip, false);
+            Optional<Slot> fittableSlots = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(equip, false);
             if (fittableSlots.isEmpty()) {
                 // Try to swap items with the first non-bad slot.
                 for (Slot slot : Slot.getCurrentScreenSlots()) {
@@ -175,7 +175,7 @@ public class SlotHandler {
                         return false;
                     }
                 }
-                if (ItemHelper.canThrowAwayStack(_mod, cursor)) {
+                if (ItemHelper.canThrowAwayStack(mod, cursor)) {
                     clickSlotForce(PlayerSlot.UNDEFINED, 0, SlotActionType.PICKUP);
                     return true;
                 }
@@ -212,7 +212,7 @@ public class SlotHandler {
         if (toEquip == null) return false;
 
         //If the bot try to eat
-        if (_mod.getFoodChain().needsToEat() && !unInterruptable) { //unless we really need to force equip the item
+        if (mod.getFoodChain().needsToEat() && !unInterruptable) { //unless we really need to force equip the item
             return false; //don't equip the item for now
         }
 
@@ -221,7 +221,7 @@ public class SlotHandler {
         if (toEquip.matches(StorageHelper.getItemStackInSlot(target).getItem())) return true;
 
         for (Item item : toEquip.getMatches()) {
-            if (_mod.getItemStorage().hasItem(item)) {
+            if (mod.getItemStorage().hasItem(item)) {
                 if (forceEquipItem(item)) return true;
             }
         }

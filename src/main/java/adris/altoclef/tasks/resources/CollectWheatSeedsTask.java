@@ -24,17 +24,16 @@ public class CollectWheatSeedsTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.WHEAT);
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // If wheat block found, collect wheat but don't pick up the wheat.
-        if (mod.getBlockTracker().anyFound(Blocks.WHEAT)) {
+        if (mod.getBlockScanner().anyFound(Blocks.WHEAT)) {
             return new CollectCropTask(Items.AIR, 999, Blocks.WHEAT, Items.WHEAT_SEEDS);
         }
         // Otherwise, break grass blocks.
-        return new MineAndCollectTask(Items.WHEAT_SEEDS, _count, new Block[]{Blocks.GRASS_BLOCK, Blocks.TALL_GRASS}, MiningRequirement.HAND);
+        return new MineAndCollectTask(Items.WHEAT_SEEDS, _count, new Block[]{Blocks.SHORT_GRASS, Blocks.TALL_GRASS}, MiningRequirement.HAND);
     }
 
     @Override

@@ -12,21 +12,21 @@ import java.util.function.Consumer;
 
 public class ContainerCache {
 
-    private final BlockPos _blockPos;
-    private final Dimension _dimension;
-    private final ContainerType _containerType;
+    private final BlockPos blockPos;
+    private final Dimension dimension;
+    private final ContainerType containerType;
 
-    private final HashMap<Item, Integer> _itemCounts = new HashMap<>();
+    private final HashMap<Item, Integer> itemCounts = new HashMap<>();
     private int _emptySlots;
 
     public ContainerCache(Dimension dimension, BlockPos blockPos, ContainerType containerType) {
-        _dimension = dimension;
-        _blockPos = blockPos;
-        _containerType = containerType;
+        this.dimension = dimension;
+        this.blockPos = blockPos;
+        this.containerType = containerType;
     }
 
     public void update(ScreenHandler screenHandler, Consumer<ItemStack> onStack) {
-        _itemCounts.clear();
+        itemCounts.clear();
         _emptySlots = 0;
         int start = 0;
         int end = screenHandler.slots.size() - (4 * 9); // subtract by player inventory
@@ -45,7 +45,7 @@ public class ContainerCache {
             } else {
                 Item item = stack.getItem();
                 int count = stack.getCount();
-                _itemCounts.put(item, _itemCounts.getOrDefault(item, 0) + count);
+                itemCounts.put(item, itemCounts.getOrDefault(item, 0) + count);
                 onStack.accept(stack);
             }
         }
@@ -54,14 +54,14 @@ public class ContainerCache {
     public int getItemCount(Item... items) {
         int result = 0;
         for (Item item : items) {
-            result += _itemCounts.getOrDefault(item, 0);
+            result += itemCounts.getOrDefault(item, 0);
         }
         return result;
     }
 
     public boolean hasItem(Item... items) {
         for (Item item : items) {
-            if (_itemCounts.containsKey(item) && _itemCounts.get(item) > 0)
+            if (itemCounts.containsKey(item) && itemCounts.get(item) > 0)
                 return true;
         }
         return false;
@@ -76,14 +76,14 @@ public class ContainerCache {
     }
 
     public BlockPos getBlockPos() {
-        return _blockPos;
+        return blockPos;
     }
 
     public ContainerType getContainerType() {
-        return _containerType;
+        return containerType;
     }
 
     public Dimension getDimension() {
-        return _dimension;
+        return dimension;
     }
 }

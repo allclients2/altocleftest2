@@ -1,15 +1,44 @@
+import com.replaymod.gradle.preprocess.PreprocessTask
+
+buildscript {
+    def (major, minor, patch) = project.name.split("-")[0].tokenize('.')
+    project.ext.mcVersion = "${major}${minor.padLeft(2, '0')}${(patch ?: '').padLeft(2, '0')}" as int
+
+    dependencies {
+        classpath 'fabric-loom:fabric-loom.gradle.plugin:1.0-SNAPSHOT'
+    }
+}
+
+
 plugins {
-    id "fabric-loom" version "1.5-SNAPSHOT"
     id "maven-publish"
     id 'com.github.johnrengelman.shadow' version '8.1.1'
 }
+
+apply plugin: 'fabric-loom'
+apply plugin: 'com.replaymod.preprocess'
 
 sourceCompatibility = JavaVersion.VERSION_17
 targetCompatibility = JavaVersion.VERSION_17
 
 archivesBaseName = project.archives_base_name
-version = project.mod_version
+version = "${project.name}-${project.mod_version}"
 group = project.maven_group
+
+def mappingsVersions = [
+        12002: "1.20.2+build.4",
+        12004: "1.20.4+build.3",
+]
+
+def fabricApiVersions = [
+        12002: "0.91.2+1.20.2",
+        12004: "0.96.3+1.20.4",
+]
+
+def baritoneVersions = [
+        12002: "1.20.2-beta1",
+        12004: "1.20.4-beta1",
+]
 
 repositories {
     flatDir {
@@ -19,6 +48,7 @@ repositories {
     maven {
         name = "MarvionKiritoRepo"
         url = "https://marvionkirito.github.io/maven/"
+        artifactUrls("https://marvionkirito.github.io/maven/cabaletta/baritone-unoptimized/${baritoneVersions[mcVersion]}")
     }
     maven {
         name = 'babbaj-repo'
@@ -28,36 +58,42 @@ repositories {
 
 dependencies {
     //to change the versions see the gradle.properties file
-    minecraft("com.mojang:minecraft:${project.minecraft_version}")
-    mappings("net.fabricmc:yarn:${project.yarn_mappings}:v2")
+    minecraft("com.mojang:minecraft:${project.name}")
+    mappings("net.fabricmc:yarn:${mappingsVersions[mcVersion]}:v2")
     modImplementation("net.fabricmc:fabric-loader:${project.loader_version}")
+    include(implementation(annotationProcessor("io.github.llamalad7:mixinextras-fabric:0.3.5")))
 
     // Fabric API. This is technically optional, but you probably want it anyway.
-    modImplementation("net.fabricmc.fabric-api:fabric-api:${project.fabric_version}")
+    modImplementation("net.fabricmc.fabric-api:fabric-api:${fabricApiVersions[mcVersion]}")
 
     // Jackson JSON
-    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.1'
-    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.1'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.1'
+    implementation 'com.fasterxml.jackson.core:jackson-core:2.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-annotations:2.16.0'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.16.0'
 
     // Nether pathfinder
     implementation 'dev.babbaj:nether-pathfinder:1.5'
 
     // PSA: Some older mods, compiled on Loom 0.2.1, might have outdated Maven POMs.
     // You may need to force-disable transitiveness on them.
-    shadow('com.fasterxml.jackson.core:jackson-core:2.16.1')
-    shadow('com.fasterxml.jackson.core:jackson-annotations:2.16.1')
-    shadow('com.fasterxml.jackson.core:jackson-databind:2.16.1')
+    shadow('com.fasterxml.jackson.core:jackson-core:2.16.0')
+    shadow('com.fasterxml.jackson.core:jackson-annotations:2.16.0')
+    shadow('com.fasterxml.jackson.core:jackson-databind:2.16.0')
 
     // Thank you georgeagostino for fixing my garbage
     /*
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation 'baritone-api-fabric:baritone-unoptimized-fabric-1.20.4-beta1'
-        include "baritone-api-fabric:baritone-unoptimized-fabric-1.20.4-beta1"
+        modImplementation "baritone-api-fabric:baritone-unoptimized-fabric-${baritoneVersions[mcVersion]}"
+        include "baritone-api-fabric:baritone-unoptimized-fabric-${baritoneVersions[mcVersion]}"
     } else {
-        modImplementation "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1"
-        include "cabaletta:baritone-unoptimized-fabric:1.20.4-beta1"
+        if (mcVersion == 12004) {
+            modImplementation "cabaletta:baritone-unoptimized-fabric:${baritoneVersions[mcVersion]}"
+            include "cabaletta:baritone-unoptimized-fabric:${baritoneVersions[mcVersion]}"
+        } else {
+            modImplementation "cabaletta:baritone-unoptimized:${baritoneVersions[mcVersion]}"
+            include "cabaletta:baritone-unoptimized:${baritoneVersions[mcVersion]}"
+        }
     }
     */
 
@@ -72,17 +108,17 @@ shadowJar {
 }
 
 remapJar {
-    dependsOn(":shadowJar")
+    dependsOn("shadowJar")
     input.set(shadowJar.archiveFile)
 }
 
 processResources {
-    inputs.property "version", project.version
+    inputs.property("version", project.version)
+    inputs.property("mcVersion", project.name)
 
-    from(sourceSets.main.resources.srcDirs) {
-        include "fabric.mod.json"
-        expand "version": project.version
-        duplicatesStrategy DuplicatesStrategy.EXCLUDE
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version,
+                "mcVersion": project.name
     }
 
     from(sourceSets.main.resources.srcDirs) {

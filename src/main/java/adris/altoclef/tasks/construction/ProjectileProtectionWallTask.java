@@ -40,39 +40,38 @@ import net.minecraft.world.World;
 
 public class ProjectileProtectionWallTask extends Task implements ITaskRequiresGrounded {
 
-	private BlockPos _targetPlacePos;
-	private TimerGame _waitForBlockPlacement = new TimerGame(2);
-	
-	private static AltoClef _mod;
-	
+
+	private final AltoClef mod;
+    private final TimerGame waitForBlockPlacement = new TimerGame(2);
+
+    private BlockPos targetPlacePos;
+
 	public ProjectileProtectionWallTask(AltoClef mod) {
-		_mod = mod;
+		this.mod = mod;
 	}
-	
+
 	@Override
 	protected void onStart(AltoClef mod) {
-		// TODO Auto-generated method stub
-		_waitForBlockPlacement.forceElapse();
+		waitForBlockPlacement.forceElapse();
 	}
 
 	@Override
 	protected Task onTick(AltoClef mod) {
-		// TODO Auto-generated method stub
-		
-		if (_targetPlacePos != null && !WorldHelper.isSolid(mod, _targetPlacePos)) {
-			Optional<adris.altoclef.util.slots.Slot> slot = StorageHelper.getSlotWithThrowawayBlock(_mod, true);
+		if (targetPlacePos != null && !WorldHelper.isSolidBlock(mod, targetPlacePos)) {
+			Optional<adris.altoclef.util.slots.Slot> slot = StorageHelper.getSlotWithThrowawayBlock(this.mod, true);
 			if(slot.isPresent()) {
-				place(_targetPlacePos, Hand.MAIN_HAND, slot.get().getInventorySlot(), 0);
-				_targetPlacePos = null;
+				place(targetPlacePos, Hand.MAIN_HAND, slot.get().getInventorySlot());
+				targetPlacePos = null;
 				setDebugState(null);
 			}
 			return null;
 		}
-		
+
+
 		Optional<Entity> sentity = mod.getEntityTracker().getClosestEntity((e) -> {
-        	if(e instanceof SkeletonEntity 
+        	if(e instanceof SkeletonEntity
         			&& EntityHelper.isAngryAtPlayer(mod, e)
-        			&& 
+        			&&
         			(((SkeletonEntity) e).getItemUseTime() > 8)
         			) return true;
         	return false;
@@ -87,10 +86,10 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
             double x = playerPos.x - 2 * direction.x;
             double y = playerPos.y + direction.y;
             double z = playerPos.z - 2 * direction.z;
-            
-            _targetPlacePos = new BlockPos((int) x, (int) y+1, (int) z);
-			setDebugState("Placing at " + _targetPlacePos.toString());
-			_waitForBlockPlacement.reset();
+
+            targetPlacePos = new BlockPos((int) x, (int) y+1, (int) z);
+			setDebugState("Placing at " + targetPlacePos.toString());
+			waitForBlockPlacement.reset();
         }
 		return null;
 	}
@@ -98,23 +97,23 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 	@Override
 	protected void onStop(AltoClef mod, Task interruptTask) {
 		// TODO Auto-generated method stub
-		
+
 	}
-	
+
 	@Override
     public boolean isFinished(AltoClef mod) {
         assert MinecraftClient.getInstance().world != null;
-        
+
         Optional<Entity> entity = mod.getEntityTracker().getClosestEntity((e) -> {
-        	if(e instanceof SkeletonEntity 
+        	if(e instanceof SkeletonEntity
         			&& EntityHelper.isAngryAtPlayer(mod, e)
-        			&& 
+        			&&
         			(((SkeletonEntity) e).getItemUseTime() > 3)
         			) return true;
         	return false;
         }, SkeletonEntity.class);
-        
-        return _targetPlacePos != null && WorldHelper.isSolid(mod, _targetPlacePos) || entity.isEmpty();
+
+        return targetPlacePos != null && WorldHelper.isSolidBlock(mod, targetPlacePos) || entity.isEmpty();
     }
 
 	@Override
@@ -128,11 +127,11 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 		// TODO Auto-generated method stub
 		return "Placing blocks to block projectiles";
 	}
-	
-	public static Direction getPlaceSide(BlockPos blockPos) {
+
+	public Direction getPlaceSide(BlockPos blockPos) {
         for (Direction side : Direction.values()) {
             BlockPos neighbor = blockPos.offset(side);
-            BlockState state = _mod.getWorld().getBlockState(neighbor);
+            BlockState state = mod.getWorld().getBlockState(neighbor);
 
             // Check if neighbour isn't empty
             if (state.isAir() || isClickable(state.getBlock())) continue;
@@ -145,8 +144,8 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 
         return null;
     }
-	
-	public static boolean place(BlockPos blockPos, Hand hand, int slot, int recursion) {
+
+	public boolean place(BlockPos blockPos, Hand hand, int slot) {
         if (slot < 0 || slot > 8) return false;
         if (!canPlace(blockPos)) return false;
 
@@ -156,10 +155,7 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         Direction side = getPlaceSide(blockPos);
 
         if (side == null) {
-            if (recursion < 6) { //patch
-                return false;
-            }
-        	place(blockPos.down(), hand, slot, recursion + 1); //stackoverflow errr?
+        	place(blockPos.down(), hand, slot);
         	return false;
         } else {
             neighbour = blockPos.offset(side);
@@ -168,8 +164,8 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 
         BlockHitResult bhr = new BlockHitResult(hitPos, side.getOpposite(), neighbour, false);
 
-        _mod.getPlayer().setYaw((float) getYaw(hitPos));
-        _mod.getPlayer().setPitch((float) getPitch(hitPos));
+        mod.getPlayer().setYaw((float) getYaw(hitPos));
+        mod.getPlayer().setPitch((float) getPitch(hitPos));
 		swap(slot);
 
         interact(bhr, hand);
@@ -177,8 +173,8 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 
         return true;
     }
-    
-	
+
+
 	public static boolean isClickable(Block block) {
         return block instanceof CraftingTableBlock
             || block instanceof AnvilBlock
@@ -191,56 +187,56 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
             || block instanceof NoteBlock
             || block instanceof TrapdoorBlock;
     }
-	
-	public static void interact(BlockHitResult blockHitResult, Hand hand) {
-        boolean wasSneaking = _mod.getPlayer().input.sneaking;
-        _mod.getPlayer().input.sneaking = false;
 
-        ActionResult result = _mod.getController().interactBlock(_mod.getPlayer(), hand, blockHitResult);
+	public void interact(BlockHitResult blockHitResult, Hand hand) {
+        boolean wasSneaking = mod.getPlayer().input.sneaking;
+        mod.getPlayer().input.sneaking = false;
+
+        ActionResult result = mod.getController().interactBlock(mod.getPlayer(), hand, blockHitResult);
 
         if (result.shouldSwingHand()) {
-            _mod.getPlayer().swingHand(hand);
+            mod.getPlayer().swingHand(hand);
         }
 
-        _mod.getPlayer().input.sneaking = wasSneaking;
+        mod.getPlayer().input.sneaking = wasSneaking;
     }
 
-	public static boolean canPlace(BlockPos blockPos, boolean checkEntities) {
+	public boolean canPlace(BlockPos blockPos, boolean checkEntities) {
         if (blockPos == null) return false;
 
         // Check y level
         if (!World.isValid(blockPos)) return false;
 
         // Check if current block is replaceable
-        if (!_mod.getWorld().getBlockState(blockPos).isReplaceable()) return false;
+        if (!mod.getWorld().getBlockState(blockPos).isReplaceable()) return false;
 
         // Check if intersects entities
-        return !checkEntities || _mod.getWorld().canPlace(Blocks.OBSIDIAN.getDefaultState(), blockPos, ShapeContext.absent());
+        return !checkEntities || mod.getWorld().canPlace(Blocks.OBSIDIAN.getDefaultState(), blockPos, ShapeContext.absent());
     }
 
-    public static boolean canPlace(BlockPos blockPos) {
+    public boolean canPlace(BlockPos blockPos) {
         return canPlace(blockPos, true);
     }
-	
-    public static boolean swap(int slot) {
+
+    public boolean swap(int slot) {
         if (slot == PlayerSlot.OFFHAND_SLOT.getInventorySlot()) return true;
         if (slot < 0 || slot > 8) return false;
 
-        _mod.getPlayer().getInventory().selectedSlot = slot;
+        mod.getPlayer().getInventory().selectedSlot = slot;
         return true;
     }
-    
-    public static double getYaw(Vec3d pos) {
-        return _mod.getPlayer().getYaw() + MathHelper.wrapDegrees((float) Math.toDegrees(Math.atan2(pos.getZ() - _mod.getPlayer().getZ(), pos.getX() - _mod.getPlayer().getX())) - 90f - _mod.getPlayer().getYaw());
+
+    public double getYaw(Vec3d pos) {
+        return mod.getPlayer().getYaw() + MathHelper.wrapDegrees((float) Math.toDegrees(Math.atan2(pos.getZ() - mod.getPlayer().getZ(), pos.getX() - mod.getPlayer().getX())) - 90f - mod.getPlayer().getYaw());
     }
 
-    public static double getPitch(Vec3d pos) {
-        double diffX = pos.getX() - _mod.getPlayer().getX();
-        double diffY = pos.getY() - (_mod.getPlayer().getY() + _mod.getPlayer().getEyeHeight(_mod.getPlayer().getPose()));
-        double diffZ = pos.getZ() - _mod.getPlayer().getZ();
+    public double getPitch(Vec3d pos) {
+        double diffX = pos.getX() - mod.getPlayer().getX();
+        double diffY = pos.getY() - (mod.getPlayer().getY() + mod.getPlayer().getEyeHeight(mod.getPlayer().getPose()));
+        double diffZ = pos.getZ() - mod.getPlayer().getZ();
 
         double diffXZ = Math.sqrt(diffX * diffX + diffZ * diffZ);
 
-        return _mod.getPlayer().getPitch() + MathHelper.wrapDegrees((float) -Math.toDegrees(Math.atan2(diffY, diffXZ)) - _mod.getPlayer().getPitch());
+        return mod.getPlayer().getPitch() + MathHelper.wrapDegrees((float) -Math.toDegrees(Math.atan2(diffY, diffXZ)) - mod.getPlayer().getPitch());
     }
 }

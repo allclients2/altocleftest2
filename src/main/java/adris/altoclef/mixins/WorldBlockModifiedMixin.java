@@ -7,6 +7,7 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -14,6 +15,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(World.class)
 public class WorldBlockModifiedMixin {
 
+    @Unique
     private static boolean hasBlock(BlockState state, BlockPos pos) {
         return !state.isAir() && state.isSolidBlock(MinecraftClient.getInstance().world, pos);
     }
@@ -28,5 +30,5 @@ public class WorldBlockModifiedMixin {
             EventBus.publish(evt);
         }
     }
-    //onBlockChanged
+
 }

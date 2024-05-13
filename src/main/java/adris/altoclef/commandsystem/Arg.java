@@ -1,25 +1,25 @@
 package adris.altoclef.commandsystem;
 
 public class Arg<T> extends ArgBase {
-    private final Class<T> _tType;
+    private final Class<T> tType;
+    private final String name;
     public T Default;
-    private boolean _isArray = false;
-    private String _name = "";
-    private boolean _showDefault;
+    private boolean isArray = false;
+    private boolean showDefault;
 
     // Regular Constructor
     public Arg(Class<T> type, String name) throws CommandException {
-        _name = name;
+        this.name = name;
         // I really hate java
-        _tType = type;
+        tType = type;
 
-        _showDefault = true;
-        _hasDefault = false;
+        showDefault = true;
+        hasDefault = false;
         // If enum, we're good
-        if (!_tType.isEnum()) {
+        if (!tType.isEnum()) {
             // Make sure as an extra precaution that we only use (non enum) types we can handle
-            if (!isInstancesOf(_tType, String.class, Float.class, Integer.class, Double.class, Long.class, ItemList.class, GotoTarget.class)) {
-                throw new CommandException("Arguments are not programmed to parse the following type: " + _tType + ". This is either not implemented intentionally or by accident somehow.");
+            if (!isInstancesOf(tType, String.class, Float.class, Integer.class, Double.class, Long.class, ItemList.class, GotoTarget.class)) {
+                throw new CommandException("Arguments are not programmed to parse the following type: " + tType + ". This is either not implemented intentionally or by accident somehow.");
             }
         }
     }
@@ -27,10 +27,10 @@ public class Arg<T> extends ArgBase {
     // Constructor with default value
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault, boolean showDefault) throws CommandException {
         this(type, name);
-        _hasDefault = true;
+        hasDefault = true;
         Default = defaultValue;
-        _minArgCountToUseDefault = minArgCountToUseDefault;
-        _showDefault = showDefault;
+        this.minArgCountToUseDefault = minArgCountToUseDefault;
+        this.showDefault = showDefault;
     }
 
     public Arg(Class<T> type, String name, T defaultValue, int minArgCountToUseDefault) throws CommandException {
@@ -54,16 +54,16 @@ public class Arg<T> extends ArgBase {
     // This is important cause if it is, it will stop parsing further variables and end here as it is a params.
     @Override
     public boolean isArray() {
-        return _isArray;
+        return isArray;
     }
 
     private boolean isEnum() {
-        return _tType.isEnum();
+        return tType.isEnum();
     }
 
     // Horrendous chain syntax that I'm only using here.
     public Arg<T> asArray() {
-        _isArray = true;
+        isArray = true;
         return this;
     }
 
@@ -76,12 +76,12 @@ public class Arg<T> extends ArgBase {
     @Override
     public String getHelpRepresentation() {
         if (hasDefault()) {
-            if (_showDefault) {
-                return "<" + _name + "=" + Default + ">";
+            if (showDefault) {
+                return "<" + name + "=" + Default + ">";
             }
-            return "<" + _name + ">";
+            return "<" + name + ">";
         }
-        return "[" + _name + "]";
+        return "[" + name + "]";
     }
 
     @SuppressWarnings("unchecked")
@@ -207,7 +207,7 @@ public class Arg<T> extends ArgBase {
 
     @Override
     public Object parseUnit(String unit, String[] unitPlusRemainder) throws CommandException {
-        return parseUnitUtil(_tType, unit, unitPlusRemainder);
+        return parseUnitUtil(tType, unit, unitPlusRemainder);
     }
 
     public boolean checkValidUnit(String arg, StringBuilder errorMsg) {
@@ -225,6 +225,6 @@ public class Arg<T> extends ArgBase {
     public boolean isArbitrarilyLong() {
         // Some arguments don't fit into individual "units".
         // I should _really_ rewrite this system...
-        return isInstanceOf(_tType, ItemList.class) || isInstanceOf(_tType, GotoTarget.class);
+        return isInstanceOf(tType, ItemList.class) || isInstanceOf(tType, GotoTarget.class);
     }
 }

@@ -8,64 +8,64 @@ import java.util.function.Predicate;
 
 public abstract class Task {
 
-    private String _oldDebugState = "";
-    private String _debugState = "";
+    private String oldDebugState = "";
+    private String debugState = "";
 
-    private Task _sub = null;
+    private Task sub = null;
 
-    private boolean _first = true;
+    private boolean first = true;
 
-    private boolean _stopped = false;
+    private boolean stopped = false;
 
-    private boolean _active = false;
+    private boolean active = false;
 
     public void tick(AltoClef mod, TaskChain parentChain) {
         parentChain.addTaskToChain(this);
-        if (_first) {
+        if (first) {
             Debug.logInternal("Task START: " + this);
-            _active = true;
+            active = true;
             onStart(mod);
-            _first = false;
-            _stopped = false;
+            first = false;
+            stopped = false;
         }
-        if (_stopped) return;
+        if (stopped) return;
 
         Task newSub = onTick(mod);
         // Debug state print
-        if (!_oldDebugState.equals(_debugState)) {
+        if (!oldDebugState.equals(debugState)) {
             Debug.logInternal(toString());
-            _oldDebugState = _debugState;
+            oldDebugState = debugState;
         }
         // We have a sub task
         if (newSub != null) {
-            if (!newSub.isEqual(_sub)) {
-                if (canBeInterrupted(mod, _sub, newSub)) {
+            if (!newSub.isEqual(sub)) {
+                if (canBeInterrupted(mod, sub, newSub)) {
                     // Our sub task is new
-                    if (_sub != null) {
+                    if (sub != null) {
                         // Our previous sub must be interrupted.
-                        _sub.stop(mod, newSub);
+                        sub.stop(mod, newSub);
                     }
 
-                    _sub = newSub;
+                    sub = newSub;
                 }
             }
 
             // Run our child
-            _sub.tick(mod, parentChain);
+            sub.tick(mod, parentChain);
         } else {
             // We are null
-            if (_sub != null && canBeInterrupted(mod, _sub, null)) {
+            if (sub != null && canBeInterrupted(mod, sub, null)) {
                 // Our previous sub must be interrupted.
-                _sub.stop(mod);
-                _sub = null;
+                sub.stop(mod);
+                sub = null;
             }
         }
     }
 
     public void reset() {
-        _first = true;
-        _active = false;
-        _stopped = false;
+        first = true;
+        active = false;
+        stopped = false;
     }
 
     public void stop(AltoClef mod) {
@@ -76,19 +76,19 @@ public abstract class Task {
      * Stops the task. Next time it's run it will run `onStart`
      */
     public void stop(AltoClef mod, Task interruptTask) {
-        if (!_active) return;
+        if (!active) return;
         Debug.logInternal("Task STOP: " + this + ", interrupted by " + interruptTask);
-        if (!_first) {
+        if (!first) {
             onStop(mod, interruptTask);
         }
 
-        if (_sub != null && !_sub.stopped()) {
-            _sub.stop(mod, interruptTask);
+        if (sub != null && !sub.stopped()) {
+            sub.stop(mod, interruptTask);
         }
 
-        _first = true;
-        _active = false;
-        _stopped = true;
+        first = true;
+        active = false;
+        stopped = true;
     }
 
     /**
@@ -99,23 +99,23 @@ public abstract class Task {
      * Doesn't stop it all-together (meaning `isActive` still returns true)
      */
     public void interrupt(AltoClef mod, Task interruptTask) {
-        if (!_active) return;
-        if (!_first) {
+        if (!active) return;
+        if (!first) {
             onStop(mod, interruptTask);
         }
 
-        if (_sub != null && !_sub.stopped()) {
-            _sub.interrupt(mod, interruptTask);
+        if (sub != null && !sub.stopped()) {
+            sub.interrupt(mod, interruptTask);
         }
 
-        _first = true;
+        first = true;
     }
 
     protected void setDebugState(String state) {
         if (state == null) {
             state = "";
         }
-        _debugState = state;
+        debugState = state;
     }
 
     // Virtual
@@ -124,11 +124,11 @@ public abstract class Task {
     }
 
     public boolean isActive() {
-        return _active;
+        return active;
     }
 
     public boolean stopped() {
-        return _stopped;
+        return stopped;
     }
 
     protected abstract void onStart(AltoClef mod);
@@ -144,7 +144,7 @@ public abstract class Task {
 
     @Override
     public String toString() {
-        return "<" + toDebugString() + "> " + _debugState;
+        return "<" + toDebugString() + "> " + debugState;
     }
 
     @Override
@@ -159,7 +159,7 @@ public abstract class Task {
         Task t = this;
         while (t != null) {
             if (pred.test(t)) return true;
-            t = t._sub;
+            t = t.sub;
         }
         return false;
     }
