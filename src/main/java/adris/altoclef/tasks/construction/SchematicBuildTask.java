@@ -11,11 +11,13 @@ import adris.altoclef.util.CubeBounds;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.schematic.ISchematic;
+import baritone.api.utils.Pair;
 import baritone.process.BuilderProcess;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Vec3i;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -28,13 +30,9 @@ public class SchematicBuildTask extends Task {
     private String schematicFileName;
     private BlockPos startPos;
     private int allowedResourceStackCount;
-    private CubeBounds bounds;
     private Map<BlockState, Integer> missing;
-    private boolean sourced;
-    private boolean pause;
-    private boolean clearRunning = false;
-    private String name;
     private ISchematic schematic;
+    private Vec3i origin;
     private static final int FOOD_UNITS = 80;
     private static final int MIN_FOOD_UNITS = 10;
     private final TimerGame _clickTimer = new TimerGame(120);
@@ -46,18 +44,13 @@ public class SchematicBuildTask extends Task {
     }
 
     public SchematicBuildTask(final String schematicFileName, final BlockPos startPos) {
-        this(schematicFileName, startPos, 3);
+        this(schematicFileName, startPos, 64);
     }
 
     public SchematicBuildTask(final String schematicFileName, final BlockPos startPos, final int allowedResourceStackCount) {
-        this();
         this.schematicFileName = schematicFileName;
         this.startPos = startPos;
         this.allowedResourceStackCount = allowedResourceStackCount;
-    }
-
-    public SchematicBuildTask() {
-        this.sourced = false;
     }
 
     @Override
@@ -69,19 +62,20 @@ public class SchematicBuildTask extends Task {
         }
 
         final File file = new File("schematics/" + schematicFileName);
+
         if (!file.exists()) {
             Debug.logMessage("Could not locate schematic file. Terminating...");
             this.finished = true;
             return;
         }
 
-        if (isNull(this.schematic)) {
-            builder.build(schematicFileName, startPos); //TODO: I think there should be a state queue in baritone
-        } else {
-            builder.build(this.name, this.schematic, startPos);
-        }
+        builder.build(schematicFileName, startPos);
 
-        this.pause = false;
+
+        updateBuilderData();
+        setupAvoidancePredicate(mod);
+
+
 
         _moveChecker.reset();
         _clickTimer.reset();
@@ -119,59 +113,57 @@ public class SchematicBuildTask extends Task {
         return o == null;
     }
 
-    private void overrideMissing() {
-        this.missing = builder.getMissing();
+    private void updateBuilderData() {
+        Map<BlockState, Integer> missingcheck = builder.getMissing();
+        if (missingcheck != null) {
+            missing = missingcheck;
+        }
+
+        if (schematic == null || origin == null) {
+            Pair<ISchematic, BlockPos> SchemAndOrigin = builder.getSchemAndOrigin();
+            schematic = SchemAndOrigin.first();
+            origin = SchemAndOrigin.second();
+        }
     }
 
-    private Map<BlockState, Integer> getMissing() {
-        if (isNull(this.missing)) {
-            overrideMissing();
-        }
-        return this.missing;
-    }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (clearRunning && builder.isActive()) {
-            return null;
-        }
+        updateBuilderData();
 
-        clearRunning = false;
-        overrideMissing();
-        this.sourced = false;
-
-        System.out.println(getMissing());
-        if (!isNull(getMissing()) && !getMissing().isEmpty() && (builder.isPaused() || !builder.isActive())) {
+        if (!isNull(missing) && !missing.isEmpty() && (builder.isPaused() || !builder.isActive())) {
             if (mod.getPlayer().getHungerManager().getFoodLevel() < MIN_FOOD_UNITS) {
                 return new CollectFoodTask(FOOD_UNITS);
             }
-            mod.log("checking list");
-            for (final BlockState state : getTodoList(mod, missing)) {
-                mod.log("getting" + state.toString());
-                return TaskCatalogue.getItemTask(state.getBlock().asItem(), missing.get(state));
+            setDebugState("Checking list");
+            for (final BlockState state : missing.keySet()) { //getTodoList(mod, missing)
+                Item item = state.getBlock().asItem();
+                int countRequired = missing.get(state);
+                if (mod.getItemStorage().getItemCount(item) < countRequired) {
+                    setDebugState("Getting " + state.getBlock().asItem().toString());
+                    return TaskCatalogue.getItemTask(state.getBlock().asItem(), countRequired);
+                }
             }
-            this.sourced = true;
-        }
-
-        if (this.sourced && !builder.isActive()) {
-
+            //Then we couldnt get anything so just resume.
+            missing.clear();
+        } else if (builder.isPaused() || !builder.isActive()) {
             builder.resume();
-            Debug.logMessage("Resuming build process...");
             System.out.println("Resuming builder...");
         }
 
+        System.out.println("missing altoclef perspective: " + missing);
         if (_moveChecker.check(mod)) {
             _clickTimer.reset();
         }
 
         if (_clickTimer.elapsed()) {
-            if (isNull(walkAroundTask)) {
+            if (walkAroundTask == null) {
                 walkAroundTask = new TimeoutWanderTask(5);
             }
-            Debug.logMessage("Timer elapsed.");
+            Debug.logMessage("Anti stuck timer elapsed.");
         }
 
-        if (!isNull(walkAroundTask)) {
+        if (walkAroundTask != null) {
             if (!walkAroundTask.isFinished(mod)) {
                 return walkAroundTask;
             } else {
@@ -182,39 +174,43 @@ public class SchematicBuildTask extends Task {
             }
         }
 
-        /*/
-        if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable() != null) {
-            if (BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().stream().anyMatch(e ->  e != null && e.getBlock() instanceof BedBlock)) {
-                System.out.println("ALT: true");
-            }
-            BaritoneAPI.getProvider().getPrimaryBaritone().getBuilderProcess().getApproxPlaceable().forEach(e -> {
-                if (Utils.isSet(e) && e.getBlock().asItem().toString() != "air") {
-                    System.out.println(e.getBlock().getName());
-                    System.out.println(e.getBlock().asItem().getName());
-                    System.out.println(e.getBlock().asItem().toString());
-                    System.out.println(e.getBlock().toString());
-                    System.out.println("(((((((((");
-                    System.out.println(e.getBlock().getDefaultState());
-                    System.out.println(")))))))))");
-                    System.out.println("~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                }
-            });
-        }*/
-        //mod.getInventoryTracker().getItemStackInSlot(mod.getInventoryTracker().getInventorySlotsWithItem(Items.OAK_DOOR).get(0)).getItem().
-        /*
-        missing.forEach((k,e) -> {
-            if (Utils.isSet(k)) {
-                System.out.println(k);
-            }
-        });*/
-
         return null;
+    }
+
+    private void setupAvoidancePredicate(AltoClef mod) {
+        /*
+        int originX = origin.getX();
+        int originY = origin.getY();
+        int originZ = origin.getZ();
+        int widthMax = schematic.widthX() + originX;
+        int heightMax = schematic.heightY() + originY;
+        int depthMax = schematic.lengthZ() + originZ; // Corrected variable name from widthMax to depthMax
+        mod.getBehaviour().avoidBlockBreaking(block -> {
+            int blockX = block.getX();
+            int blockY = block.getY();
+            int blockZ = block.getZ();
+            // check if the blocks position is in the schematic build area
+            if (
+                blockX >= originX && blockX < widthMax && // X
+                blockY >= originY && blockY < heightMax && // Y
+                blockZ >= originZ && blockZ < depthMax // Z
+            ) {
+                //mod.log("said to avoid breaking at " + blockX + "," + blockY + "," + blockZ + ".");
+                return true;
+            } else {
+                return false;
+            }
+        });
+        */
+
+        BlockPos originBlockPos = new BlockPos(origin.getX(), origin.getY(), origin.getZ());
+        CubeBounds avoidanceBound = new CubeBounds(originBlockPos, schematic.widthX(), schematic.heightY(), schematic.lengthZ());
+        mod.getBehaviour().avoidBlockBreaking(block -> avoidanceBound.inside(block.getX(), block.getY(), block.getZ()));
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         builder.pause();
-        this.pause = true;
     }
 
     @Override

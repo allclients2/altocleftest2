@@ -446,7 +446,7 @@ public interface WorldHelper {
     }
 
     // Function to check if the player is surrounded on two or more sides
-    public static boolean isSurrounded(AltoClef mod, List<Entity> entities) {
+    static boolean isSurrounded(AltoClef mod, List<Entity> entities) {
 
         BlockPos playerPos = mod.getPlayer().getBlockPos();
 

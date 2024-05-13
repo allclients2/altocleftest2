@@ -8,7 +8,7 @@ import adris.altoclef.tasks.construction.SchematicBuildTask;
 
 public class BuildCommand extends Command {
     public BuildCommand() throws CommandException {
-        super("build", "Build a structure from schematic data", new Arg(String.class, "filename", "", 0));
+        super("build", "!SO GLITCHY ITS USELESS; IN DEVELOPMENT! Build a structure from schematic data", new Arg(String.class, "filename", "", 0));
     }
 
     @Override
