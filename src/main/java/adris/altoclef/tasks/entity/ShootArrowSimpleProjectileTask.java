@@ -2,13 +2,11 @@ package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.speedrun.BeatMinecraft2Task;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
-import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.projectile.ArrowEntity;
 import net.minecraft.item.Item;
@@ -115,10 +113,6 @@ public class ShootArrowSimpleProjectileTask extends Task {
                 }
             }
 
-            if (BeatMinecraft2Task.getConfig().renderDistanceManipulation && MinecraftClient.getInstance().options.getSimulationDistance().getValue() < 32) {
-                // For farther entities, the arrow may get stuck in the air, so we need to increase the simulation distance
-                MinecraftClient.getInstance().options.getSimulationDistance().setValue(32);
-            }
             mod.getInputControls().release(Input.CLICK_RIGHT); // Release the arrow
             shot = true;
         }

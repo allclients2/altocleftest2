@@ -6,27 +6,27 @@ import java.util.Objects;
 
 public class SmeltTarget {
 
-    private final ItemTarget _item;
-    private final Item[] _optionalMaterials;
-    private ItemTarget _material;
+    private final ItemTarget item;
+    private final Item[] optionalMaterials;
+    private ItemTarget material;
 
     public SmeltTarget(ItemTarget item, ItemTarget material, Item... optionalMaterials) {
-        _item = item;
-        _material = material;
-        _material = new ItemTarget(material, _item.getTargetCount());
-        _optionalMaterials = optionalMaterials;
+        this.item = item;
+        this.material = material;
+        this.material = new ItemTarget(material, this.item.getTargetCount());
+        this.optionalMaterials = optionalMaterials;
     }
 
     public ItemTarget getItem() {
-        return _item;
+        return item;
     }
 
     public ItemTarget getMaterial() {
-        return _material;
+        return material;
     }
 
     public Item[] getOptionalMaterials() {
-        return _optionalMaterials;
+        return optionalMaterials;
     }
 
     @Override
@@ -34,11 +34,11 @@ public class SmeltTarget {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         SmeltTarget that = (SmeltTarget) o;
-        return Objects.equals(_material, that._material) && Objects.equals(_item, that._item);
+        return Objects.equals(material, that.material) && Objects.equals(item, that.item);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(_material, _item);
+        return Objects.hash(material, item);
     }
 }

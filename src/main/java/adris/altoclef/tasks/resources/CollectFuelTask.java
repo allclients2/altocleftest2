@@ -11,10 +11,10 @@ import net.minecraft.item.Items;
 // TODO: Make this collect more than just coal. It should smartly pick alternative sources if coal is too far away or if we simply cannot get a wooden pick.
 public class CollectFuelTask extends Task {
 
-    private final double _targetFuel;
+    private final double targetFuel;
 
     public CollectFuelTask(double targetFuel) {
-        _targetFuel = targetFuel;
+        this.targetFuel = targetFuel;
     }
 
     @Override
@@ -29,7 +29,7 @@ public class CollectFuelTask extends Task {
             case OVERWORLD -> {
                 // Just collect coal for now.
                 setDebugState("Collecting coal.");
-                return TaskCatalogue.getItemTask(Items.COAL, (int) Math.ceil(_targetFuel / 8));
+                return TaskCatalogue.getItemTask(Items.COAL, (int) Math.ceil(targetFuel / 8));
             }
             case END -> {
                 setDebugState("Going to overworld, since, well, no more fuel can be found here.");
@@ -39,7 +39,6 @@ public class CollectFuelTask extends Task {
                 setDebugState("Going to overworld, since we COULD use wood but wood confuses the bot. A bug at the moment.");
                 return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
             }
-            //return TaskCatalogue.getItemTask("planks", (int) Math.ceil(_targetFuel));
         }
         setDebugState("INVALID DIMENSION: " + WorldHelper.getCurrentDimension());
         return null;
@@ -53,18 +52,18 @@ public class CollectFuelTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof CollectFuelTask task) {
-            return Math.abs(task._targetFuel - _targetFuel) < 0.01;
+            return Math.abs(task.targetFuel - targetFuel) < 0.01;
         }
         return false;
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return mod.getItemStorage().getItemCountInventoryOnly(Items.COAL) >= _targetFuel;
+        return mod.getItemStorage().getItemCountInventoryOnly(Items.COAL) >= targetFuel;
     }
 
     @Override
     protected String toDebugString() {
-        return "Collect Fuel: x" + _targetFuel;
+        return "Collect Fuel: x" + targetFuel;
     }
 }

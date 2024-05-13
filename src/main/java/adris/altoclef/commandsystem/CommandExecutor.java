@@ -9,25 +9,25 @@ import java.util.function.Consumer;
 
 public class CommandExecutor {
 
-    private final HashMap<String, Command> _commandSheet = new HashMap<>();
-    private final AltoClef _mod;
+    private final HashMap<String, Command> commandSheet = new HashMap<>();
+    private final AltoClef mod;
 
     public CommandExecutor(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
     }
 
     public void registerNewCommand(Command... commands) {
         for (Command command : commands) {
-            if (_commandSheet.containsKey(command.getName())) {
+            if (commandSheet.containsKey(command.getName())) {
                 Debug.logInternal("Command with name " + command.getName() + " already exists! Can't register that name twice.");
                 continue;
             }
-            _commandSheet.put(command.getName(), command);
+            commandSheet.put(command.getName(), command);
         }
     }
 
     private String getCommandPrefix() {
-        return _mod.getModSettings().getCommandPrefix();
+        return mod.getModSettings().getCommandPrefix();
     }
 
     public boolean isClientCommand(String line) {
@@ -47,7 +47,7 @@ public class CommandExecutor {
                 getException.accept(new CommandException("Invalid command:" + part));
                 executeRecursive(commands, parts, index + 1, onFinish, getException);
             } else {
-                command.run(_mod, part, () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
+                command.run(mod, part, () -> executeRecursive(commands, parts, index + 1, onFinish, getException));
             }
         } catch (CommandException ae) {
             getException.accept(new CommandException(ae.getMessage() + "\nUsage: " + command.getHelpRepresentation(), ae));
@@ -95,21 +95,21 @@ public class CommandExecutor {
                 command = line.substring(0, firstSpace);
             }
 
-            if (!_commandSheet.containsKey(command)) {
+            if (!commandSheet.containsKey(command)) {
                 throw new CommandException("Command " + command + " does not exist.");
             }
 
-            return _commandSheet.get(command);
+            return commandSheet.get(command);
         }
         return null;
 
     }
 
     public Collection<Command> allCommands() {
-        return _commandSheet.values();
+        return commandSheet.values();
     }
 
     public Command get(String name) {
-        return (_commandSheet.getOrDefault(name, null));
+        return (commandSheet.getOrDefault(name, null));
     }
 }

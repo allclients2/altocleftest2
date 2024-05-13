@@ -35,7 +35,6 @@ public class StoreInStashTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(TO_SCAN);
         if (_storedItems == null) {
             _storedItems = new ContainerStoredTracker(slot -> {
                 Optional<BlockPos> currentContainer = mod.getItemStorage().getLastBlockPosInteraction();
@@ -66,7 +65,7 @@ public class StoreInStashTask extends Task {
         };
 
         // Store in valid container
-        if (mod.getBlockTracker().anyFound(validContainer, TO_SCAN)) {
+        if (mod.getBlockScanner().anyFound(validContainer, TO_SCAN)) {
             setDebugState("Storing in closest stash container");
             return new DoToClosestBlockTask(
                     (BlockPos bpos) -> new StoreInContainerTask(bpos, false, _storedItems.getUnstoredItemTargetsYouCanStore(mod, _toStore)),
@@ -82,7 +81,6 @@ public class StoreInStashTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(TO_SCAN);
         _storedItems.stopTracking();
     }
 

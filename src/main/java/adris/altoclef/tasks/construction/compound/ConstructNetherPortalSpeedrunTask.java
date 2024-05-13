@@ -112,7 +112,6 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
     protected void onStart(AltoClef mod) {
         _isPlacingLiquid = false;
         _portalFrameBuilt = false;
-        mod.getBlockTracker().trackBlock(Blocks.LAVA);
         mod.getBehaviour().push();
         //mod.getConfigState().setAllowWalkThroughFlowingWater(true);
         // Avoid breaking frame.
@@ -319,7 +318,6 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
 
     @Override
     protected void onStop(AltoClef mod, adris.altoclef.tasksystem.Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.LAVA);
         mod.getBehaviour().pop();
     }
 
@@ -340,7 +338,7 @@ public class ConstructNetherPortalSpeedrunTask extends adris.altoclef.tasksystem
 
         double nearestSqDistance = Double.POSITIVE_INFINITY;
         BlockPos nearestLake = null;
-        for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.LAVA)) {
+        for (BlockPos pos : mod.getBlockScanner().getKnownLocations(Blocks.LAVA)) {
             if (alreadyExplored.contains(pos)) continue;
             double sqDist = playerPos.getSquaredDistance(pos);
             if (sqDist < nearestSqDistance) {

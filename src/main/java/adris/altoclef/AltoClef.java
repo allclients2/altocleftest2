@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
+import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
@@ -36,10 +37,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
 
-import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Queue;
+import java.util.*;
 import java.util.function.Consumer;
 
 /**
@@ -51,33 +49,37 @@ public class AltoClef implements ModInitializer {
     private static final Queue<Consumer<AltoClef>> _postInitQueue = new ArrayDeque<>();
 
     // Central Managers
-    private static CommandExecutor _commandExecutor;
-    private TaskRunner _taskRunner;
-    private TrackerManager _trackerManager;
-    private BotBehaviour _botBehaviour;
-    private PlayerExtraController _extraController;
+    private static CommandExecutor commandExecutor;
+    private TaskRunner taskRunner;
+    private TrackerManager trackerManager;
+    private BotBehaviour botBehaviour;
+    private PlayerExtraController extraController;
     // Task chains
-    private UserTaskChain _userTaskChain;
-    private FoodChain _foodChain;
-    private MobDefenseChain _mobDefenseChain;
-    private MLGBucketFallChain _mlgBucketChain;
+    private UserTaskChain userTaskChain;
+    private FoodChain foodChain;
+    private MobDefenseChain mobDefenseChain;
+    private MLGBucketFallChain mlgBucketChain;
+    private UnstuckChain unstuckChain;
     // Trackers
-    private ItemStorageTracker _storageTracker;
-    private ContainerSubTracker _containerSubTracker;
-    private EntityTracker _entityTracker;
-    private BlockTracker _blockTracker;
-    private SimpleChunkTracker _chunkTracker;
-    private MiscBlockTracker _miscBlockTracker;
+    private ItemStorageTracker storageTracker;
+    private ContainerSubTracker containerSubTracker;
+    private EntityTracker entityTracker;
+    private BlockScanner blockScanner;
+    private SimpleChunkTracker chunkTracker;
+    private MiscBlockTracker miscBlockTracker;
     // Renderers
-    private CommandStatusOverlay _commandStatusOverlay;
+    private CommandStatusOverlay commandStatusOverlay;
     // Settings
-    private adris.altoclef.Settings _settings;
+    private adris.altoclef.Settings settings;
     // Misc managers/input
-    private MessageSender _messageSender;
-    private InputControls _inputControls;
-    private SlotHandler _slotHandler;
-    // Butler
-    private Butler _butler;
+    private MessageSender messageSender;
+    private InputControls inputControls;
+
+    private Butler butler;
+    private SlotHandler slotHandler;
+
+    //TODO refactor this later
+    public static AltoClef INSTANCE;
 
     // Are we in game (playing in a server/world)
     public static boolean inGame() {
@@ -88,7 +90,7 @@ public class AltoClef implements ModInitializer {
      * Executes commands (ex. `@get`/`@gamer`)
      */
     public static CommandExecutor getCommandExecutor() {
-        return _commandExecutor;
+        return commandExecutor;
     }
 
     @Override
@@ -97,6 +99,7 @@ public class AltoClef implements ModInitializer {
         // However, some things (like resources) may still be uninitialized.
         // As such, nothing will be loaded here but basic initialization.
         EventBus.subscribe(TitleScreenEntryEvent.class, evt -> onInitializeLoad());
+        INSTANCE = this;
     }
 
     public void onInitializeLoad() {
@@ -106,45 +109,45 @@ public class AltoClef implements ModInitializer {
         initializeBaritoneSettings();
 
         // Central Managers
-        _commandExecutor = new CommandExecutor(this);
-        _taskRunner = new TaskRunner(this);
-        _trackerManager = new TrackerManager(this);
-        _botBehaviour = new BotBehaviour(this);
-        _extraController = new PlayerExtraController(this);
+        commandExecutor = new CommandExecutor(this);
+        taskRunner = new TaskRunner(this);
+        trackerManager = new TrackerManager(this);
+        botBehaviour = new BotBehaviour(this);
+        extraController = new PlayerExtraController(this);
 
         // Task chains
-        _userTaskChain = new UserTaskChain(_taskRunner);
-        _mobDefenseChain = new MobDefenseChain(_taskRunner);
-        new DeathMenuChain(_taskRunner);
-        new PlayerInteractionFixChain(_taskRunner);
-        _mlgBucketChain = new MLGBucketFallChain(_taskRunner);
-        new WorldSurvivalChain(_taskRunner);
-        _foodChain = new FoodChain(_taskRunner);
+        userTaskChain = new UserTaskChain(taskRunner);
+        mobDefenseChain = new MobDefenseChain(taskRunner);
+        new DeathMenuChain(taskRunner);
+        new PlayerInteractionFixChain(taskRunner);
+        mlgBucketChain = new MLGBucketFallChain(taskRunner);
+        unstuckChain = new UnstuckChain(taskRunner);
+        new WorldSurvivalChain(taskRunner);
+        foodChain = new FoodChain(taskRunner);
 
         // Trackers
-        _storageTracker = new ItemStorageTracker(this, _trackerManager, container -> _containerSubTracker = container);
-        _entityTracker = new EntityTracker(_trackerManager);
-        _blockTracker = new BlockTracker(this, _trackerManager);
-        _chunkTracker = new SimpleChunkTracker(this);
-        _miscBlockTracker = new MiscBlockTracker(this);
+        storageTracker = new ItemStorageTracker(this, trackerManager, container -> containerSubTracker = container);
+        entityTracker = new EntityTracker(trackerManager);
+        blockScanner = new BlockScanner(this);
+        chunkTracker = new SimpleChunkTracker(this);
+        miscBlockTracker = new MiscBlockTracker(this);
 
         // Renderers
-        _commandStatusOverlay = new CommandStatusOverlay();
+        commandStatusOverlay = new CommandStatusOverlay();
 
         // Misc managers
-        _messageSender = new MessageSender();
-        _inputControls = new InputControls();
-        _slotHandler = new SlotHandler(this);
-
-        _butler = new Butler(this);
+        messageSender = new MessageSender();
+        inputControls = new InputControls();
+        butler = new Butler(this);
+        slotHandler = new SlotHandler(this);
 
         initializeCommands();
 
         // Load settings
         adris.altoclef.Settings.load(newSettings -> {
-            _settings = newSettings;
+            settings = newSettings;
             // Baritone's `acceptableThrowawayItems` should match our own.
-            List<Item> baritoneCanPlace = Arrays.stream(_settings.getThrowawayItems(this, true))
+            List<Item> baritoneCanPlace = Arrays.stream(settings.getThrowawayItems(this, true))
                     .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK && item != Items.SAND && item
                             != Items.GRAVEL).toList();
             getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
@@ -154,8 +157,8 @@ public class AltoClef implements ModInitializer {
                 getCommandExecutor().executeWithPrefix(getModSettings().getIdleCommand());
             }
             // Don't break blocks or place blocks where we are explicitly protected.
-            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> _settings.isPositionExplicitlyProtected(blockPos));
-            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> _settings.isPositionExplicitlyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockBreak(blockPos -> settings.isPositionExplicitlyProtected(blockPos));
+            getExtraBaritoneSettings().avoidBlockPlace(blockPos -> settings.isPositionExplicitlyProtected(blockPos));
         });
 
         // Receive + cancel chat
@@ -182,66 +185,42 @@ public class AltoClef implements ModInitializer {
         runEnqueuedPostInits();
     }
 
-
-    // Post Baritone "Fail" FPS duct tape.
-    // Baritone lags A TON while getting a path and failing, it spams chat with "[Baritone]: Failed" and obliterates the fps.
-    // This is a simple duct tape for such an event
-    private final Task WanderDuctTape = new TimeoutWanderTask();
-    private boolean DuctTapeApplied = false;
-    private void BaritoneFPSDuctTape() {
-        if (MinecraftClient.getInstance().getCurrentFps() <= 7 && getClientBaritone().getPathingBehavior().calcFailedLastTick()) {
-            if (getClientBaritone().getExploreProcess().isActive()) { //If already wandering then cancel
-                log("Baritone FPS Duct tape, is implemented final measures.");
-                getClientBaritoneSettings().costHeuristic.value = 80.0; //Accept terrible paths
-            } else {
-                log("Lag detected and Baritone Calculation Failed, Wandering.. (Temporary duct tape)");
-                _userTaskChain.setTask(new TimeoutWanderTask());
-            }
-
-            DuctTapeApplied = true;
-        } else if (DuctTapeApplied) { // Reset
-            getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
-            WanderDuctTape.stop(this);
-            DuctTapeApplied = false;
-        }
-    }
-
     // Client tick
     private void onClientTick() {
         runEnqueuedPostInits();
 
-        _inputControls.onTickPre();
+        inputControls.onTickPre();
 
         // Cancel shortcut
         if (InputHelper.isKeyPressed(GLFW.GLFW_KEY_LEFT_CONTROL) && InputHelper.isKeyPressed(GLFW.GLFW_KEY_K)) {
-            _userTaskChain.cancel(this);
-            if (_taskRunner.getCurrentTaskChain() != null) {
-                _taskRunner.getCurrentTaskChain().stop(this);
+            userTaskChain.cancel(this);
+            if (taskRunner.getCurrentTaskChain() != null) {
+                taskRunner.getCurrentTaskChain().stop(this);
             }
         }
 
         // TODO: should this go here?
-        _storageTracker.setDirty();
-        _containerSubTracker.onServerTick();
-        _miscBlockTracker.tick();
+        storageTracker.setDirty();
+        containerSubTracker.onServerTick();
+        miscBlockTracker.tick();
+        trackerManager.tick();
+        blockScanner.tick();
+        taskRunner.tick();
 
-        _trackerManager.tick();
-        _blockTracker.preTickTask();
-        _taskRunner.tick();
-        _blockTracker.postTickTask();
+        messageSender.tick();
 
-        _butler.tick();
-        _messageSender.tick();
+        inputControls.onTickPost();
+        butler.tick();
+        messageSender.tick();
 
-        _inputControls.onTickPost();
+        inputControls.onTickPost();
 
-        BaritoneFPSDuctTape();
     }
 
     /// GETTERS AND SETTERS
 
     private void onClientRenderOverlay(MatrixStack matrixStack) {
-        _commandStatusOverlay.render(this, matrixStack);
+        commandStatusOverlay.render(this, matrixStack);
     }
 
     // Settings
@@ -262,16 +241,18 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().allowParkourPlace.value = false;
         getClientBaritoneSettings().allowDiagonalDescend.value = false;
         getClientBaritoneSettings().allowDiagonalAscend.value = false;
-
-        getClientBaritoneSettings().blocksToAvoid.value = List.of( //Two block tall plants
-                Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
+        getClientBaritoneSettings().blocksToAvoid.value = new LinkedList<>(List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
                 Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
                 Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
-                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN, Blocks.SUNFLOWER, Blocks.LILAC,
+                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN,
                 Blocks.ROSE_BUSH, Blocks.PEONY
-        );
+        ));
+        // dont try to break nether portal block
+        getClientBaritoneSettings().blocksToAvoidBreaking.value.add(Blocks.NETHER_PORTAL);
+        getClientBaritoneSettings().blocksToDisallowBreaking.value.add(Blocks.NETHER_PORTAL);
+
         // Let baritone move items to hotbar to use them
 
         // Reduces a bit of far rendering to save FPS
@@ -285,6 +266,7 @@ public class AltoClef implements ModInitializer {
 
         // Water bucket placement will be handled by us exclusively
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
+
         getClientBaritoneSettings().failureTimeoutMS.value = 500L;
 
         // For render smoothing
@@ -294,8 +276,6 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
         getClientBaritoneSettings().avoidBreakingMultiplier.value = AvoidBreakingMultiplier;
         getClientBaritoneSettings().blockPlacementPenalty.value = PlacementPenalty;
-
-
         // Default is 3.563 (In decompiled)
 
         // Give baritone more time to calculate paths. Sometimes they can be really far away.
@@ -311,7 +291,7 @@ public class AltoClef implements ModInitializer {
     private void initializeCommands() {
         try {
             // This creates the commands. If you want any more commands feel free to initialize new command lists.
-            new AltoClefCommands();
+            AltoClefCommands.init();
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -328,56 +308,56 @@ public class AltoClef implements ModInitializer {
      * (task chains run the task tree)
      */
     public TaskRunner getTaskRunner() {
-        return _taskRunner;
+        return taskRunner;
     }
 
     /**
      * The user task chain (runs your command. Ex. Get Diamonds, Beat the Game)
      */
     public UserTaskChain getUserTaskChain() {
-        return _userTaskChain;
+        return userTaskChain;
     }
 
     /**
      * Controls bot behaviours, like whether to temporarily "protect" certain blocks or items
      */
     public BotBehaviour getBehaviour() {
-        return _botBehaviour;
+        return botBehaviour;
     }
 
     /**
      * Tracks items in your inventory and in storage containers.
      */
-    public  ItemStorageTracker getItemStorage() {
-        return _storageTracker;
+    public ItemStorageTracker getItemStorage() {
+        return storageTracker;
     }
 
     /**
      * Tracks loaded entities
      */
     public EntityTracker getEntityTracker() {
-        return _entityTracker;
+        return entityTracker;
     }
 
     /**
-     * Tracks blocks and their positions
+     * Tracks blocks and their positions - better version of BlockTracker
      */
-    public BlockTracker getBlockTracker() {
-        return _blockTracker;
+    public BlockScanner getBlockScanner() {
+        return blockScanner;
     }
 
     /**
      * Tracks of whether a chunk is loaded/visible or not
      */
     public SimpleChunkTracker getChunkTracker() {
-        return _chunkTracker;
+        return chunkTracker;
     }
 
     /**
      * Tracks random block things, like the last nether portal we used
      */
     public MiscBlockTracker getMiscBlockTracker() {
-        return _miscBlockTracker;
+        return miscBlockTracker;
     }
 
     /**
@@ -408,28 +388,22 @@ public class AltoClef implements ModInitializer {
      * AltoClef Settings
      */
     public adris.altoclef.Settings getModSettings() {
-        return _settings;
+        return settings;
     }
 
-    /**
-     * Butler controller. Keeps track of users and lets you receive user messages
-     */
-    public Butler getButler() {
-        return _butler;
-    }
 
     /**
      * Sends chat messages (avoids auto-kicking)
      */
     public MessageSender getMessageSender() {
-        return _messageSender;
+        return messageSender;
     }
 
     /**
      * Does Inventory/container slot actions
      */
     public SlotHandler getSlotHandler() {
-        return _slotHandler;
+        return slotHandler;
     }
 
     /**
@@ -438,6 +412,7 @@ public class AltoClef implements ModInitializer {
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
+
 
     /**
      * Minecraft world access (could just be static honestly)
@@ -457,14 +432,21 @@ public class AltoClef implements ModInitializer {
      * Extra controls not present in ClientPlayerInteractionManager. This REALLY should be made static or combined with something else.
      */
     public PlayerExtraController getControllerExtras() {
-        return _extraController;
+        return extraController;
     }
 
     /**
      * Manual control over input actions (ex. jumping, attacking)
      */
     public InputControls getInputControls() {
-        return _inputControls;
+        return inputControls;
+    }
+
+    /**
+     * Butler stuff
+     */
+    public Butler getButler() {
+        return butler;
     }
 
     /**
@@ -479,35 +461,39 @@ public class AltoClef implements ModInitializer {
      * Run a user task
      */
     public void runUserTask(Task task, Runnable onFinish) {
-        _userTaskChain.runTask(this, task, onFinish);
+        userTaskChain.runTask(this, task, onFinish);
     }
 
     /**
      * Cancel currently running user task
      */
     public void cancelUserTask() {
-        _userTaskChain.cancel(this);
+        userTaskChain.cancel(this);
     }
 
     /**
      * Takes control away to eat food
      */
     public FoodChain getFoodChain() {
-        return _foodChain;
+        return foodChain;
     }
 
     /**
      * Takes control away to defend against mobs
      */
     public MobDefenseChain getMobDefenseChain() {
-        return _mobDefenseChain;
+        return mobDefenseChain;
     }
 
     /**
      * Takes control away to perform bucket saves
      */
     public MLGBucketFallChain getMLGBucketChain() {
-        return _mlgBucketChain;
+        return mlgBucketChain;
+    }
+
+    public UnstuckChain getUnstuckChain() {
+        return unstuckChain;
     }
 
     public void log(String message) {
@@ -519,7 +505,6 @@ public class AltoClef implements ModInitializer {
      */
     public void log(String message, MessagePriority priority) {
         Debug.logMessage(message);
-        _butler.onLog(message, priority);
     }
 
     public void logWarning(String message) {
@@ -531,7 +516,6 @@ public class AltoClef implements ModInitializer {
      */
     public void logWarning(String message, MessagePriority priority) {
         Debug.logWarning(message);
-        _butler.onLogWarning(message, priority);
     }
 
     private void runEnqueuedPostInits() {

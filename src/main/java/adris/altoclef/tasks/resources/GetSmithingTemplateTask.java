@@ -25,7 +25,7 @@ public class GetSmithingTemplateTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.CHEST);
+
     }
 
     @Override
@@ -40,7 +40,7 @@ public class GetSmithingTemplateTask extends ResourceTask {
         //    _bastionloc = null;
         // }
         if (_chestloc == null) {
-            for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.CHEST)) {
+            for (BlockPos pos : mod.getBlockScanner().getKnownLocations(Blocks.CHEST)) {
                 if (WorldHelper.isInteractableBlock(mod, pos)) {
                     _chestloc = pos;
                     break;
@@ -54,7 +54,7 @@ public class GetSmithingTemplateTask extends ResourceTask {
                 return new DestroyBlockTask(_chestloc);
             } else {
                 _chestloc = null;
-                for (BlockPos pos : mod.getBlockTracker().getKnownLocations(Blocks.CHEST)) {
+                for (BlockPos pos : mod.getBlockScanner().getKnownLocations(Blocks.CHEST)) {
                     if (WorldHelper.isInteractableBlock(mod, pos)) {
                         _chestloc = pos;
                         break;
@@ -69,7 +69,6 @@ public class GetSmithingTemplateTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.CHEST);
     }
 
     @Override

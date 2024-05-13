@@ -49,7 +49,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             Blocks.BIG_DRIPLEAF_STEM,
             Blocks.SMALL_DRIPLEAF,
             Blocks.TALL_GRASS,
-            Blocks.GRASS_BLOCK
+            Blocks.SHORT_GRASS
     };
     private Task _unstuckTask = null;
     // Am starting to regret not making this a singleton
@@ -233,7 +233,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
         if (!obj.isOnGround() && !obj.isTouchingWater()) {
             // Assume we'll land down one or two blocks from here. We could do this more advanced but whatever.
             BlockPos p = obj.getBlockPos();
-            if (!WorldHelper.isSolid(mod, p.down(3))) {
+            if (!WorldHelper.isSolidBlock(mod, p.down(3))) {
                 return obj.getPos().subtract(0, 2, 0);
             }
             return obj.getPos().subtract(0, 1, 0);

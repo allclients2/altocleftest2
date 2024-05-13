@@ -29,7 +29,7 @@ public class DefaultGoToDimensionTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
+
     }
 
     @Override
@@ -71,7 +71,7 @@ public class DefaultGoToDimensionTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.NETHER_PORTAL);
+
     }
 
     @Override
@@ -131,8 +131,8 @@ public class DefaultGoToDimensionTask extends Task {
     }
 
     private boolean netherPortalIsClose(AltoClef mod) {
-        if (mod.getBlockTracker().anyFound(Blocks.NETHER_PORTAL)) {
-            Optional<BlockPos> closest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.NETHER_PORTAL);
+        if (mod.getBlockScanner().anyFound(Blocks.NETHER_PORTAL)) {
+            Optional<BlockPos> closest = mod.getBlockScanner().getNearestBlock( Blocks.NETHER_PORTAL);
             return closest.isPresent() && closest.get().isWithinDistance(mod.getPlayer().getPos(), 2000);
         }
         return false;

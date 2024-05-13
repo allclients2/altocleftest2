@@ -1,7 +1,6 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.resources.CollectFuelTask;
@@ -38,21 +37,19 @@ import java.util.stream.Stream;
  */
 public class SmeltInSmokerTask extends ResourceTask {
 
-    private final SmeltTarget[] _targets;
+    private final SmeltTarget target;
 
-    private final DoSmeltInSmokerTask _doTask;
-
-    public SmeltInSmokerTask(SmeltTarget[] targets) {
-        super(extractItemTargets(targets));
-        _targets = targets;
-        // TODO: Do them in order.
-        boolean ignoreMaterials = false;
-        _doTask = new DoSmeltInSmokerTask(targets[0], ignoreMaterials);
-    }
+    private final DoSmeltInSmokerTask doTask;
 
     public SmeltInSmokerTask(SmeltTarget target) {
-        this(new SmeltTarget[]{target});
+        super(extractItemTargets(new SmeltTarget[]{target}));
+        this.target = target;
+        // TODO: Do them in order.
+        boolean ignoreMaterials = false;
+        doTask = new DoSmeltInSmokerTask(target, ignoreMaterials);
     }
+
+
 
     private static ItemTarget[] extractItemTargets(SmeltTarget[] recipeTargets) {
         List<ItemTarget> result = new ArrayList<>(recipeTargets.length);
@@ -63,7 +60,7 @@ public class SmeltInSmokerTask extends ResourceTask {
     }
 
     public void ignoreMaterials() {
-        _doTask.ignoreMaterials();
+        doTask.ignoreMaterials();
     }
 
     @Override
@@ -73,23 +70,18 @@ public class SmeltInSmokerTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.SMOKER);
         mod.getBehaviour().push();
-        if (_targets.length != 1) {
-            Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
-        }
     }
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        Optional<BlockPos> smokerPos = mod.getBlockTracker().getNearestTracking(Blocks.SMOKER);
+        Optional<BlockPos> smokerPos = mod.getBlockScanner().getNearestBlock(Blocks.SMOKER);
         smokerPos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
-        return _doTask;
+        return doTask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.SMOKER);
         mod.getBehaviour().pop();
         // Close smoker screen
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
@@ -110,24 +102,24 @@ public class SmeltInSmokerTask extends ResourceTask {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return super.isFinished(mod) || _doTask.isFinished(mod);
+        return super.isFinished(mod) || doTask.isFinished(mod);
     }
 
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof SmeltInSmokerTask task) {
-            return task._doTask.isEqual(_doTask);
+            return task.doTask.isEqual(doTask);
         }
         return false;
     }
 
     @Override
     protected String toDebugStringName() {
-        return _doTask.toDebugString();
+        return doTask.toDebugString();
     }
 
     public SmeltTarget[] getTargets() {
-        return _targets;
+        return new SmeltTarget[]{target};
     }
 
     @SuppressWarnings("ConditionCoveredByFurtherCondition")
@@ -163,11 +155,17 @@ public class SmeltInSmokerTask extends ResourceTask {
         }
 
         @Override
-        protected Task onTick(AltoClef mod) {
+        protected void onStart(AltoClef mod) {
+            super.onStart(mod);
+
             mod.getBehaviour().addProtectedItems(ItemHelper.PLANKS);
             mod.getBehaviour().addProtectedItems(Items.COAL);
             mod.getBehaviour().addProtectedItems(_allMaterials.getMatches());
             mod.getBehaviour().addProtectedItems(_target.getMaterial().getMatches());
+        }
+
+        @Override
+        protected Task onTick(AltoClef mod) {
             tryUpdateOpenSmoker(mod);
             // Include both regular + optional items
             ItemTarget materialTarget = _allMaterials;

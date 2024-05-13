@@ -37,17 +37,17 @@ import java.util.Optional;
  * Left or Right click on a block on a particular (or any) side of the block.
  */
 public class InteractWithBlockTask extends Task {
-    private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
+    private final MovementProgressChecker moveChecker = new MovementProgressChecker();
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
-    private final ItemTarget _toUse;
-    private final Direction _direction;
-    private final BlockPos _target;
-    private final boolean _walkInto;
-    private final Vec3i _interactOffset;
-    private final Input _interactInput;
-    private final boolean _shiftClick;
-    private final TimerGame _clickTimer = new TimerGame(5);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5, true);
+    private final ItemTarget toUse;
+    private final Direction direction;
+    private final BlockPos target;
+    private final boolean walkInto;
+    private final Vec3i interactOffset;
+    private final Input interactInput;
+    private final boolean shiftClick;
+    private final TimerGame clickTimer = new TimerGame(5);
+    private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(5, true);
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -61,20 +61,21 @@ public class InteractWithBlockTask extends Task {
             Blocks.BIG_DRIPLEAF_STEM,
             Blocks.SMALL_DRIPLEAF,
             Blocks.TALL_GRASS,
-            Blocks.GRASS_BLOCK,
+            Blocks.SHORT_GRASS,
             Blocks.SWEET_BERRY_BUSH
     };
-    private Task _unstuckTask = null;
-    private ClickResponse _cachedClickStatus = ClickResponse.CANT_REACH;
+    private Task unstuckTask = null;
+    private ClickResponse cachedClickStatus = ClickResponse.CANT_REACH;
+    private int waitingForClickTicks = 0;
 
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, Vec3i interactOffset, boolean shiftClick) {
-        _toUse = toUse;
-        _direction = direction;
-        _target = target;
-        _interactInput = interactInput;
-        _walkInto = walkInto;
-        _interactOffset = interactOffset;
-        _shiftClick = shiftClick;
+        this.toUse = toUse;
+        this.direction = direction;
+        this.target = target;
+        this.interactInput = interactInput;
+        this.walkInto = walkInto;
+        this.interactOffset = interactOffset;
+        this.shiftClick = shiftClick;
     }
 
     public InteractWithBlockTask(ItemTarget toUse, Direction direction, BlockPos target, Input interactInput, boolean walkInto, boolean shiftClick) {
@@ -222,16 +223,16 @@ public class InteractWithBlockTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getClientBaritone().getPathingBehavior().forceCancel();
-        _moveChecker.reset();
+        moveChecker.reset();
         stuckCheck.reset();
-        _wanderTask.resetWander();
-        _clickTimer.reset();
+        wanderTask.resetWander();
+        clickTimer.reset();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
         if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
-            _moveChecker.reset();
+            moveChecker.reset();
         }
         if (WorldHelper.isInNetherPortal(mod)) {
             if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
@@ -251,74 +252,87 @@ public class InteractWithBlockTask extends Task {
                 mod.getInputControls().release(Input.MOVE_FORWARD);
             }
         }
-        if (_unstuckTask != null && _unstuckTask.isActive() && !_unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
+        if (unstuckTask != null && unstuckTask.isActive() && !unstuckTask.isFinished(mod) && stuckInBlock(mod) != null) {
             setDebugState("Getting unstuck from block.");
             stuckCheck.reset();
             // Stop other tasks, we are JUST shimmying
             mod.getClientBaritone().getCustomGoalProcess().onLostControl();
             mod.getClientBaritone().getExploreProcess().onLostControl();
-            return _unstuckTask;
+            return unstuckTask;
         }
-        if (!_moveChecker.check(mod) || !stuckCheck.check(mod)) {
+        if (!moveChecker.check(mod) || !stuckCheck.check(mod)) {
             BlockPos blockStuck = stuckInBlock(mod);
             if (blockStuck != null) {
-                _unstuckTask = getFenceUnstuckTask();
-                return _unstuckTask;
+                unstuckTask = getFenceUnstuckTask();
+                return unstuckTask;
             }
             stuckCheck.reset();
         }
 
-        _cachedClickStatus = ClickResponse.CANT_REACH;
+        cachedClickStatus = ClickResponse.CANT_REACH;
 
         // Get our use item first
-        if (!ItemTarget.nullOrEmpty(_toUse) && !StorageHelper.itemTargetsMet(mod, _toUse)) {
-            _moveChecker.reset();
-            _clickTimer.reset();
-            return TaskCatalogue.getItemTask(_toUse);
+        if (!ItemTarget.nullOrEmpty(toUse) && !StorageHelper.itemTargetsMet(mod, toUse)) {
+            moveChecker.reset();
+            clickTimer.reset();
+            return TaskCatalogue.getItemTask(toUse);
         }
 
         // Wander and check
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
-            _moveChecker.reset();
-            _clickTimer.reset();
-            return _wanderTask;
+        if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
+            moveChecker.reset();
+            clickTimer.reset();
+            return wanderTask;
         }
-        if (!_moveChecker.check(mod)) {
+        if (!moveChecker.check(mod)) {
             Debug.logMessage("Failed, blacklisting and wandering.");
-            mod.getBlockTracker().requestBlockUnreachable(_target);
-            return _wanderTask;
+            mod.getBlockScanner().requestBlockUnreachable(target);
+            return wanderTask;
         }
 
         int reachDistance = 0;
-        Goal moveGoal = createGoalForInteract(_target, reachDistance, _direction, _interactOffset, _walkInto);
+        Goal moveGoal = createGoalForInteract(target, reachDistance, direction, interactOffset, walkInto);
         ICustomGoalProcess proc = mod.getClientBaritone().getCustomGoalProcess();
 
-        _cachedClickStatus = rightClick(mod);
-        switch (Objects.requireNonNull(_cachedClickStatus)) {
+        cachedClickStatus = rightClick(mod);
+        switch (Objects.requireNonNull(cachedClickStatus)) {
             case CANT_REACH -> {
                 setDebugState("Getting to our goal");
                 // Get to our goal then
                 if (!proc.isActive()) {
                     proc.setGoalAndPath(moveGoal);
                 }
-                _clickTimer.reset();
+                clickTimer.reset();
             }
             case WAIT_FOR_CLICK -> {
                 setDebugState("Waiting for click");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
-                _clickTimer.reset();
+                clickTimer.reset();
+
+                // try to get unstuck by pressing shift
+                waitingForClickTicks++;
+                if (waitingForClickTicks % 25 == 0 && shiftClick) {
+                    mod.getInputControls().hold(Input.SNEAK);
+                    mod.log("trying to press shift");
+                }
+
+                if (waitingForClickTicks > 10*20) {
+                    mod.log("trying to wander");
+                    waitingForClickTicks = 0;
+                    return wanderTask;
+                }
             }
             case CLICK_ATTEMPTED -> {
                 setDebugState("Clicking.");
                 if (proc.isActive()) {
                     proc.onLostControl();
                 }
-                if (_clickTimer.elapsed()) {
+                if (clickTimer.elapsed()) {
                     // We tried clicking but failed.
-                    _clickTimer.reset();
-                    return _wanderTask;
+                    clickTimer.reset();
+                    return wanderTask;
                 }
             }
         }
@@ -341,24 +355,24 @@ public class InteractWithBlockTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof InteractWithBlockTask task) {
-            if ((task._direction == null) != (_direction == null)) return false;
-            if (task._direction != null && !task._direction.equals(_direction)) return false;
-            if ((task._toUse == null) != (_toUse == null)) return false;
-            if (task._toUse != null && !task._toUse.equals(_toUse)) return false;
-            if (!task._target.equals(_target)) return false;
-            if (!task._interactInput.equals(_interactInput)) return false;
-            return task._walkInto == _walkInto;
+            if ((task.direction == null) != (direction == null)) return false;
+            if (task.direction != null && !task.direction.equals(direction)) return false;
+            if ((task.toUse == null) != (toUse == null)) return false;
+            if (task.toUse != null && !task.toUse.equals(toUse)) return false;
+            if (!task.target.equals(target)) return false;
+            if (!task.interactInput.equals(interactInput)) return false;
+            return task.walkInto == walkInto;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Interact using " + _toUse + " at " + _target + " dir " + _direction;
+        return "Interact using " + toUse + " at " + target + " dir " + direction;
     }
 
     public ClickResponse getClickStatus() {
-        return _cachedClickStatus;
+        return cachedClickStatus;
     }
 
     private ClickResponse rightClick(AltoClef mod) {
@@ -396,15 +410,15 @@ public class InteractWithBlockTask extends Task {
 
         Optional<Rotation> reachable = getCurrentReach();
         if (reachable.isPresent()) {
-            if (LookHelper.isLookingAt(mod, _target)) {
-                if (_toUse != null) {
-                    mod.getSlotHandler().forceEquipItem(_toUse, false);
+            if (LookHelper.isLookingAt(mod, target)) {
+                if (toUse != null) {
+                    mod.getSlotHandler().forceEquipItem(toUse, false);
                 } else {
                     mod.getSlotHandler().forceDeequipRightClickableItem();
                 }
-                mod.getInputControls().tryPress(_interactInput);
-                if (mod.getInputControls().isHeldDown(_interactInput)) {
-                    if (_shiftClick) {
+                mod.getInputControls().tryPress(interactInput);
+                if (mod.getInputControls().isHeldDown(interactInput)) {
+                    if (shiftClick) {
                         mod.getInputControls().hold(Input.SNEAK);
                     }
                     return ClickResponse.CLICK_ATTEMPTED;
@@ -415,14 +429,14 @@ public class InteractWithBlockTask extends Task {
             }
             return ClickResponse.WAIT_FOR_CLICK;
         }
-        if (_shiftClick) {
+        if (shiftClick) {
             mod.getInputControls().release(Input.SNEAK);
         }
         return ClickResponse.CANT_REACH;
     }
 
     public Optional<Rotation> getCurrentReach() {
-        return LookHelper.getReach(_target, _direction);
+        return LookHelper.getReach(target, direction);
     }
 
     public enum ClickResponse {

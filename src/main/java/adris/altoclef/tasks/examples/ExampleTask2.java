@@ -12,12 +12,10 @@ import java.util.Optional;
 
 public class ExampleTask2 extends Task {
 
-    private BlockPos _target = null;
+    private BlockPos target = null;
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.OAK_LOG);
-
         // Extra credit: Bot will NOT damage trees.
         mod.getBehaviour().push();
         mod.getBehaviour().avoidBlockBreaking(blockPos -> {
@@ -37,12 +35,12 @@ public class ExampleTask2 extends Task {
          * Stand on top of its last leaf
          */
 
-        if (_target != null) {
-            return new GetToBlockTask(_target);
+        if (target != null) {
+            return new GetToBlockTask(target);
         }
 
-        if (mod.getBlockTracker().anyFound(Blocks.OAK_LOG)) {
-            Optional<BlockPos> nearest = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OAK_LOG);
+        if (mod.getBlockScanner().anyFound(Blocks.OAK_LOG)) {
+            Optional<BlockPos> nearest = mod.getBlockScanner().getNearestBlock(Blocks.OAK_LOG);
             if (nearest.isPresent()) {
                 // Figure out leaves
                 BlockPos check = new BlockPos(nearest.get());
@@ -50,7 +48,7 @@ public class ExampleTask2 extends Task {
                         mod.getWorld().getBlockState(check).getBlock() == Blocks.OAK_LEAVES) {
                     check = check.up();
                 }
-                _target = check;
+                target = check;
             }
             return null;
         }
@@ -60,7 +58,6 @@ public class ExampleTask2 extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.OAK_LOG);
         mod.getBehaviour().pop();
     }
 
@@ -71,8 +68,8 @@ public class ExampleTask2 extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        if (_target != null) {
-            return mod.getPlayer().getBlockPos().equals(_target);
+        if (target != null) {
+            return mod.getPlayer().getBlockPos().equals(target);
         }
         return super.isFinished(mod);
     }

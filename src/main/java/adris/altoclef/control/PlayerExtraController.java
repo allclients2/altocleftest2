@@ -10,47 +10,47 @@ import net.minecraft.util.math.BlockPos;
 
 public class PlayerExtraController {
 
-    private final AltoClef _mod;
-    private BlockPos _blockBreakPos;
-    private double _blockBreakProgress;
+    private final AltoClef mod;
+    private BlockPos blockBreakPos;
+    private double blockBreakProgress;
 
     public PlayerExtraController(AltoClef mod) {
-        _mod = mod;
+        this.mod = mod;
 
         EventBus.subscribe(BlockBreakingEvent.class, evt -> onBlockBreak(evt.blockPos, evt.progress));
         EventBus.subscribe(BlockBreakingCancelEvent.class, evt -> onBlockStopBreaking());
     }
 
     private void onBlockBreak(BlockPos pos, double progress) {
-        _blockBreakPos = pos;
-        _blockBreakProgress = progress;
+        blockBreakPos = pos;
+        blockBreakProgress = progress;
     }
 
     private void onBlockStopBreaking() {
-        _blockBreakPos = null;
-        _blockBreakProgress = 0;
+        blockBreakPos = null;
+        blockBreakProgress = 0;
     }
 
     public BlockPos getBreakingBlockPos() {
-        return _blockBreakPos;
+        return blockBreakPos;
     }
 
     public boolean isBreakingBlock() {
-        return _blockBreakPos != null;
+        return blockBreakPos != null;
     }
 
     public double getBreakingBlockProgress() {
-        return _blockBreakProgress;
+        return blockBreakProgress;
     }
 
     public boolean inRange(Entity entity) {
-        return _mod.getPlayer().isInRange(entity, _mod.getModSettings().getEntityReachRange());
+        return mod.getPlayer().isInRange(entity, mod.getModSettings().getEntityReachRange());
     }
 
     public void attack(Entity entity) {
         if (inRange(entity)) {
-            _mod.getController().attackEntity(_mod.getPlayer(), entity);
-            _mod.getPlayer().swingHand(Hand.MAIN_HAND);
+            mod.getController().attackEntity(mod.getPlayer(), entity);
+            mod.getPlayer().swingHand(Hand.MAIN_HAND);
         }
     }
 }

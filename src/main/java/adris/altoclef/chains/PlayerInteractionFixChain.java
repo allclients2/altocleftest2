@@ -26,16 +26,17 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Optional;
 
 public class PlayerInteractionFixChain extends TaskChain {
-    private final TimerGame _stackHeldTimeout = new TimerGame(1);
-    private final TimerGame _generalDuctTapeSwapTimeout = new TimerGame(30);
-    private final TimerGame _shiftDepressTimeout = new TimerGame(10);
-    private final TimerGame _betterToolTimer = new TimerGame(0);
-    private final TimerGame _mouseMovingButScreenOpenTimeout = new TimerGame(1);
-    private ItemStack _lastHandStack = null;
+    private final TimerGame stackHeldTimeout = new TimerGame(1);
+    private final TimerGame generalDuctTapeSwapTimeout = new TimerGame(30);
+    private final TimerGame shiftDepressTimeout = new TimerGame(10);
+    private final TimerGame betterToolTimer = new TimerGame(0);
+    private final TimerGame mouseMovingButScreenOpenTimeout = new TimerGame(1);
+    private ItemStack lastHandStack = null;
     private BlockPos LastBreakingPosition = new BlockPos(0, -512, 0);
 
-    private Screen _lastScreen;
-    private Rotation _lastLookRotation;
+
+    private Screen lastScreen;
+    private Rotation lastLookRotation;
 
     public PlayerInteractionFixChain(TaskRunner runner) {
         super(runner);
@@ -60,9 +61,9 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         if (!AltoClef.inGame()) return Float.NEGATIVE_INFINITY;
 
-        if (mod.getUserTaskChain().isActive() && _betterToolTimer.elapsed()) {
+        if (mod.getUserTaskChain().isActive() && betterToolTimer.elapsed()) {
             // Equip the right tool for the job if we're not using one.
-            _betterToolTimer.reset();
+            betterToolTimer.reset();
             if (mod.getControllerExtras().isBreakingBlock()) {
                 BlockPos BreakingPos = mod.getControllerExtras().getBreakingBlockPos();
                 BlockState state = mod.getWorld().getBlockState(BreakingPos);
@@ -85,20 +86,12 @@ public class PlayerInteractionFixChain extends TaskChain {
                             )
                         ) {
                             Debug.logMessage("Found better tool in inventory, equipping.");
-                            mod.log(BreakingPos + " BREAKPOS");
-                            mod.log(LastBreakingPosition + " LASTBREAKPOS");
+                            Debug.logMessage(BreakingPos + " BREAKPOS");
+                            Debug.logMessage(LastBreakingPosition + " LASTBREAKPOS");
+
                             LastBreakingPosition = BreakingPos; //To prevent fighting of tool equipping
                             ItemStack bestToolItemStack = StorageHelper.getItemStackInSlot(bestToolSlot.get());
                             Item bestToolItem = bestToolItemStack.getItem();
-
-                            /*
-                            // Change Penalty based upon the best item, it shouldn't be too late to change paths.
-                            if (bestToolItem != null) {
-                                mod.getBehaviour().setBlockBreakAdditionalPenalty((1.0 - (bestToolItem.getMaxDamage() / 2500.0)) * 12);
-                            } else {
-                                mod.getBehaviour().setBlockBreakAdditionalPenalty(18.0);
-                            }
-                            */
 
                             mod.getSlotHandler().forceEquipItem(bestToolItem);
                         }
@@ -109,19 +102,19 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         // Unpress shift (it gets stuck for some reason???)
         if (mod.getInputControls().isHeldDown(Input.SNEAK)) {
-            if (_shiftDepressTimeout.elapsed()) {
+            if (shiftDepressTimeout.elapsed()) {
                 mod.getInputControls().release(Input.SNEAK);
             }
         } else {
-            _shiftDepressTimeout.reset();
+            shiftDepressTimeout.reset();
         }
 
         // Refresh inventory
-        if (_generalDuctTapeSwapTimeout.elapsed()) {
+        if (generalDuctTapeSwapTimeout.elapsed()) {
             if (!mod.getControllerExtras().isBreakingBlock()) {
                 Debug.logMessage("Refreshed inventory...");
                 mod.getSlotHandler().refreshInventory();
-                _generalDuctTapeSwapTimeout.reset();
+                generalDuctTapeSwapTimeout.reset();
                 return Float.NEGATIVE_INFINITY;
             }
         }
@@ -130,19 +123,19 @@ public class PlayerInteractionFixChain extends TaskChain {
 
         if (currentStack != null && !currentStack.isEmpty()) {
             //noinspection PointlessNullCheck
-            if (_lastHandStack == null || !ItemStack.areEqual(currentStack, _lastHandStack)) {
+            if (lastHandStack == null || !ItemStack.areEqual(currentStack, lastHandStack)) {
                 // We're holding a new item in our stack!
-                _stackHeldTimeout.reset();
-                _lastHandStack = currentStack.copy();
+                stackHeldTimeout.reset();
+                lastHandStack = currentStack.copy();
             }
         } else {
-            _stackHeldTimeout.reset();
-            _lastHandStack = null;
+            stackHeldTimeout.reset();
+            lastHandStack = null;
         }
 
         // If we have something in our hand for a period of time...
-        if (_lastHandStack != null && _stackHeldTimeout.elapsed()) {
-            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(_lastHandStack, false);
+        if (lastHandStack != null && stackHeldTimeout.elapsed()) {
+            Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(lastHandStack, false);
             if (moveTo.isPresent()) {
                 mod.getSlotHandler().clickSlot(moveTo.get(), 0, SlotActionType.PICKUP);
                 return Float.NEGATIVE_INFINITY;
@@ -195,27 +188,27 @@ public class PlayerInteractionFixChain extends TaskChain {
             return false;
         // Only check look if we've had the same screen open for a while
         Screen openScreen = MinecraftClient.getInstance().currentScreen;
-        if (openScreen != _lastScreen) {
-            _mouseMovingButScreenOpenTimeout.reset();
+        if (openScreen != lastScreen) {
+            mouseMovingButScreenOpenTimeout.reset();
         }
         // We're in the player screen/a screen we DON'T want to cancel out of
         if (openScreen == null || openScreen instanceof ChatScreen || openScreen instanceof GameMenuScreen || openScreen instanceof DeathScreen) {
-            _mouseMovingButScreenOpenTimeout.reset();
+            mouseMovingButScreenOpenTimeout.reset();
             return false;
         }
         // Check for rotation change
         Rotation look = LookHelper.getLookRotation();
-        if (_lastLookRotation != null && _mouseMovingButScreenOpenTimeout.elapsed()) {
-            Rotation delta = look.subtract(_lastLookRotation);
+        if (lastLookRotation != null && mouseMovingButScreenOpenTimeout.elapsed()) {
+            Rotation delta = look.subtract(lastLookRotation);
             if (Math.abs(delta.getYaw()) > 0.1f || Math.abs(delta.getPitch()) > 0.1f) {
-                _lastLookRotation = look;
+                lastLookRotation = look;
                 return true;
             }
             // do NOT update our last look rotation, just because we want to measure long term rotation.
         } else {
-            _lastLookRotation = look;
+            lastLookRotation = look;
         }
-        _lastScreen = openScreen;
+        lastScreen = openScreen;
         return false;
     }
 

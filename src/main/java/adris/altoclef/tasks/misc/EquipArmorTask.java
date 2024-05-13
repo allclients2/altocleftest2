@@ -23,10 +23,10 @@ import java.util.function.Predicate;
 
 public class EquipArmorTask extends Task {
 
-    private final ItemTarget[] _toEquip;
+    private final ItemTarget[] toEquip;
 
     public EquipArmorTask(ItemTarget... toEquip) {
-        _toEquip = toEquip;
+        this.toEquip = toEquip;
     }
 
     public EquipArmorTask(Item... toEquip) {
@@ -40,7 +40,7 @@ public class EquipArmorTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        ItemTarget[] armorsNotEquipped = Arrays.stream(_toEquip).filter(target -> !StorageHelper.itemTargetsMetInventory(mod, target) && !StorageHelper.isArmorEquipped(mod, target.getMatches())).toArray(ItemTarget[]::new);
+        ItemTarget[] armorsNotEquipped = Arrays.stream(toEquip).filter(target -> !StorageHelper.itemTargetsMetInventory(mod, target) && !StorageHelper.isArmorEquipped(mod, target.getMatches())).toArray(ItemTarget[]::new);
         boolean armorMet = armorsNotEquipped.length == 0;
         if (!armorMet) {
             setDebugState("Obtaining armor");
@@ -50,7 +50,7 @@ public class EquipArmorTask extends Task {
         setDebugState("Equipping armor");
 
         // Now equip
-        for (ItemTarget targetArmor : _toEquip) {
+        for (ItemTarget targetArmor : toEquip) {
             Item[] targetArmorMatches = targetArmor.getMatches();
             if (Arrays.stream(targetArmorMatches).toList().contains(Items.SHIELD)) {
                 ShieldItem shield = (ShieldItem) Objects.requireNonNull(targetArmor.getMatches())[0];
@@ -143,19 +143,19 @@ public class EquipArmorTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof EquipArmorTask task) {
-            return Arrays.equals(task._toEquip, _toEquip);
+            return Arrays.equals(task.toEquip, toEquip);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Equipping armor " + ArrayUtils.toString(_toEquip);
+        return "Equipping armor " + ArrayUtils.toString(toEquip);
     }
 
     private boolean armorTestAll(Predicate<Item> armorSatisfies) {
         // If ALL item target has any match that is equipped...
-        return Arrays.stream(_toEquip).allMatch(
+        return Arrays.stream(toEquip).allMatch(
                 target -> Arrays.stream(target.getMatches()).anyMatch(armorSatisfies)
         );
     }

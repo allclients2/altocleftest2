@@ -16,22 +16,22 @@ import java.util.Objects;
 import java.util.function.Predicate;
 
 public class EnterNetherPortalTask extends Task {
-    private final Task _getPortalTask;
-    private final Dimension _targetDimension;
+    private final Task getPortalTask;
+    private final Dimension targetDimension;
 
-    private final TimerGame _portalTimeout = new TimerGame(10);
-    private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(5);
+    private final TimerGame portalTimeout = new TimerGame(10);
+    private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(5);
 
-    private final Predicate<BlockPos> _goodPortal;
+    private final Predicate<BlockPos> goodPortal;
 
-    private boolean _leftPortal;
+    private boolean leftPortal;
 
     public EnterNetherPortalTask(Task getPortalTask, Dimension targetDimension, Predicate<BlockPos> goodPortal) {
         if (targetDimension == Dimension.END)
             throw new IllegalArgumentException("Can't build a nether portal to the end.");
-        _getPortalTask = getPortalTask;
-        _targetDimension = targetDimension;
-        _goodPortal = goodPortal;
+        this.getPortalTask = getPortalTask;
+        this.targetDimension = targetDimension;
+        this.goodPortal = goodPortal;
     }
 
     public EnterNetherPortalTask(Dimension targetDimension, Predicate<BlockPos> goodPortal) {
@@ -48,26 +48,25 @@ public class EnterNetherPortalTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.NETHER_PORTAL);
-        _leftPortal = false;
-        _portalTimeout.reset();
-        _wanderTask.resetWander();
+        leftPortal = false;
+        portalTimeout.reset();
+        wanderTask.resetWander();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
 
-        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod)) {
+        if (wanderTask.isActive() && !wanderTask.isFinished(mod)) {
             setDebugState("Exiting portal for a bit.");
-            _portalTimeout.reset();
-            _leftPortal = true;
-            return _wanderTask;
+            portalTimeout.reset();
+            leftPortal = true;
+            return wanderTask;
         }
 
         if (mod.getWorld().getBlockState(mod.getPlayer().getBlockPos()).getBlock() == Blocks.NETHER_PORTAL) {
 
-            if (_portalTimeout.elapsed() && !_leftPortal) {
-                return _wanderTask;
+            if (portalTimeout.elapsed() && !leftPortal) {
+                return wanderTask;
             }
             setDebugState("Waiting inside portal");
             mod.getClientBaritone().getExploreProcess().onLostControl();
@@ -82,28 +81,31 @@ public class EnterNetherPortalTask extends Task {
             mod.getInputControls().release(Input.MOVE_FORWARD);
             return null;
         } else {
-            _portalTimeout.reset();
+            portalTimeout.reset();
         }
 
         Predicate<BlockPos> standablePortal = blockPos -> {
             if (mod.getWorld().getBlockState(blockPos).getBlock() == Blocks.NETHER_PORTAL) {
-                return true;
+                return goodPortal.test(blockPos);
             }
             // REQUIRE that there be solid ground beneath us, not more portal.
             if (!mod.getChunkTracker().isChunkLoaded(blockPos)) {
                 // Eh just assume it's good for now
-                return true;
+                return goodPortal.test(blockPos);
             }
             BlockPos below = blockPos.down();
-            boolean canStand = WorldHelper.isSolid(mod, below) && !mod.getBlockTracker().blockIsValid(below, Blocks.NETHER_PORTAL);
-            return canStand && _goodPortal.test(blockPos);
+            boolean canStand = WorldHelper.isSolidBlock(mod, below) && !mod.getBlockScanner().isBlockAtPosition(below, Blocks.NETHER_PORTAL);
+            return canStand && goodPortal.test(blockPos);
         };
 
-        if (mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
+        if (mod.getBlockScanner().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
             setDebugState("Going to found portal");
             return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos, false), standablePortal, Blocks.NETHER_PORTAL);
         }
-        if (!mod.getBlockTracker().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
+
+        //this probably isn't needed here, the check should fail everytime
+        
+        if (!mod.getBlockScanner().anyFound(standablePortal, Blocks.NETHER_PORTAL)) {
             setDebugState("Making new nether portal.");
             if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 return new ConstructNetherPortalBucketTask();
@@ -112,23 +114,23 @@ public class EnterNetherPortalTask extends Task {
             }
         }
         setDebugState("Getting our portal");
-        return _getPortalTask;
+        return getPortalTask;
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.NETHER_PORTAL);
+
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return WorldHelper.getCurrentDimension() == _targetDimension;
+        return WorldHelper.getCurrentDimension() == targetDimension;
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof EnterNetherPortalTask task) {
-            return (Objects.equals(task._getPortalTask, _getPortalTask) && Objects.equals(task._targetDimension, _targetDimension));
+            return (Objects.equals(task.getPortalTask, getPortalTask) && Objects.equals(task.targetDimension, targetDimension));
         }
         return false;
     }

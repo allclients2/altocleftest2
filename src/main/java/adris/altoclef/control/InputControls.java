@@ -22,7 +22,7 @@ import java.util.Set;
 @SuppressWarnings("UnnecessaryDefault")
 public class InputControls {
 
-    private final Queue<Input> _toUnpress = new ArrayDeque<>();
+    private final Queue<Input> toUnpress = new ArrayDeque<>();
     private final Set<Input> _waitForRelease = new HashSet<>(); // a click requires a release.
 
     private static KeyBinding inputToKeyBinding(Input input) {
@@ -49,7 +49,7 @@ public class InputControls {
         inputToKeyBinding(input).setPressed(true);
         // Also necessary to ensure the game registers the input as "pressed"
         KeyBinding.onKeyPressed(inputToKeyBinding(input).getDefaultKey());
-        _toUnpress.add(input);
+        toUnpress.add(input);
         _waitForRelease.add(input);
     }
 
@@ -77,8 +77,8 @@ public class InputControls {
 
     // Before the user calls input commands for the frame
     public void onTickPre() {
-        while (!_toUnpress.isEmpty()) {
-            inputToKeyBinding(_toUnpress.remove()).setPressed(false);
+        while (!toUnpress.isEmpty()) {
+            inputToKeyBinding(toUnpress.remove()).setPressed(false);
         }
     }
 

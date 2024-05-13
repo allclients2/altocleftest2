@@ -10,6 +10,7 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
+import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -22,26 +23,32 @@ public class EntityHelper {
     public static final double ENTITY_GRAVITY = 0.08; // per second
 
     public static boolean isAngryAtPlayer(AltoClef mod, Entity mob) {
-        boolean hostile = isGenerallyHostileToPlayer(mod, mob);
+        boolean hostile = isProbablyHostileToPlayer(mod, mob);
         if (mob instanceof LivingEntity entity) {
             return hostile && entity.canSee(mod.getPlayer());
         }
         return hostile;
     }
 
-    public static boolean isGenerallyHostileToPlayer(AltoClef mod, Entity hostile) {
-        // This is only temporary.
-        if (hostile instanceof MobEntity entity) {
-            if (entity instanceof HostileEntity entity1) {
-                return entity1.isAttacking() || !(entity1 instanceof EndermanEntity || entity1 instanceof PiglinEntity ||
-                        entity1 instanceof SpiderEntity || entity1 instanceof ZombifiedPiglinEntity);
+    public static boolean isProbablyHostileToPlayer(AltoClef mod, Entity entity) {
+        if (entity instanceof MobEntity mob) {
+            if (mob instanceof SlimeEntity slime) {
+                return slime.getAttributeValue(EntityAttributes.GENERIC_ATTACK_DAMAGE) > 0;
             }
-            if (entity instanceof SlimeEntity entity1) {
-                return entity1.canSee(mod.getPlayer());
+            if (mob instanceof PiglinEntity piglin) {
+                return piglin.isAttacking() && !isTradingPiglin(mob) && piglin.isAdult();
             }
-            return entity.isAttacking();
+            if (mob instanceof EndermanEntity enderman) {
+                return enderman.isAngry();
+            }
+            if (mob instanceof ZombifiedPiglinEntity zombifiedPiglin) {
+                return zombifiedPiglin.isAttacking();
+            }
+
+            return mob.isAttacking() || mob instanceof HostileEntity;
         }
-        return !isTradingPiglin(hostile);
+
+        return false;
     }
 
     public static boolean isTradingPiglin(Entity entity) {

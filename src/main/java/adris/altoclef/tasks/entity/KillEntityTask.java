@@ -11,32 +11,32 @@ import java.util.Optional;
  */
 public class KillEntityTask extends AbstractKillEntityTask {
 
-    private final Entity _target;
+    private final Entity target;
 
     public KillEntityTask(Entity entity) {
-        _target = entity;
+        target = entity;
     }
 
     public KillEntityTask(Entity entity, double maintainDistance, double combatGuardLowerRange, double combatGuardLowerFieldRadius) {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
-        _target = entity;
+        target = entity;
     }
 
     @Override
     protected Optional<Entity> getEntityTarget(AltoClef mod) {
-        return Optional.of(_target);
+        return Optional.of(target);
     }
 
     @Override
     protected boolean isSubEqual(AbstractDoToEntityTask other) {
         if (other instanceof KillEntityTask task) {
-            return Objects.equals(task._target, _target);
+            return Objects.equals(task.target, target);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Killing " + _target.getType().getTranslationKey();
+        return "Killing " + target.getType().getTranslationKey();
     }
 }

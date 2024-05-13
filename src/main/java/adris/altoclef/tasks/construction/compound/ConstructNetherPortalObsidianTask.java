@@ -6,18 +6,26 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
+import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
+import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.Vec3i;
+import net.minecraft.world.World;
+
+import java.util.LinkedList;
+import java.util.Queue;
 
 /**
  * Build a nether portal with obsidian blocks.
@@ -118,7 +126,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
         if (_origin != null) {
             if (mod.getWorld().getBlockState(_origin.up()).getBlock() == Blocks.NETHER_PORTAL) {
                 setDebugState("Done constructing nether portal.");
-                mod.getBlockTracker().addBlock(Blocks.NETHER_PORTAL, _origin.up());
+                mod.getBlockScanner().addBlock(Blocks.NETHER_PORTAL, _origin.up());
                 return null;
             }
         }
@@ -127,7 +135,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
         if (_origin != null) {
             for (Vec3i frameOffs : PORTAL_FRAME) {
                 BlockPos framePos = _origin.add(frameOffs);
-                if (!mod.getBlockTracker().blockIsValid(framePos, Blocks.OBSIDIAN)) {
+                if (!mod.getBlockScanner().isBlockAtPosition(framePos, Blocks.OBSIDIAN)) {
                     placeTarget = framePos;
                     break;
                 }
@@ -160,6 +168,32 @@ public class ConstructNetherPortalObsidianTask extends Task {
 
         // Place frame
         if (placeTarget != null) {
+            World world = mod.getWorld();
+
+            if (surroundedByAir(world,placeTarget)) {
+                LinkedList<BlockPos> queue = new LinkedList<>();
+                queue.add(placeTarget);
+                while (surroundedByAir(world, placeTarget)) {
+                    BlockPos pos = queue.removeFirst();
+
+                    if (surroundedByAir(world,pos)) {
+                        queue.add(pos.up());
+                        queue.add(pos.down());
+                        queue.add(pos.east());
+                        queue.add(pos.west());
+                        queue.add(pos.north());
+                        queue.add(pos.south());
+                    } else {
+                        return new PlaceStructureBlockTask(pos);
+                    }
+                }
+
+                mod.logWarning("Did not find any block to place obsidian on");
+            }
+
+            if (!world.getBlockState(placeTarget).isAir() && !world.getBlockState(placeTarget).getBlock().equals(Blocks.OBSIDIAN)) {
+                return new DestroyBlockTask(placeTarget);
+            }
             setDebugState("Placing frame...");
             return new PlaceBlockTask(placeTarget, Blocks.OBSIDIAN);
         }
@@ -177,6 +211,11 @@ public class ConstructNetherPortalObsidianTask extends Task {
         }
         // Flint and steel
         return new InteractWithBlockTask(new ItemTarget(Items.FLINT_AND_STEEL, 1), Direction.UP, _origin.down(), true);
+    }
+
+    private boolean surroundedByAir(World world, BlockPos pos) {
+        return world.getBlockState(pos.west()).isAir() && world.getBlockState(pos.south()).isAir() && world.getBlockState(pos.east()).isAir() &&
+                world.getBlockState(pos.up()).isAir() && world.getBlockState(pos.down()).isAir() && world.getBlockState(pos.north()).isAir();
     }
 
     @Override

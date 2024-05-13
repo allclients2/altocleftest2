@@ -43,7 +43,6 @@ public class StoreInAnyContainerTask extends Task {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(TO_SCAN);
         _storedItems.startTracking();
         _dungeonChests.clear();
         _nonDungeonChests.clear();
@@ -69,7 +68,7 @@ public class StoreInAnyContainerTask extends Task {
 
             // If it's a chest and the block above can't be broken, we can't open this one.
             boolean isChest = WorldHelper.isChest(mod, containerPos);
-            if (isChest && WorldHelper.isSolid(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up()))
+            if (isChest && WorldHelper.isSolidBlock(mod, containerPos.up()) && !WorldHelper.canBreak(mod, containerPos.up()))
                 return false;
 
             //if (!_acceptableContainer.test(containerPos))
@@ -100,13 +99,13 @@ public class StoreInAnyContainerTask extends Task {
             return true;
         };
 
-        if (mod.getBlockTracker().anyFound(validContainer, TO_SCAN)) {
+        if (mod.getBlockScanner().anyFound(validContainer, TO_SCAN)) {
 
             setDebugState("Going to container and depositing items");
 
             if (!_progressChecker.check(mod) && _currentChestTry != null) {
                 Debug.logMessage("Failed to open container. Suggesting it may be unreachable.");
-                mod.getBlockTracker().requestBlockUnreachable(_currentChestTry, 2);
+                mod.getBlockScanner().requestBlockUnreachable(_currentChestTry, 2);
                 _currentChestTry = null;
                 _progressChecker.reset();
             }
@@ -150,7 +149,6 @@ public class StoreInAnyContainerTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         _storedItems.stopTracking();
-        mod.getBlockTracker().stopTracking(TO_SCAN);
     }
 
     @Override

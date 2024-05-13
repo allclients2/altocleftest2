@@ -11,7 +11,10 @@ import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.mob.*;
+import net.minecraft.entity.mob.CreeperEntity;
+import net.minecraft.entity.mob.HoglinEntity;
+import net.minecraft.entity.mob.WardenEntity;
+import net.minecraft.entity.mob.ZoglinEntity;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
@@ -30,11 +33,11 @@ import java.util.Optional;
  */
 public class KillAura {
     // Smart aura data
-    private final List<Entity> _targets = new ArrayList<>();
-    private final TimerGame _hitDelay = new TimerGame(0.2);
-    boolean _shielding = false;
-    private double _forceFieldRange = Double.POSITIVE_INFINITY;
-    private Entity _forceHit = null;
+    private final List<Entity> targets = new ArrayList<>();
+    boolean shielding = false;
+    private double forceFieldRange = Double.POSITIVE_INFINITY;
+    private Entity forceHit = null;
+    public boolean attackedLastTick = false;
 
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
@@ -58,27 +61,28 @@ public class KillAura {
     }
 
     public void tickStart() {
-        _targets.clear();
-        _forceHit = null;
+        targets.clear();
+        forceHit = null;
+        attackedLastTick = false;
     }
 
     public void applyAura(Entity entity) {
-        _targets.add(entity);
+        targets.add(entity);
         // Always hit ghast balls.
-        if (entity instanceof FireballEntity) _forceHit = entity;
+        if (entity instanceof FireballEntity) forceHit = entity;
     }
 
     public void setRange(double range) {
-        _forceFieldRange = range;
+        forceFieldRange = range;
     }
 
     public void tickEnd(AltoClef mod) {
-        Optional<Entity> entities = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+        Optional<Entity> entities = targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
         if (entities.isPresent() &&
                 !mod.getEntityTracker().entityFound(PotionEntity.class) &&
-                (Double.isInfinite(_forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange ||
+                (Double.isInfinite(forceFieldRange) || entities.get().squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
                         entities.get().squaredDistanceTo(mod.getPlayer()) < 40) &&
-                !mod.getMLGBucketChain().isFallingOhNo(mod) && mod.getMLGBucketChain().doneMLG() &&
+                !mod.getMLGBucketChain().isFalling(mod) && mod.getMLGBucketChain().doneMLG() &&
                 !mod.getMLGBucketChain().isChorusFruiting()) {
             PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
             Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
@@ -92,7 +96,7 @@ public class KillAura {
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
                     mod.getSlotHandler().forceEquipItemToOffhand(Items.SHIELD);
-                } else if(!WorldHelper.isSurroundedByHostiles(mod)) {
+                } else if (!WorldHelper.isSurroundedByHostiles(mod)) {
                     startShielding(mod);
                 }
             }
@@ -106,28 +110,15 @@ public class KillAura {
                 performFastestAttack(mod);
                 break;
             case SMART:
-                if (_targets.size() <= 2 || _targets.stream().allMatch(entity -> entity instanceof SkeletonEntity) ||
-                        _targets.stream().allMatch(entity -> entity instanceof WitchEntity) ||
-                        _targets.stream().allMatch(entity -> entity instanceof PillagerEntity) ||
-                        _targets.stream().allMatch(entity -> entity instanceof PiglinEntity) ||
-                        _targets.stream().allMatch(entity -> entity instanceof StrayEntity) ||
-                        _targets.stream().allMatch(entity -> entity instanceof BlazeEntity)) {
+                // Attack force mobs ALWAYS. (currently used only for fireballs)
+                if (forceHit != null) {
+                    attack(mod, forceHit, true);
+                    break;
+                }
+
+                if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFalling(mod) &&
+                        mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
                     performDelayedAttack(mod);
-                } else {
-                    if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
-                            mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
-                        // Attack force mobs ALWAYS.
-                        if (_forceHit != null) {
-                            attack(mod, _forceHit, true);
-                        }
-                        if (_hitDelay.elapsed()) {
-                            _hitDelay.reset();
-
-                            Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
-
-                            toHit.ifPresent(entity -> attack(mod, entity, true));
-                        }
-                    }
                 }
                 break;
             case DELAY:
@@ -139,17 +130,17 @@ public class KillAura {
     }
 
     private void performDelayedAttack(AltoClef mod) {
-        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFalling(mod) &&
                 mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
-            if (_forceHit != null) {
-                attack(mod, _forceHit, true);
+            if (forceHit != null) {
+                attack(mod, forceHit, true);
             }
             // wait for the attack delay
-            if (_targets.isEmpty()) {
+            if (targets.isEmpty()) {
                 return;
             }
 
-            Optional<Entity> toHit = _targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
+            Optional<Entity> toHit = targets.stream().min(StlHelper.compareValues(entity -> entity.squaredDistanceTo(mod.getPlayer())));
 
             if (mod.getPlayer() == null || mod.getPlayer().getAttackCooldownProgress(0) < 1) {
                 return;
@@ -160,10 +151,10 @@ public class KillAura {
     }
 
     private void performFastestAttack(AltoClef mod) {
-        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFallingOhNo(mod) &&
+        if (!mod.getFoodChain().needsToEat() && !mod.getMLGBucketChain().isFalling(mod) &&
                 mod.getMLGBucketChain().doneMLG() && !mod.getMLGBucketChain().isChorusFruiting()) {
             // Just attack whenever you can
-            for (Entity entity : _targets) {
+            for (Entity entity : targets) {
                 attack(mod, entity);
             }
         }
@@ -181,7 +172,7 @@ public class KillAura {
             double zAim = entity.getZ();
             LookHelper.lookAt(mod, new Vec3d(xAim, yAim, zAim));
         }
-        if (Double.isInfinite(_forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < _forceFieldRange * _forceFieldRange ||
+        if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
                 entity.squaredDistanceTo(mod.getPlayer()) < 40) {
             if (entity instanceof FireballEntity) {
                 mod.getControllerExtras().attack(entity);
@@ -196,6 +187,7 @@ public class KillAura {
             }
             if (canAttack) {
                 if (mod.getPlayer().isOnGround() || mod.getPlayer().getVelocity().getY() < 0 || mod.getPlayer().isTouchingWater()) {
+                    attackedLastTick = true;
                     mod.getControllerExtras().attack(entity);
                 }
             }
@@ -203,7 +195,7 @@ public class KillAura {
     }
 
     public void startShielding(AltoClef mod) {
-        _shielding = true;
+        shielding = true;
         mod.getClientBaritone().getPathingBehavior().requestPause();
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
@@ -227,7 +219,7 @@ public class KillAura {
     }
 
     public void stopShielding(AltoClef mod) {
-        if (_shielding) {
+        if (shielding) {
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
             if (cursor.isFood()) {
                 Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
@@ -240,13 +232,12 @@ public class KillAura {
             mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getInputControls().release(Input.JUMP);
             mod.getExtraBaritoneSettings().setInteractionPaused(false);
-            _shielding = false;
+            shielding = false;
         }
     }
 
-    public boolean isShielding()
-    {
-        return _shielding;
+    public boolean isShielding() {
+        return shielding;
     }
 
     public enum Strategy {

@@ -13,19 +13,19 @@ import net.minecraft.util.math.BlockPos;
 import java.util.HashSet;
 
 public class DragonBreathTracker {
-    private final HashSet<BlockPos> _breathBlocks = new HashSet<>();
+    private final HashSet<BlockPos> breathBlocks = new HashSet<>();
 
     public void updateBreath(AltoClef mod) {
-        _breathBlocks.clear();
+        breathBlocks.clear();
         for (AreaEffectCloudEntity cloud : mod.getEntityTracker().getTrackedEntities(AreaEffectCloudEntity.class)) {
             for (BlockPos bad : WorldHelper.getBlocksTouchingBox(mod, cloud.getBoundingBox())) {
-                _breathBlocks.add(bad);
+                breathBlocks.add(bad);
             }
         }
     }
 
     public boolean isTouchingDragonBreath(BlockPos pos) {
-        return _breathBlocks.contains(pos);
+        return breathBlocks.contains(pos);
     }
 
     public Task getRunAwayTask() {
@@ -51,7 +51,7 @@ public class DragonBreathTracker {
 
         @Override
         protected Goal newGoal(AltoClef mod) {
-            return new GoalRunAway(10, _breathBlocks.toArray(BlockPos[]::new));
+            return new GoalRunAway(10, breathBlocks.toArray(BlockPos[]::new));
         }
 
         @Override

@@ -10,14 +10,13 @@ import adris.altoclef.util.time.Stopwatch;
 
 // A task chain that runs a user defined task at the same priority.
 // This basically replaces our old Task Runner.
-@SuppressWarnings("ALL")
 public class UserTaskChain extends SingleTaskChain {
 
-    private final Stopwatch _taskStopwatch = new Stopwatch();
-    private Runnable _currentOnFinish = null;
+    private final Stopwatch taskStopwatch = new Stopwatch();
+    private Runnable currentOnFinish = null;
 
-    private boolean _runningIdleTask;
-    private boolean _nextTaskIdleFlag;
+    private boolean runningIdleTask;
+    private boolean nextTaskIdleFlag;
 
     public UserTaskChain(TaskRunner runner) {
         super(runner);
@@ -38,7 +37,7 @@ public class UserTaskChain extends SingleTaskChain {
         if (minutes != 0) {
             result += (minutes % 60) + " minutes ";
         }
-        if (!result.equals("")) {
+        if (!result.isEmpty()) {
             result += "and ";
         }
         result += String.format("%.3f", (seconds % 60));
@@ -49,13 +48,13 @@ public class UserTaskChain extends SingleTaskChain {
     protected void onTick(AltoClef mod) {
 
         // Pause if we're not loaded into a world.
-        if (!mod.inGame()) return;
+        if (!AltoClef.inGame()) return;
 
         super.onTick(mod);
     }
 
     public void cancel(AltoClef mod) {
-        if (_mainTask != null && _mainTask.isActive()) {
+        if (mainTask != null && mainTask.isActive()) {
             stop(mod);
             onTaskFinish(mod);
         }
@@ -72,16 +71,16 @@ public class UserTaskChain extends SingleTaskChain {
     }
 
     public void runTask(AltoClef mod, Task task, Runnable onFinish) {
-        _runningIdleTask = _nextTaskIdleFlag;
-        _nextTaskIdleFlag = false;
+        runningIdleTask = nextTaskIdleFlag;
+        nextTaskIdleFlag = false;
 
-        _currentOnFinish = onFinish;
+        currentOnFinish = onFinish;
 
-        if (!_runningIdleTask) {
+        if (!runningIdleTask) {
             Debug.logMessage("User Task Set: " + task.toString());
         }
         mod.getTaskRunner().enable();
-        _taskStopwatch.begin();
+        taskStopwatch.begin();
         setTask(task);
 
         if (mod.getModSettings().failedToLoad()) {
@@ -99,34 +98,33 @@ public class UserTaskChain extends SingleTaskChain {
             // Extra reset. Sometimes baritone is laggy and doesn't properly reset our press
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
-        double seconds = _taskStopwatch.time();
-        Task oldTask = _mainTask;
-        _mainTask = null;
-        if (_currentOnFinish != null) {
-            //noinspection unchecked
-            _currentOnFinish.run();
+        double seconds = taskStopwatch.time();
+        Task oldTask = mainTask;
+        mainTask = null;
+        if (currentOnFinish != null) {
+            currentOnFinish.run();
         }
         // our `onFinish` might have triggered more tasks.
-        boolean actuallyDone = _mainTask == null;
+        boolean actuallyDone = mainTask == null;
         if (actuallyDone) {
-            if (!_runningIdleTask) {
+            if (!runningIdleTask) {
                 Debug.logMessage("User task FINISHED. Took %s seconds.", prettyPrintTimeDuration(seconds));
                 EventBus.publish(new TaskFinishedEvent(seconds, oldTask));
             }
             if (shouldIdle) {
                 AltoClef.getCommandExecutor().executeWithPrefix(mod.getModSettings().getIdleCommand());
                 signalNextTaskToBeIdleTask();
-                _runningIdleTask = true;
+                runningIdleTask = true;
             }
         }
     }
 
     public boolean isRunningIdleTask() {
-        return isActive() && _runningIdleTask;
+        return isActive() && runningIdleTask;
     }
 
     // The next task will be an idle task.
     public void signalNextTaskToBeIdleTask() {
-        _nextTaskIdleFlag = true;
+        nextTaskIdleFlag = true;
     }
 }

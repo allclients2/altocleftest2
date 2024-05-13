@@ -15,27 +15,27 @@ import java.util.function.Consumer;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class EventBus {
 
-    private static final HashMap<Class, List<Subscription>> _topics = new HashMap<>();
-    private static final List<Pair<Class, Subscription>> _toAdd = new ArrayList<>();
-    private static boolean _lock;
+    private static final HashMap<Class, List<Subscription>> topics = new HashMap<>();
+    private static final List<Pair<Class, Subscription>> toAdd = new ArrayList<>();
+    private static boolean lock;
 
     public static <T> void publish(T event) {
         Class type = event.getClass();
 
         // Add all subscriptions we need to add
-        for (Pair<Class, Subscription> toAdd : _toAdd) {
+        for (Pair<Class, Subscription> toAdd : toAdd) {
             subscribeInternal(toAdd.getLeft(), toAdd.getRight());
         }
-        _toAdd.clear();
+        toAdd.clear();
 
-        if (_topics.containsKey(type)) {
-            List<Subscription> subscribers = _topics.get(type);
+        if (topics.containsKey(type)) {
+            List<Subscription> subscribers = topics.get(type);
 
             // Subscriptions can be deleted while they're called
             List<Subscription> toDelete = new ArrayList<>();
 
             // Go through our subscription list. We shouldn't modify the list while we're iterating it.
-            _lock = true;
+            lock = true;
             for (Subscription subRaw : subscribers) {
                 Subscription<T> sub;
                 try {
@@ -51,21 +51,21 @@ public class EventBus {
                 }
             }
             // Delete all subscriptions
-            _lock = false;
+            lock = false;
         }
     }
 
     private static <T> void subscribeInternal(Class<T> type, Subscription<T> sub) {
-        if (!_topics.containsKey(type)) {
-            _topics.put(type, new ArrayList<>());
+        if (!topics.containsKey(type)) {
+            topics.put(type, new ArrayList<>());
         }
-        _topics.get(type).add(sub);
+        topics.get(type).add(sub);
     }
 
     public static <T> Subscription<T> subscribe(Class<T> type, Consumer<T> consumeEvent) {
         Subscription<T> sub = new Subscription<>(consumeEvent);
-        if (_lock) {
-            _toAdd.add(new Pair<>(type, sub));
+        if (lock) {
+            toAdd.add(new Pair<>(type, sub));
         } else {
             subscribeInternal(type, sub);
         }

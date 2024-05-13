@@ -40,7 +40,7 @@ public class ItemHelper {
     public static final Item[] DIRTS = new Item[]{Items.DIRT, Items.DIRT_PATH, Items.COARSE_DIRT, Items.ROOTED_DIRT};
     public static final Item[] PLANKS = new Item[]{Items.ACACIA_PLANKS, Items.BIRCH_PLANKS, Items.CRIMSON_PLANKS,
             Items.DARK_OAK_PLANKS, Items.OAK_PLANKS, Items.JUNGLE_PLANKS, Items.SPRUCE_PLANKS, Items.WARPED_PLANKS,
-            Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS, Items.CHERRY_PLANKS};
+            Items.MANGROVE_PLANKS, Items.CHERRY_PLANKS, Items.BAMBOO_PLANKS};
     public static final Item[] LEAVES = new Item[]{Items.ACACIA_LEAVES, Items.BIRCH_LEAVES, Items.DARK_OAK_LEAVES,
             Items.OAK_LEAVES, Items.JUNGLE_LEAVES, Items.SPRUCE_LEAVES, Items.MANGROVE_LEAVES, Items.CHERRY_LEAVES};
     public static final Item[] WOOD = new Item[]{Items.ACACIA_WOOD, Items.BIRCH_WOOD, Items.CRIMSON_HYPHAE,
@@ -127,7 +127,7 @@ public class ItemHelper {
             Blocks.SPRUCE_HANGING_SIGN, Blocks.SPRUCE_WALL_HANGING_SIGN, Blocks.MANGROVE_HANGING_SIGN,
             Blocks.MANGROVE_WALL_HANGING_SIGN, Blocks.BAMBOO_HANGING_SIGN, Blocks.BAMBOO_WALL_HANGING_SIGN,
             Blocks.CHERRY_HANGING_SIGN, Blocks.CHERRY_WALL_HANGING_SIGN};
-    private static final Map<Item, Item> _oreToDrop = new HashMap<>() {
+    private static final Map<Item, Item> oreToDrop = new HashMap<>() {
         {
             put(Items.COAL_ORE, Items.COAL);
             put(Items.DEEPSLATE_COAL_ORE, Items.COAL);
@@ -145,7 +145,7 @@ public class ItemHelper {
             put(Items.DEEPSLATE_REDSTONE_ORE, Items.REDSTONE);
         }
     };
-    private static final Map<Item, Item> _logToPlanks = new HashMap<>() {
+    private static final Map<Item, Item> logToPlanks = new HashMap<>() {
         {
             put(Items.CHERRY_LOG, Items.CHERRY_PLANKS);
             put(Items.CHERRY_WOOD, Items.CHERRY_PLANKS);
@@ -189,7 +189,7 @@ public class ItemHelper {
             put(Items.STRIPPED_WARPED_HYPHAE, Items.WARPED_PLANKS);
         }
     };
-    private static final Map<Item, Item> _planksToLogs = new HashMap<>() {
+    private static final Map<Item, Item> planksToLogs = new HashMap<>() {
         {
             put(Items.CHERRY_PLANKS, Items.CHERRY_LOG);
             put(Items.MANGROVE_PLANKS, Items.MANGROVE_LOG);
@@ -203,7 +203,7 @@ public class ItemHelper {
             put(Items.WARPED_PLANKS, Items.WARPED_STEM);
         }
     };
-    private static final Map<Item, Item> _strippedToLogs = new HashMap<>() {
+    private static final Map<Item, Item> strippedToLogs = new HashMap<>() {
         {
             put(Items.STRIPPED_CHERRY_LOG, Items.CHERRY_LOG);
             put(Items.STRIPPED_MANGROVE_LOG, Items.MANGROVE_LOG);
@@ -218,7 +218,7 @@ public class ItemHelper {
         }
     };
     // This is kinda jank ngl
-    private static final Map<MapColor, ColorfulItems> _colorMap = new HashMap<MapColor, ColorfulItems>() {
+    private static final Map<MapColor, ColorfulItems> colorMap = new HashMap<MapColor, ColorfulItems>() {
         {
             p(DyeColor.RED, "red", Items.RED_DYE, Items.RED_WOOL, Items.RED_BED, Items.RED_CARPET, Items.RED_STAINED_GLASS, Items.RED_STAINED_GLASS_PANE, Items.RED_TERRACOTTA, Items.RED_GLAZED_TERRACOTTA, Items.RED_CONCRETE, Items.RED_CONCRETE_POWDER, Items.RED_BANNER, Items.RED_SHULKER_BOX, Blocks.RED_WALL_BANNER);
             p(DyeColor.WHITE, "white", Items.WHITE_DYE, Items.WHITE_WOOL, Items.WHITE_BED, Items.WHITE_CARPET, Items.WHITE_STAINED_GLASS, Items.WHITE_STAINED_GLASS_PANE, Items.WHITE_TERRACOTTA, Items.WHITE_GLAZED_TERRACOTTA, Items.WHITE_CONCRETE, Items.WHITE_CONCRETE_POWDER, Items.WHITE_BANNER, Items.WHITE_SHULKER_BOX, Blocks.WHITE_WALL_BANNER);
@@ -243,7 +243,7 @@ public class ItemHelper {
             put(color.getMapColor(), new ColorfulItems(color, colorName, dye, wool, bed, carpet, stainedGlass, stainedGlassPane, terracotta, glazedTerracotta, concrete, concretePowder, banner, shulker, wallBanner));
         }
     };
-    private static final Map<WoodType, WoodItems> _woodMap = new HashMap<WoodType, WoodItems>() {
+    private static final Map<WoodType, WoodItems> woodMap = new HashMap<WoodType, WoodItems>() {
         {
             p(WoodType.CHERRY, "cherry", Items.CHERRY_PLANKS, Items.CHERRY_LOG, Items.STRIPPED_CHERRY_LOG, Items.STRIPPED_CHERRY_WOOD, Items.CHERRY_WOOD, Items.CHERRY_SIGN, Items.CHERRY_HANGING_SIGN, Items.CHERRY_DOOR, Items.CHERRY_BUTTON, Items.CHERRY_STAIRS, Items.CHERRY_SLAB, Items.CHERRY_FENCE, Items.CHERRY_FENCE_GATE, Items.CHERRY_BOAT, Items.CHERRY_SAPLING, Items.CHERRY_LEAVES, Items.CHERRY_PRESSURE_PLATE, Items.CHERRY_TRAPDOOR);
             p(WoodType.BAMBOO, "bamboo", null, null, Items.STRIPPED_BAMBOO_BLOCK, null, null, Items.BAMBOO_SIGN, Items.BAMBOO_HANGING_SIGN, Items.BAMBOO_DOOR, Items.BAMBOO_BUTTON, Items.BAMBOO_STAIRS, Items.BAMBOO_SLAB, Items.BAMBOO_FENCE, Items.BAMBOO_FENCE_GATE, Items.BAMBOO_RAFT, Items.BAMBOO, null, Items.BAMBOO_PRESSURE_PLATE, Items.BAMBOO_TRAPDOOR);
@@ -262,7 +262,7 @@ public class ItemHelper {
             put(type, new WoodItems(prefix, planks, log, strippedLog, strippedWood, wood, sign, hangingSign, door, button, stairs, slab, fence, fenceGate, boat, sapling, leaves, pressurePlate, trapdoor));
         }
     };
-    private static final HashMap<Item, Item> _cookableFoodMap = new HashMap<>() {
+    public static final HashMap<Item, Item> cookableFoodMap = new HashMap<>() {
         {
             put(Items.PORKCHOP, Items.COOKED_PORKCHOP);
             put(Items.BEEF, Items.COOKED_BEEF);
@@ -274,8 +274,9 @@ public class ItemHelper {
             put(Items.POTATO, Items.BAKED_POTATO);
         }
     };
-    public static final Item[] RAW_FOODS = _cookableFoodMap.keySet().toArray(Item[]::new);
-    private static Map<Item, Integer> _fuelTimeMap = null;
+    public static final Item[] RAW_FOODS = cookableFoodMap.keySet().toArray(Item[]::new);
+    public static final Item[] COOKED_FOODS = cookableFoodMap.values().toArray(Item[]::new);
+    private static Map<Item, Integer> fuelTimeMap = null;
 
     public static String stripItemName(Item item) {
         String[] possibilities = new String[]{"item.minecraft.", "block.minecraft."};
@@ -298,6 +299,7 @@ public class ItemHelper {
     /* Logs:
         ACACIA
         BIRCH
+        CHERRY
         CRIMSON
         DARK_OAK
         OAK
@@ -339,23 +341,23 @@ public class ItemHelper {
     }
 
     public static Item oreToDrop(Item ore) {
-        return _oreToDrop.getOrDefault(ore, null);
+        return oreToDrop.getOrDefault(ore, null);
     }
 
     public static Item logToPlanks(Item logItem) {
-        return _logToPlanks.getOrDefault(logItem, null);
+        return logToPlanks.getOrDefault(logItem, null);
     }
 
     public static Item planksToLog(Item plankItem) {
-        return _planksToLogs.getOrDefault(plankItem, null);
+        return planksToLogs.getOrDefault(plankItem, null);
     }
 
     public static Item strippedToLogs(Item logItem) {
-        return _strippedToLogs.getOrDefault(logItem, null);
+        return strippedToLogs.getOrDefault(logItem, null);
     }
 
     public static ColorfulItems getColorfulItems(MapColor color) {
-        return _colorMap.get(color);
+        return colorMap.get(color);
     }
 
     public static ColorfulItems getColorfulItems(DyeColor color) {
@@ -363,19 +365,19 @@ public class ItemHelper {
     }
 
     public static Collection<ColorfulItems> getColorfulItems() {
-        return _colorMap.values();
+        return colorMap.values();
     }
 
     public static WoodItems getWoodItems(WoodType type) {
-        return _woodMap.get(type);
+        return woodMap.get(type);
     }
 
     public static Collection<WoodItems> getWoodItems() {
-        return _woodMap.values();
+        return woodMap.values();
     }
 
     public static Optional<Item> getCookedFood(Item rawFood) {
-        return Optional.ofNullable(_cookableFoodMap.getOrDefault(rawFood, null));
+        return Optional.ofNullable(cookableFoodMap.getOrDefault(rawFood, null));
     }
 
     public static String trimItemName(String name) {
@@ -393,7 +395,7 @@ public class ItemHelper {
                 // BlockTags.LEAVES); should also work... but is slower
                 b instanceof LeavesBlock
                         || b == Blocks.COBWEB
-                        || b == Blocks.GRASS_BLOCK
+                        || b == Blocks.SHORT_GRASS
                         || b == Blocks.TALL_GRASS
                         || b == Blocks.LILY_PAD
                         || b == Blocks.FERN
@@ -433,10 +435,10 @@ public class ItemHelper {
     }
 
     private static Map<Item, Integer> getFuelTimeMap() {
-        if (_fuelTimeMap == null) {
-            _fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
+        if (fuelTimeMap == null) {
+            fuelTimeMap = AbstractFurnaceBlockEntity.createFuelTimeMap();
         }
-        return _fuelTimeMap;
+        return fuelTimeMap;
     }
 
     public static double getFuelAmount(Item... items) {
@@ -461,7 +463,7 @@ public class ItemHelper {
     }
 
     public boolean isRawFood(Item item) {
-        return _cookableFoodMap.containsKey(item);
+        return cookableFoodMap.containsKey(item);
     }
 
     public static class ColorfulItems {
@@ -557,49 +559,35 @@ public class ItemHelper {
         public OreDistribution(Block block)
         {
 
-            if(block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE)
-            {
+            if (block == Blocks.COAL_ORE || block == Blocks.DEEPSLATE_COAL_ORE) {
                 maxHeight = 192;
                 optimalHeight = 96;
                 minHeight = 0;
-            }else
-            if(block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE)
-            {
+            } else if (block == Blocks.COPPER_ORE || block == Blocks.DEEPSLATE_COPPER_ORE) {
                 maxHeight = 112;
                 optimalHeight = 48;
                 minHeight = -16;
-            }else
-            if(block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE)
-            {
+            } else if (block == Blocks.IRON_ORE || block == Blocks.DEEPSLATE_IRON_ORE) {
                 maxHeight = 72;
                 optimalHeight = 16;
                 minHeight = -32;
-            }else
-            if(block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE)
-            {
+            } else if (block == Blocks.LAPIS_ORE || block == Blocks.DEEPSLATE_LAPIS_ORE) {
                 maxHeight = 64;
                 optimalHeight = 0;
                 minHeight = -59;
-            }else
-            if(block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE)
-            {
+            } else if (block == Blocks.GOLD_ORE || block == Blocks.DEEPSLATE_GOLD_ORE) {
                 maxHeight = 32;
                 optimalHeight = -16;
                 minHeight = -59;
-            }else
-            if(block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE)
-            {
+            } else if (block == Blocks.DIAMOND_ORE || block == Blocks.DEEPSLATE_DIAMOND_ORE) {
                 maxHeight = 15;
                 optimalHeight = -59;
                 minHeight = -59;
-            }else
-            if(block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE)
-            {
+            } else if (block == Blocks.REDSTONE_ORE || block == Blocks.DEEPSLATE_REDSTONE_ORE) {
                 maxHeight = 15;
                 optimalHeight = -59;
                 minHeight = -59;
-            }else
-            {
+            } else {
                 maxHeight = 8;
                 optimalHeight = 8;
                 minHeight = 8;

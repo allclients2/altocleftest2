@@ -5,6 +5,7 @@ import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.pathing.goals.Goal;
 import baritone.api.pathing.goals.GoalBlock;
 import net.minecraft.util.math.BlockPos;
@@ -14,6 +15,8 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     private final BlockPos _position;
     private final boolean _preferStairs;
     private final Dimension _dimension;
+    private int finishedTicks = 0;
+    private final TimerGame wanderTimer = new TimerGame(2);
 
     public GetToBlockTask(BlockPos position, boolean preferStairs) {
         this(position, preferStairs, null);
@@ -38,6 +41,22 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
         if (_dimension != null && WorldHelper.getCurrentDimension() != _dimension) {
             return new DefaultGoToDimensionTask(_dimension);
         }
+
+        if (isFinished(mod)) {
+            finishedTicks++;
+        } else {
+            finishedTicks = 0;
+        }
+        if (finishedTicks > 10*20) {
+            wanderTimer.reset();
+            mod.logWarning("GetToBlock was finished for 10 seconds yet is still being called, wandering");
+            finishedTicks = 0;
+            return new TimeoutWanderTask();
+        }
+        if (!wanderTimer.elapsed()) {
+            return new TimeoutWanderTask();
+        }
+
         return super.onTick(mod);
     }
 
@@ -86,6 +105,6 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
     @Override
     protected void onWander(AltoClef mod) {
         super.onWander(mod);
-        mod.getBlockTracker().requestBlockUnreachable(_position);
+        mod.getBlockScanner().requestBlockUnreachable(_position);
     }
 }

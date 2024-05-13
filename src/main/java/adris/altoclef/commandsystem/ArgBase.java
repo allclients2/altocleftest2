@@ -3,8 +3,8 @@ package adris.altoclef.commandsystem;
 import java.lang.reflect.ParameterizedType;
 
 public abstract class ArgBase {
-    protected int _minArgCountToUseDefault;
-    protected boolean _hasDefault;
+    protected int minArgCountToUseDefault;
+    protected boolean hasDefault;
 
     protected <V> V getConverted(Class<V> vType, Object ob) {
         try {
@@ -34,11 +34,11 @@ public abstract class ArgBase {
     public abstract String getHelpRepresentation();
 
     public int getMinArgCountToUseDefault() {
-        return _minArgCountToUseDefault;
+        return minArgCountToUseDefault;
     }
 
     public boolean hasDefault() {
-        return _hasDefault;
+        return hasDefault;
     }
 
     public boolean isArray() {

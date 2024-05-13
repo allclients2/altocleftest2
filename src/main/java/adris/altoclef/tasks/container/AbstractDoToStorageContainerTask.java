@@ -18,7 +18,7 @@ import java.util.Optional;
  */
 public abstract class AbstractDoToStorageContainerTask extends Task {
 
-    private ContainerType _currentContainerType = null;
+    private ContainerType currentContainerType = null;
 
     @Override
     protected void onStart(AltoClef mod) {
@@ -32,30 +32,27 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
         // No container found
         if (containerTarget.isEmpty()) {
             setDebugState("Wandering");
-            _currentContainerType = null;
-            return onSearchWander(mod);
+            currentContainerType = null;
+            return onSearchWander();
         }
 
         BlockPos targetPos = containerTarget.get();
 
         // We're open
-        if (_currentContainerType != null && ContainerType.screenHandlerMatches(_currentContainerType)) {
+        if (currentContainerType != null && ContainerType.screenHandlerMatches(currentContainerType)) {
 
-            // Optional<BlockPos> lastInteracted = mod.getItemStorage().getLastBlockPosInteraction();
-            //if (lastInteracted.isPresent() && lastInteracted.get().equals(targetPos)) {
             Optional<ContainerCache> cache = mod.getItemStorage().getContainerAtPosition(targetPos);
             if (cache.isPresent()) {
                 return onContainerOpenSubtask(mod, cache.get());
             }
-            //}
         }
 
         // Get to the container
         if (mod.getChunkTracker().isChunkLoaded(targetPos)) {
             Block type = mod.getWorld().getBlockState(targetPos).getBlock();
-            _currentContainerType = ContainerType.getFromBlock(type);
+            currentContainerType = ContainerType.getFromBlock(type);
         }
-        if (WorldHelper.isChest(mod, targetPos) && WorldHelper.isSolid(mod, targetPos.up()) && WorldHelper.canBreak(mod, targetPos.up())) {
+        if (WorldHelper.isChest(mod, targetPos) && WorldHelper.isSolidBlock(mod, targetPos.up()) && WorldHelper.canBreak(mod, targetPos.up())) {
             setDebugState("Clearing block above chest");
             return new DestroyBlockTask(targetPos.up());
         }
@@ -74,7 +71,7 @@ public abstract class AbstractDoToStorageContainerTask extends Task {
 
     // Virtual
     // TODO: Interface this
-    protected Task onSearchWander(AltoClef mod) {
+    protected Task onSearchWander() {
         return new TimeoutWanderTask();
     }
 }

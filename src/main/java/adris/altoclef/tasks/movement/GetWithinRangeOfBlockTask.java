@@ -8,29 +8,29 @@ import net.minecraft.util.math.BlockPos;
 
 public class GetWithinRangeOfBlockTask extends CustomBaritoneGoalTask {
 
-    private final BlockPos _blockPos;
-    private final int _range;
+    public final BlockPos blockPos;
+    public final int range;
 
     public GetWithinRangeOfBlockTask(BlockPos blockPos, int range) {
-        _blockPos = blockPos;
-        _range = range;
+        this.blockPos = blockPos;
+        this.range = range;
     }
 
     @Override
     protected Goal newGoal(AltoClef mod) {
-        return new GoalNear(_blockPos, _range);
+        return new GoalNear(blockPos, range);
     }
 
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof GetWithinRangeOfBlockTask task) {
-            return task._blockPos.equals(_blockPos) && task._range == _range;
+            return task.blockPos.equals(blockPos) && task.range == range;
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Getting within " + _range + " blocks of " + _blockPos.toShortString();
+        return "Getting within " + range + " blocks of " + blockPos.toShortString();
     }
 }

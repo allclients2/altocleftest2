@@ -18,14 +18,14 @@ public class LootDesertTempleTask extends Task {
             new Vec3i(0, 0, 2),
             new Vec3i(0, 0, -2)
     };
-    private final BlockPos _temple;
-    private final List<Item> _wanted;
-    private Task _lootTask;
-    private short _looted = 0;
+    private final BlockPos temple;
+    private final List<Item> wanted;
+    private Task lootTask;
+    private short looted = 0;
 
     public LootDesertTempleTask(BlockPos temple, List<Item> wanted) {
-        _temple = temple;
-        _wanted = wanted;
+        this.temple = temple;
+        this.wanted = wanted;
     }
 
     @Override
@@ -35,21 +35,21 @@ public class LootDesertTempleTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (_lootTask != null) {
-            if (!_lootTask.isFinished(mod)) {
+        if (lootTask != null) {
+            if (!lootTask.isFinished(mod)) {
                 setDebugState("Looting a desert temple chest");
-                return _lootTask;
+                return lootTask;
             }
-            _looted++;
+            looted++;
         }
-        if (mod.getWorld().getBlockState(_temple).getBlock() == Blocks.STONE_PRESSURE_PLATE) {
+        if (mod.getWorld().getBlockState(temple).getBlock() == Blocks.STONE_PRESSURE_PLATE) {
             setDebugState("Breaking pressure plate");
-            return new DestroyBlockTask(_temple);
+            return new DestroyBlockTask(temple);
         }
-        if (_looted < 4) {
+        if (looted < 4) {
             setDebugState("Looting a desert temple chest");
-            _lootTask = new LootContainerTask(_temple.add(CHEST_POSITIONS_RELATIVE[_looted]), _wanted);
-            return _lootTask;
+            lootTask = new LootContainerTask(temple.add(CHEST_POSITIONS_RELATIVE[looted]), wanted);
+            return lootTask;
         }
         setDebugState("Why is this still running? Report this");
         return null;
@@ -62,12 +62,12 @@ public class LootDesertTempleTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        return other instanceof LootDesertTempleTask && ((LootDesertTempleTask) other).getTemplePos() == _temple;
+        return other instanceof LootDesertTempleTask && ((LootDesertTempleTask) other).getTemplePos() == temple;
     }
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _looted == 4;
+        return looted == 4;
     }
 
     @Override
@@ -76,6 +76,6 @@ public class LootDesertTempleTask extends Task {
     }
 
     public BlockPos getTemplePos() {
-        return _temple;
+        return temple;
     }
 }

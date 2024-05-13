@@ -6,18 +6,18 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class GotoTarget {
-    private final int _x;
-    private final int _y;
-    private final int _z;
-    private final Dimension _dimension;
-    private final GotoTargetCoordType _type;
+    private final int x;
+    private final int y;
+    private final int z;
+    private final Dimension dimension;
+    private final GotoTargetCoordType type;
 
     public GotoTarget(int x, int y, int z, Dimension dimension, GotoTargetCoordType type) {
-        _x = x;
-        _y = y;
-        _z = z;
-        _dimension = dimension;
-        _type = type;
+        this.x = x;
+        this.y = y;
+        this.z = z;
+        this.dimension = dimension;
+        this.type = type;
     }
 
     public static GotoTarget parseRemainder(String line) throws CommandException {
@@ -63,27 +63,27 @@ public class GotoTarget {
     }
 
     public int getX() {
-        return _x;
+        return x;
     }
 
     public int getY() {
-        return _y;
+        return y;
     }
 
     public int getZ() {
-        return _z;
+        return z;
     }
 
     public Dimension getDimension() {
-        return _dimension;
+        return dimension;
     }
 
     public boolean hasDimension() {
-        return _dimension != null;
+        return dimension != null;
     }
 
     public GotoTargetCoordType getType() {
-        return _type;
+        return type;
     }
 
     // Combination of types we can have

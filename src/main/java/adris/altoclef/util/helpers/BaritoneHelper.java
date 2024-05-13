@@ -21,6 +21,6 @@ public class BaritoneHelper {
         double xDiff = xTarget - xStart;
         int yDiff = (int) yTarget - (int) yStart;
         double zDiff = zTarget - zStart;
-        return GoalBlock.calculate(xDiff, yDiff < 0 ? yDiff + 1 : yDiff, zDiff);
+        return GoalBlock.calculate(xDiff, yDiff < 0 ? yDiff - 1 : yDiff, zDiff);
     }
 }

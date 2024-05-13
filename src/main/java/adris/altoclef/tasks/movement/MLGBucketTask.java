@@ -168,7 +168,7 @@ public class MLGBucketTask extends Task {
             return null;
         }
         // If our raycast hit a non-solid block, go DOWN one.
-        if (!WorldHelper.isSolid(mod, toPlaceOn)) {
+        if (!WorldHelper.isSolidBlock(mod, toPlaceOn)) {
             toPlaceOn = toPlaceOn.down();
         }
         BlockPos willLandIn = toPlaceOn.up();
@@ -265,7 +265,7 @@ public class MLGBucketTask extends Task {
      * Twisted vines require we press space ONLY when we're inside the vines
      */
     private void handleJumpForLand(AltoClef mod, BlockPos willLandOn) {
-        BlockPos willLandIn = WorldHelper.isSolid(mod, willLandOn) ? willLandOn.up() : willLandOn;
+        BlockPos willLandIn = WorldHelper.isSolidBlock(mod, willLandOn) ? willLandOn.up() : willLandOn;
         BlockState s = mod.getWorld().getBlockState(willLandIn);
         if (s.getBlock() == Blocks.LAVA) {
             // ALWAYS hold jump for lava

@@ -12,11 +12,11 @@ import net.minecraft.entity.mob.MagmaCubeEntity;
 import net.minecraft.item.Items;
 
 public class CollectMagmaCreamTask extends ResourceTask {
-    private final int _count;
+    private final int count;
 
     public CollectMagmaCreamTask(int count) {
         super(Items.MAGMA_CREAM, count);
-        _count = count;
+        this.count = count;
     }
 
     @Override
@@ -42,7 +42,7 @@ public class CollectMagmaCreamTask extends ResourceTask {
          *      Go to overworld lol
          */
         int currentCream = mod.getItemStorage().getItemCount(Items.MAGMA_CREAM);
-        int neededCream = _count - currentCream;
+        int neededCream = count - currentCream;
         switch (WorldHelper.getCurrentDimension()) {
             case NETHER -> {
                 if (mod.getEntityTracker().entityFound(MagmaCubeEntity.class)) {
@@ -89,6 +89,6 @@ public class CollectMagmaCreamTask extends ResourceTask {
 
     @Override
     protected String toDebugStringName() {
-        return "Collecting " + _count + " Magma cream.";
+        return "Collecting " + count + " Magma cream.";
     }
 }

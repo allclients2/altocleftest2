@@ -24,10 +24,10 @@ import java.util.Optional;
  */
 public class CraftGenericManuallyTask extends Task {
 
-    private final RecipeTarget _target;
+    private final RecipeTarget target;
 
     public CraftGenericManuallyTask(RecipeTarget target) {
-        _target = target;
+        this.target = target;
     }
 
     @Override
@@ -73,15 +73,15 @@ public class CraftGenericManuallyTask extends Task {
         // We need 9 sticks
         // plank recipe results in 4 sticks
         // this means 3 planks per slot
-        int requiredPerSlot = (int) Math.ceil((double) _target.getTargetCount() / _target.getRecipe().outputCount());
+        int requiredPerSlot = (int) Math.ceil((double) target.getTargetCount() / target.getRecipe().outputCount());
 
         // For each slot in table
-        for (int craftSlot = 0; craftSlot < _target.getRecipe().getSlotCount(); ++craftSlot) {
-            ItemTarget toFill = _target.getRecipe().getSlot(craftSlot);
+        for (int craftSlot = 0; craftSlot < target.getRecipe().getSlotCount(); ++craftSlot) {
+            ItemTarget toFill = target.getRecipe().getSlot(craftSlot);
             Slot currentCraftSlot;
             if (bigCrafting) {
                 // Craft in table
-                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, _target.getRecipe().isBig());
+                currentCraftSlot = CraftingTableSlot.getInputSlot(craftSlot, target.getRecipe().isBig());
             } else {
                 // Craft in window
                 currentCraftSlot = PlayerSlot.getCraftInputSlot(craftSlot);
@@ -102,7 +102,7 @@ public class CraftGenericManuallyTask extends Task {
                     if (!mod.getItemStorage().hasItemInventoryOnly(present.getItem())) {
                         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
                             setDebugState("NO MORE to fit: grabbing from output.");
-                            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
+                            return new ReceiveCraftingOutputSlotTask(outputSlot, target.getTargetCount());
                         } else {
                             // Move on to the NEXT slot, we can't fill this one anymore.
                             continue;
@@ -134,7 +134,7 @@ public class CraftGenericManuallyTask extends Task {
         }
 
         if (!StorageHelper.getItemStackInSlot(outputSlot).isEmpty()) {
-            return new ReceiveCraftingOutputSlotTask(outputSlot, _target.getTargetCount());
+            return new ReceiveCraftingOutputSlotTask(outputSlot, target.getTargetCount());
         } else {
             // Wait
             return null;
@@ -149,13 +149,13 @@ public class CraftGenericManuallyTask extends Task {
     @Override
     protected boolean isEqual(Task other) {
         if (other instanceof CraftGenericManuallyTask task) {
-            return task._target.equals(_target);
+            return task.target.equals(target);
         }
         return false;
     }
 
     @Override
     protected String toDebugString() {
-        return "Crafting: " + _target;
+        return "Crafting: " + target;
     }
 }

@@ -11,11 +11,11 @@ import java.io.IOException;
 import java.util.*;
 
 public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeserializer<T> {
-    public AbstractVectorDeserializer() {
+    protected AbstractVectorDeserializer() {
         this(null);
     }
 
-    public AbstractVectorDeserializer(Class<T> vc) {
+    protected AbstractVectorDeserializer(Class<T> vc) {
         super(vc);
     }
 
@@ -47,7 +47,7 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
     }
 
     @Override
-    public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+    public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         String[] neededComponents = getComponents();
         if (p.getCurrentToken() == JsonToken.VALUE_STRING) {
             String bposString = p.getValueAsString();
@@ -55,7 +55,7 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
             if (parts.length != neededComponents.length) {
                 throw new JsonParseException(p, "Invalid " + getTypeName() + " string: \"" + bposString + "\", must be in form \"" + String.join(",", neededComponents) + "\".");
             }
-            ArrayList<UnitType> resultingUnits = new ArrayList<UnitType>();
+            ArrayList<UnitType> resultingUnits = new ArrayList<>();
             for (String part : parts) {
                 resultingUnits.add(tryParse(p, bposString, part));
             }
@@ -65,7 +65,6 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
             p.nextToken();
             while (p.getCurrentToken() != JsonToken.END_OBJECT) {
                 if (p.getCurrentToken() == JsonToken.FIELD_NAME) {
-                    String fName = p.getCurrentName();
                     p.nextToken();
                     if (!isUnitTokenValid(p.currentToken())) {
                         throw new JsonParseException(p, "Invalid token for " + getTypeName() + ". Got: " + p.getCurrentToken());
@@ -83,7 +82,7 @@ public abstract class AbstractVectorDeserializer<T, UnitType> extends StdDeseria
             if (parts.size() != neededComponents.length) {
                 throw new JsonParseException(p, "Expected [" + String.join(",", neededComponents) + "] keys to be part of a blockpos object. Got " + Arrays.toString(parts.keySet().toArray(String[]::new)));
             }
-            ArrayList<UnitType> resultingUnits = new ArrayList<UnitType>();
+            ArrayList<UnitType> resultingUnits = new ArrayList<>();
             for (String componentName : neededComponents) {
                 resultingUnits.add(trySet(p, parts, componentName));
             }

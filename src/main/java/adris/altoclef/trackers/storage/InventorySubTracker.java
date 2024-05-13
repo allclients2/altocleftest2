@@ -26,10 +26,10 @@ import java.util.List;
  */
 public class InventorySubTracker extends Tracker {
 
-    private final HashMap<Item, List<Slot>> _itemToSlotPlayer = new HashMap<>();
-    private final HashMap<Item, List<Slot>> _itemToSlotContainer = new HashMap<>();
-    private final HashMap<Item, Integer> _itemCountsPlayer = new HashMap<>();
-    private final HashMap<Item, Integer> _itemCountsContainer = new HashMap<>();
+    private final HashMap<Item, List<Slot>> itemToSlotPlayer = new HashMap<>();
+    private final HashMap<Item, List<Slot>> itemToSlotContainer = new HashMap<>();
+    private final HashMap<Item, Integer> itemCountsPlayer = new HashMap<>();
+    private final HashMap<Item, Integer> itemCountsContainer = new HashMap<>();
 
     private ScreenHandler _prevScreenHandler;
 
@@ -64,9 +64,9 @@ public class InventorySubTracker extends Tracker {
             if (playerInventory && cursorStack.getItem().equals(item))
                 result += cursorStack.getCount();
             if (playerInventory)
-                result += _itemCountsPlayer.getOrDefault(item, 0);
+                result += itemCountsPlayer.getOrDefault(item, 0);
             if (containerInventory)
-                result += _itemCountsContainer.getOrDefault(item, 0);
+                result += itemCountsContainer.getOrDefault(item, 0);
         }
         return result;
     }
@@ -77,9 +77,9 @@ public class InventorySubTracker extends Tracker {
         for (Item item : items) {
             if (cursorStack.getItem().equals(item))
                 return true;
-            if (_itemCountsPlayer.containsKey(item))
+            if (itemCountsPlayer.containsKey(item))
                 return true;
-            if (!playerInventoryOnly && _itemCountsContainer.containsKey(item))
+            if (!playerInventoryOnly && itemCountsContainer.containsKey(item))
                 return true;
         }
         return false;
@@ -93,9 +93,9 @@ public class InventorySubTracker extends Tracker {
             if (playerInventory && cursorStack.getItem().equals(item))
                 result.add(CursorSlot.SLOT);
             if (playerInventory)
-                result.addAll(_itemToSlotPlayer.getOrDefault(item, Collections.emptyList()));
+                result.addAll(itemToSlotPlayer.getOrDefault(item, Collections.emptyList()));
             if (containerInventory)
-                result.addAll(_itemToSlotContainer.getOrDefault(item, Collections.emptyList()));
+                result.addAll(itemToSlotContainer.getOrDefault(item, Collections.emptyList()));
         }
         return result;
     }
@@ -153,9 +153,9 @@ public class InventorySubTracker extends Tracker {
         ensureUpdated();
         final List<Slot> result = new ArrayList<>();
         if (includePlayer)
-            result.addAll(getSlotsThatCanFit(_itemToSlotPlayer, item, acceptPartial));
+            result.addAll(getSlotsThatCanFit(itemToSlotPlayer, item, acceptPartial));
         if (includeContainer)
-            result.addAll(getSlotsThatCanFit(_itemToSlotContainer, item, acceptPartial));
+            result.addAll(getSlotsThatCanFit(itemToSlotContainer, item, acceptPartial));
         return result;
     }
 
@@ -173,13 +173,13 @@ public class InventorySubTracker extends Tracker {
         }
 
         if (isSlotPlayerInventory) {
-            _itemCountsPlayer.put(item, _itemCountsPlayer.getOrDefault(item, 0) + count);
+            itemCountsPlayer.put(item, itemCountsPlayer.getOrDefault(item, 0) + count);
         } else {
-            _itemCountsContainer.put(item, _itemCountsContainer.getOrDefault(item, 0) + count);
+            itemCountsContainer.put(item, itemCountsContainer.getOrDefault(item, 0) + count);
         }
 
         if (slot != null) {
-            HashMap<Item, List<Slot>> toAdd = isSlotPlayerInventory ? _itemToSlotPlayer : _itemToSlotContainer;
+            HashMap<Item, List<Slot>> toAdd = isSlotPlayerInventory ? itemToSlotPlayer : itemToSlotContainer;
             if (!toAdd.containsKey(item))
                 toAdd.put(item, new ArrayList<>());
             toAdd.get(item).add(slot);
@@ -190,10 +190,10 @@ public class InventorySubTracker extends Tracker {
     protected void updateState() {
         _prevScreenHandler = MinecraftClient.getInstance().player != null ? MinecraftClient.getInstance().player.currentScreenHandler : null;
 
-        _itemToSlotPlayer.clear();
-        _itemToSlotContainer.clear();
-        _itemCountsPlayer.clear();
-        _itemCountsContainer.clear();
+        itemToSlotPlayer.clear();
+        itemToSlotContainer.clear();
+        itemCountsPlayer.clear();
+        itemCountsContainer.clear();
         if (MinecraftClient.getInstance().player == null)
             return;
         ScreenHandler handler = MinecraftClient.getInstance().player.currentScreenHandler;
@@ -214,10 +214,10 @@ public class InventorySubTracker extends Tracker {
 
     @Override
     protected void reset() {
-        _itemToSlotPlayer.clear();
-        _itemToSlotContainer.clear();
-        _itemCountsPlayer.clear();
-        _itemCountsContainer.clear();
+        itemToSlotPlayer.clear();
+        itemToSlotContainer.clear();
+        itemCountsPlayer.clear();
+        itemCountsContainer.clear();
     }
 
     @Override

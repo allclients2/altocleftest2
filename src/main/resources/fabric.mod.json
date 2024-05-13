@@ -1,19 +1,20 @@
 {
   "schemaVersion": 1,
   "id": "altoclef",
-  "version": "1.20.4-beta1",
+  "version": "${version}",
   "name": "Alto Clef",
   "description": "Plays Block Game",
   "authors": [
     "TacoTechnica",
     "James Green",
-    "Marvion Kirito"
+    "Marvion Kirito",
+    "MiranCZ"
   ],
   "contact": {
-    "homepage": "https://fabricc.net/",
-    "sources": "https://github.com/FabricMC/fabric-example-mod"
+    "homepage": "https://github.com/MiranCZ/altoclef",
+    "sources": "https://github.com/MiranCZ/altoclef"
   },
-  "license": "CC0-1.0",
+  "license": "MIT",
   "icon": "assets/altoclef/icon.png",
   "environment": "*",
   "entrypoints": {

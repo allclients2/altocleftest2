@@ -54,7 +54,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
         // Solved for s1 + d1 * t1 = s2 + d2 * t2
         double t2 = ((d1.z * s2.x) - (d1.z * s1.x) - (d1.x * s2.z) + (d1.x * s1.z)) / ((d1.x * d2.z) - (d1.z * d2.x));
         BlockPos blockPos = BlockPos.ofFloored(start2.add(direction2.multiply(t2)));
-        return new Vec3i(blockPos.getX(), blockPos.getY(), blockPos.getZ());
+        return new Vec3i(blockPos.getX(), 0, blockPos.getZ());
     }
 
     @Override
@@ -84,6 +84,7 @@ public class LocateStrongholdCoordinatesTask extends Task {
         if (mod.getEntityTracker().entityFound(EyeOfEnderEntity.class)) {
             if (_currentThrownEye == null || !_currentThrownEye.isAlive()) {
                 Debug.logMessage("New eye direction");
+                Debug.logMessage(_currentThrownEye==null?"null":"is not alive");
                 List<EyeOfEnderEntity> enderEyes = mod.getEntityTracker().getTrackedEntities(EyeOfEnderEntity.class);
                 if (!enderEyes.isEmpty()) {
                     for (EyeOfEnderEntity enderEye : enderEyes) {

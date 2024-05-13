@@ -71,7 +71,6 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     @Override
     protected void onResourceStart(AltoClef mod) {
-        mod.getBlockTracker().trackBlock(Blocks.FURNACE);
         mod.getBehaviour().push();
         if (_targets.length != 1) {
             Debug.logWarning("Tried smelting multiple targets, only one target is supported at a time!");
@@ -80,14 +79,13 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
     @Override
     protected Task onResourceTick(AltoClef mod) {
-        Optional<BlockPos> furnacePos = mod.getBlockTracker().getNearestTracking(Blocks.FURNACE);
+        Optional<BlockPos> furnacePos = mod.getBlockScanner().getNearestBlock(Blocks.FURNACE);
         furnacePos.ifPresent(blockPos -> mod.getBehaviour().avoidBlockBreaking(blockPos));
         return _doTask;
     }
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.FURNACE);
         mod.getBehaviour().pop();
         // Close furnace screen
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
@@ -128,28 +126,28 @@ public class SmeltInFurnaceTask extends ResourceTask {
         return _targets;
     }
 
-    @SuppressWarnings("ConditionCoveredByFurtherCondition")
+
     static class DoSmeltInFurnaceTask extends DoStuffInContainerTask {
 
-        private final SmeltTarget _target;
-        private final FurnaceCache _furnaceCache = new FurnaceCache();
-        private final ItemTarget _allMaterials;
-        private boolean _ignoreMaterials;
+        private final SmeltTarget target;
+        private final FurnaceCache furnaceCache = new FurnaceCache();
+        private final ItemTarget allMaterials;
+        private boolean ignoreMaterials;
 
         public DoSmeltInFurnaceTask(SmeltTarget target) {
             super(Blocks.FURNACE, new ItemTarget(Items.FURNACE));
-            _target = target;
-            _allMaterials = new ItemTarget(Stream.concat(Arrays.stream(_target.getMaterial().getMatches()), Arrays.stream(_target.getOptionalMaterials())).toArray(Item[]::new), _target.getMaterial().getTargetCount());
+            this.target = target;
+            allMaterials = new ItemTarget(Stream.concat(Arrays.stream(this.target.getMaterial().getMatches()), Arrays.stream(this.target.getOptionalMaterials())).toArray(Item[]::new), this.target.getMaterial().getTargetCount());
         }
 
         public void ignoreMaterials() {
-            _ignoreMaterials = true;
+            ignoreMaterials = true;
         }
 
         @Override
         protected boolean isSubTaskEqual(DoStuffInContainerTask other) {
             if (other instanceof DoSmeltInFurnaceTask task) {
-                return task._target.equals(_target) && task._ignoreMaterials == _ignoreMaterials;
+                return task.target.equals(target) && task.ignoreMaterials == ignoreMaterials;
             }
             return false;
         }
@@ -160,47 +158,53 @@ public class SmeltInFurnaceTask extends ResourceTask {
         }
 
         @Override
-        protected Task onTick(AltoClef mod) {
+        protected void onStart(AltoClef mod) {
+            super.onStart(mod);
+
             mod.getBehaviour().addProtectedItems(ItemHelper.PLANKS);
             mod.getBehaviour().addProtectedItems(Items.COAL);
-            mod.getBehaviour().addProtectedItems(_allMaterials.getMatches());
-            mod.getBehaviour().addProtectedItems(_target.getMaterial().getMatches());
+            mod.getBehaviour().addProtectedItems(allMaterials.getMatches());
+            mod.getBehaviour().addProtectedItems(target.getMaterial().getMatches());
+        }
+
+        @Override
+        protected Task onTick(AltoClef mod) {
             tryUpdateOpenFurnace(mod);
             // Include both regular + optional items
-            ItemTarget materialTarget = _allMaterials;
-            ItemTarget outputTarget = _target.getItem();
+            ItemTarget materialTarget = allMaterials;
+            ItemTarget outputTarget = target.getItem();
             // Materials needed = (mat_target (- 0*mat_in_inventory) - out_in_inventory - mat_in_furnace - out_in_furnace)
             // ^ 0 * mat_in_inventory because we always care aobut the TARGET materials, not how many LEFT there are.
             int materialsNeeded = materialTarget.getTargetCount()
                     /*- mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches())*/ // See comment above
                     - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
-                    - (materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0)
-                    - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0);
-            double totalFuelInFurnace = ItemHelper.getFuelAmount(_furnaceCache.fuelSlot) + _furnaceCache.burningFuelCount + _furnaceCache.burnPercentage;
+                    - (materialTarget.matches(furnaceCache.materialSlot.getItem()) ? furnaceCache.materialSlot.getCount() : 0)
+                    - (outputTarget.matches(furnaceCache.outputSlot.getItem()) ? furnaceCache.outputSlot.getCount() : 0);
+            double totalFuelInFurnace = ItemHelper.getFuelAmount(furnaceCache.fuelSlot) + furnaceCache.burningFuelCount + furnaceCache.burnPercentage;
             // Fuel needed = (mat_target - out_in_inventory - out_in_furnace - totalFuelInFurnace)
-            double fuelNeeded = _ignoreMaterials
-                    ? Math.min(materialTarget.matches(_furnaceCache.materialSlot.getItem()) ? _furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
+            double fuelNeeded = ignoreMaterials
+                    ? Math.min(materialTarget.matches(furnaceCache.materialSlot.getItem()) ? furnaceCache.materialSlot.getCount() : 0, materialTarget.getTargetCount())
                     : materialTarget.getTargetCount()
                     /* - mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) */
                     - mod.getItemStorage().getItemCountInventoryOnly(outputTarget.getMatches())
-                    - (outputTarget.matches(_furnaceCache.outputSlot.getItem()) ? _furnaceCache.outputSlot.getCount() : 0)
+                    - (outputTarget.matches(furnaceCache.outputSlot.getItem()) ? furnaceCache.outputSlot.getCount() : 0)
                     - totalFuelInFurnace;
 
             // We don't have enough materials...
             if (mod.getItemStorage().getItemCountInventoryOnly(materialTarget.getMatches()) < materialsNeeded) {
                 setDebugState("Getting Materials");
-                return getMaterialTask(_target.getMaterial());
+                return getMaterialTask(target.getMaterial());
             }
 
             // We don't have enough fuel...
-            if (_furnaceCache.burningFuelCount <= 0 && StorageHelper.calculateInventoryFuelCount(mod) < fuelNeeded) {
+            if (furnaceCache.burningFuelCount <= 0 && StorageHelper.calculateInventoryFuelCount(mod) < fuelNeeded) {
                 setDebugState("Getting Fuel");
                 return new CollectFuelTask(fuelNeeded + 1);
             }
 
             // Make sure our materials are accessible in our inventory
-            if (StorageHelper.isItemInaccessibleToContainer(mod, _allMaterials)) {
-                return new MoveInaccessibleItemToInventoryTask(_allMaterials);
+            if (StorageHelper.isItemInaccessibleToContainer(mod, allMaterials)) {
+                return new MoveInaccessibleItemToInventoryTask(allMaterials);
             }
 
             // We have fuel and materials. Get to our container and smelt!
@@ -274,13 +278,13 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
             // Fill in input if needed
             // Materials needed in slot = (mat_target - out_in_inventory - out_in_furnace)
-            ItemTarget materialTarget = _allMaterials;
+            ItemTarget materialTarget = allMaterials;
 
             int neededMaterialsInSlot = materialTarget.getTargetCount()
-                    - mod.getItemStorage().getItemCountInventoryOnly(_target.getItem().getMatches())
-                    - (_target.getItem().matches(output.getItem()) ? output.getCount() : 0);
+                    - mod.getItemStorage().getItemCountInventoryOnly(target.getItem().getMatches())
+                    - (target.getItem().matches(output.getItem()) ? output.getCount() : 0);
             // We don't have the right material or we need more
-            if (!_allMaterials.matches(material.getItem()) || neededMaterialsInSlot > material.getCount()) {
+            if (!allMaterials.matches(material.getItem()) || neededMaterialsInSlot > material.getCount()) {
                 int materialsAlreadyIn = (materialTarget.matches(material.getItem()) ? material.getCount() : 0);
                 setDebugState("Moving Materials");
                 return new MoveItemToSlotFromInventoryTask(new ItemTarget(materialTarget, neededMaterialsInSlot - materialsAlreadyIn), FurnaceSlot.INPUT_SLOT_MATERIALS);
@@ -312,7 +316,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                                             // If our best is above, prioritize lower values
                                             (closestDelta > 0 && delta < closestDelta) ||
                                             // If our best is below, prioritize higher below values
-                                            (closestDelta < 0 && delta < 0 && delta > closestDelta)
+                                            (delta < 0 && delta > closestDelta)
                             ) {
                                 bestStack = stack;
                                 closestDelta = delta;
@@ -332,9 +336,9 @@ public class SmeltInFurnaceTask extends ResourceTask {
 
         @Override
         protected double getCostToMakeNew(AltoClef mod) {
-            if (_furnaceCache.burnPercentage > 0 || _furnaceCache.burningFuelCount > 0 ||
-                    _furnaceCache.fuelSlot != null || _furnaceCache.materialSlot != null ||
-                    _furnaceCache.outputSlot != null) {
+            if (furnaceCache.burnPercentage > 0 || furnaceCache.burningFuelCount > 0 ||
+                    !furnaceCache.fuelSlot.isEmpty() || !furnaceCache.materialSlot.isEmpty() ||
+                    !furnaceCache.outputSlot.isEmpty()) {
                 return 9999999.0;
             }
             if (mod.getItemStorage().getItemCount(Items.COBBLESTONE) > 8) {
@@ -353,11 +357,11 @@ public class SmeltInFurnaceTask extends ResourceTask {
         private void tryUpdateOpenFurnace(AltoClef mod) {
             if (isContainerOpen(mod)) {
                 // Update current furnace cache
-                _furnaceCache.burnPercentage = StorageHelper.getFurnaceCookPercent();
-                _furnaceCache.burningFuelCount = StorageHelper.getFurnaceFuel();
-                _furnaceCache.fuelSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_FUEL);
-                _furnaceCache.materialSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS);
-                _furnaceCache.outputSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
+                furnaceCache.burnPercentage = StorageHelper.getFurnaceCookPercent();
+                furnaceCache.burningFuelCount = StorageHelper.getFurnaceFuel();
+                furnaceCache.fuelSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_FUEL);
+                furnaceCache.materialSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.INPUT_SLOT_MATERIALS);
+                furnaceCache.outputSlot = StorageHelper.getItemStackInSlot(FurnaceSlot.OUTPUT_SLOT);
             }
         }
     }
@@ -366,7 +370,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
         public ItemStack materialSlot = ItemStack.EMPTY;
         public ItemStack fuelSlot = ItemStack.EMPTY;
         public ItemStack outputSlot = ItemStack.EMPTY;
-        public double burningFuelCount;
-        public double burnPercentage;
+        public double burningFuelCount = 0;
+        public double burnPercentage = 0;
     }
 }

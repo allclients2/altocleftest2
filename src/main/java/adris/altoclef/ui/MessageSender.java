@@ -19,25 +19,25 @@ public class MessageSender {
     private static final int FAST_LIMIT = 6;
     private static final int SLOW_LIMIT = 3;
 
-    private final PriorityQueue<BaseMessage> _whisperQueue = new PriorityQueue<>(
+    private final PriorityQueue<BaseMessage> whisperQueue = new PriorityQueue<>(
             Comparator.comparingInt((BaseMessage msg) -> msg.priority.getImportance())
                     .thenComparingInt(msg -> msg.index)
     );
     //private final Queue<Whisper> _whisperQueue = new ArrayDeque<>();
 
-    private final BaseTimer _fastSendTimer = new TimerReal(0.3f);
-    private final BaseTimer _bigSendTimer = new TimerReal(3.5);
-    private final BaseTimer _bigBigSendTimer = new TimerReal(10);
+    private final BaseTimer fastSendTimer = new TimerReal(0.3f);
+    private final BaseTimer bigSendTimer = new TimerReal(3.5);
+    private final BaseTimer bigBigSendTimer = new TimerReal(10);
 
-    private int _messageCounter = 0;
+    private int messageCounter = 0;
 
-    private int _fastCount;
-    private int _slowCount;
+    private int fastCount;
+    private int slowCount;
 
     public void tick() {
         if (canSendMessage()) {
-            if (!_whisperQueue.isEmpty()) {
-                BaseMessage msg = _whisperQueue.poll();
+            if (!whisperQueue.isEmpty()) {
+                BaseMessage msg = whisperQueue.poll();
                 assert msg != null;
                 sendChatUpdateTimers(msg.getChatInput());
             }
@@ -45,28 +45,28 @@ public class MessageSender {
     }
 
     public void enqueueWhisper(String username, String message, MessagePriority priority) {
-        _whisperQueue.add(new Whisper(username, message, priority, _messageCounter++));
+        whisperQueue.add(new Whisper(username, message, priority, messageCounter++));
     }
 
     public void enqueueChat(String message, MessagePriority priority) {
-        _whisperQueue.add(new ChatMessage(message, priority, _messageCounter++));
+        whisperQueue.add(new ChatMessage(message, priority, messageCounter++));
     }
 
     private boolean canSendMessage() {
-        return _bigBigSendTimer.elapsed() && _bigSendTimer.elapsed() && _fastSendTimer.elapsed();
+        return bigBigSendTimer.elapsed() && bigSendTimer.elapsed() && fastSendTimer.elapsed();
     }
 
     private void sendChatUpdateTimers(String message) {
         sendChatInstant(message);
-        _fastSendTimer.reset();
-        _fastCount++;
-        if (_fastCount >= FAST_LIMIT) {
-            _bigSendTimer.reset();
-            _fastCount = 0;
-            _slowCount++;
-            if (_slowCount >= SLOW_LIMIT) {
-                _bigBigSendTimer.reset();
-                _slowCount = 0;
+        fastSendTimer.reset();
+        fastCount++;
+        if (fastCount >= FAST_LIMIT) {
+            bigSendTimer.reset();
+            fastCount = 0;
+            slowCount++;
+            if (slowCount >= SLOW_LIMIT) {
+                bigBigSendTimer.reset();
+                slowCount = 0;
             }
         }
     }
