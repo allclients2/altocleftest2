@@ -39,7 +39,7 @@ public class Settings implements IFailableConfigFile {
     // Internal only.
     // If settings failed to load, this will be set to warn the user.
     @JsonIgnore
-    private transient boolean failedToLoad = false;
+    private transient boolean _failedToLoad = false;
 
     //////////////////////////////////////////////////////////////////////////////////////////
     ////////** BEGIN SETTINGS w/ COMMENTS **//////////////////////////////////////////////////
@@ -67,12 +67,12 @@ public class Settings implements IFailableConfigFile {
     /**
      * When logging to chat, will prepend this to each log.
      */
-    private String chatLogPrefix = "[Alto Clef] ";
+    private String chatLogPrefix = "AltoClef: ";
 
     /**
      * If true, will show a timer.
      */
-    private boolean showTimer = true;
+    private boolean showTimer = false;
 
 
     /**
@@ -400,7 +400,10 @@ public class Settings implements IFailableConfigFile {
             Stream.of(ItemHelper.SHULKER_BOXES)
     ).toList();
 
-
+    /**
+     * If true, a blast furnace will be used in smelting if an item to smelt is applicable.
+     */
+    private boolean useBlastFurnace = true;
 
     /**
      * If true, will only accept items found in `supportedFuels` as fuel when smelting.
@@ -634,6 +637,9 @@ public class Settings implements IFailableConfigFile {
         return limitFuelsToSupportedFuels;
     }
 
+    public boolean shouldUseBlastFurnace() {
+        return useBlastFurnace;
+    }
 
     public boolean isSupportedFuel(Item item) {
         return !limitFuelsToSupportedFuels || supportedFuels.contains(item);
@@ -667,11 +673,11 @@ public class Settings implements IFailableConfigFile {
 
     @Override
     public void onFailLoad() {
-        failedToLoad = true;
+        _failedToLoad = true;
     }
 
     @Override
     public boolean failedToLoad() {
-        return failedToLoad;
+        return _failedToLoad;
     }
 }

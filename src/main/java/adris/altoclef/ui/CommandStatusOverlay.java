@@ -32,10 +32,10 @@ public class CommandStatusOverlay {
 
             matrixstack.push();
 
-            drawTaskChain(MinecraftClient.getInstance().textRenderer, 10, 10,
+            drawTaskChain(MinecraftClient.getInstance().textRenderer, 10, 6,
                     matrixstack.peek().getPositionMatrix(),
                     MinecraftClient.getInstance().getBufferBuilders().getOutlineVertexConsumers(),
-                    TextRenderer.TextLayerType.SEE_THROUGH, 10, tasks, mod);
+                    TextRenderer.TextLayerType.SEE_THROUGH, 6, tasks, mod);
 
             matrixstack.pop();
         }
@@ -44,7 +44,7 @@ public class CommandStatusOverlay {
     private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType, int maxLines, List<Task> tasks, AltoClef mod) {
         int whiteColor = 0xFFFFFFFF;
 
-        matrix.scale(0.5F, 0.5F, 0.5F);
+        matrix.scale(1F, 1F, 1F);
 
         float fontHeight = renderer.fontHeight;
         float addX = 4;
@@ -84,9 +84,8 @@ public class CommandStatusOverlay {
 
         for (int i = 0; i < tasks.size(); ++i) {
             if (i == 1) {
-                x += addX*2;
-                renderer.draw("...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-
+                x += addX * 2;
+                renderer.draw("... " + (tasks.size() - maxLines) + " other task(s) ...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
             } else if (i == 0 || i > tasks.size() - maxLines) {
                 renderTask(tasks.get(i), renderer,x,y,matrix,vertexConsumers,layerType);
             } else {

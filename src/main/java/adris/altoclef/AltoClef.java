@@ -2,7 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
-import adris.altoclef.commands.BlockScanner;
+import adris.altoclef.util.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
@@ -12,7 +12,6 @@ import adris.altoclef.eventbus.events.ClientRenderEvent;
 import adris.altoclef.eventbus.events.ClientTickEvent;
 import adris.altoclef.eventbus.events.SendChatEvent;
 import adris.altoclef.eventbus.events.TitleScreenEntryEvent;
-import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -21,6 +20,7 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
+import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.util.helpers.InputHelper;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
@@ -67,6 +67,7 @@ public class AltoClef implements ModInitializer {
     private BlockScanner blockScanner;
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
+    private BlockTracker blockTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     // Settings
@@ -131,6 +132,7 @@ public class AltoClef implements ModInitializer {
         blockScanner = new BlockScanner(this);
         chunkTracker = new SimpleChunkTracker(this);
         miscBlockTracker = new MiscBlockTracker(this);
+        blockTracker = new BlockTracker(this, trackerManager);
 
         // Renderers
         commandStatusOverlay = new CommandStatusOverlay();
@@ -227,6 +229,7 @@ public class AltoClef implements ModInitializer {
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
     public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
     public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
+    public final int HostileAvoidanceRadius = 16; // should avoid placing blocks
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
@@ -268,6 +271,12 @@ public class AltoClef implements ModInitializer {
         getExtraBaritoneSettings().configurePlaceBucketButDontFall(true);
 
         getClientBaritoneSettings().failureTimeoutMS.value = 500L;
+
+        // Custom avoidance setting i added
+        getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isAngryAtPlayer(this, entity));
+        getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
+        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 12.0;
+
 
         // For render smoothing
         getClientBaritoneSettings().randomLooking.value = 0.0;
@@ -359,6 +368,14 @@ public class AltoClef implements ModInitializer {
     public MiscBlockTracker getMiscBlockTracker() {
         return miscBlockTracker;
     }
+
+    /**
+     * Block tracker, tracks blocks on if we can reach them or not.
+     */
+    public BlockTracker getBlockTracker() {
+        return blockTracker;
+    }
+
 
     /**
      * Baritone access (could just be static honestly)

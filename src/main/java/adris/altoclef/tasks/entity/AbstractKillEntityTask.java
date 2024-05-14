@@ -1,16 +1,14 @@
 package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.chains.MobDefenseChain;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Weapons;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import net.minecraft.entity.Entity;
 import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.SwordItem;
-
-import java.util.List;
 
 /**
  * Attacks an entity, but the target entity must be specified.
@@ -33,32 +31,8 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
         super(maintainDistance, combatGuardLowerRange, combatGuardLowerFieldRadius);
     }
 
-    public static Item bestWeapon(AltoClef mod) {
-        List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
-        if (!invStacks.isEmpty()) {
-            float handDamage = Float.NEGATIVE_INFINITY;
-            Item bestItem = null;
-            for (ItemStack invStack : invStacks) {
-                if (invStack.getItem() instanceof SwordItem item) {
-                    float itemDamage = item.getMaterial().getAttackDamage();
-                    Item handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
-                    if (handItem instanceof SwordItem handToolItem) {
-                        handDamage = handToolItem.getMaterial().getAttackDamage();
-                    }
-                    if (itemDamage > handDamage) {
-                        bestItem = item;
-                    } else {
-                        bestItem = handItem;
-                    }
-                }
-            }
-            return bestItem;
-        }
-        return null;
-    }
-
     public static boolean equipWeapon(AltoClef mod) {
-        Item bestWeapon = bestWeapon(mod);
+        Item bestWeapon = Weapons.getBestWeapon(mod).WeaponItem;
         Item equipedWeapon = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
         if (bestWeapon != null && bestWeapon != equipedWeapon) {
             mod.getSlotHandler().forceEquipItem(bestWeapon);

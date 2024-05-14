@@ -3,6 +3,7 @@ package adris.altoclef.tasks.speedrun;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.CustomBaritoneGoalTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import baritone.api.pathing.goals.Goal;
@@ -25,7 +26,13 @@ public class DragonBreathTracker {
     }
 
     public boolean isTouchingDragonBreath(BlockPos pos) {
-        return breathBlocks.contains(pos);
+        return
+                WorldHelper.getCurrentDimension() == Dimension.END && (
+                        // Also check up and down because we could mine into it.
+                        breathBlocks.contains(pos) ||
+                        breathBlocks.contains(pos.up()) ||
+                        breathBlocks.contains(pos.down())
+                );
     }
 
     public Task getRunAwayTask() {

@@ -147,7 +147,7 @@ public class TerminatorTask extends Task {
                 Debug.logMessage("Stopped running away because we can now punk.");
             }
             // Get building materials if we don't have them.
-            if (PlaceStructureBlockTask.getMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
+            if (StorageHelper.getBuildingMaterialCount(mod) < MIN_BUILDING_BLOCKS) {
                 setDebugState("Collecting building materials");
                 return PlaceBlockTask.getMaterialTask(PREFERRED_BUILDING_BLOCKS);
             }

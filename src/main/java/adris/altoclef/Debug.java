@@ -20,7 +20,7 @@ public class Debug {
         if (jankModInstance != null) {
             return jankModInstance.getModSettings().getChatLogPrefix();
         }
-        return "[Alto Clef] ";
+        return "[AltoClef] ";
     }
 
     public static void logMessage(String message, boolean prefix) {

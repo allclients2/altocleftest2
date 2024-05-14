@@ -1,3 +1,5 @@
+//TODO: Implement this
+/*
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
@@ -8,7 +10,7 @@ import adris.altoclef.tasks.construction.SchematicBuildTask;
 
 public class BuildCommand extends Command {
     public BuildCommand() throws CommandException {
-        super("build", "!SO GLITCHY ITS USELESS; IN DEVELOPMENT! Build a structure from schematic data", new Arg(String.class, "filename", "", 0));
+        super("build", "(CRASHES GAME) Build a structure from schematic data, much in development.", new Arg(String.class, "filename", "", 0));
     }
 
     @Override
@@ -23,3 +25,4 @@ public class BuildCommand extends Command {
         mod.runUserTask(new SchematicBuildTask(name));
     }
 }
+*/

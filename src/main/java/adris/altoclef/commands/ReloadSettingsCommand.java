@@ -7,7 +7,7 @@ import adris.altoclef.util.helpers.ConfigHelper;
 
 public class ReloadSettingsCommand extends Command {
     public ReloadSettingsCommand() {
-        super("reload_settings", "Reloads bot settings and butler whitelist/blacklist.");
+        super("reloadconfig", "Reloads mod config and butler whitelist/blacklist.");
     }
 
     @Override

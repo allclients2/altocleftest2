@@ -76,10 +76,12 @@ public class DoToClosestEntityTask extends AbstractDoToClosestObjectTask<Entity>
 
     @Override
     protected void onStart(AltoClef mod) {
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = 0; //Don't want to be dodging the entity we are using.
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius;
     }
 
     @Override
