@@ -137,7 +137,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 16.0;
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
         mod.getClientBaritoneSettings().blockPlacementPenalty.value = 4.25;
-        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = 10; // No reason to get near mobs
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // No reason to get near mobs
 
 
         _timer.reset();

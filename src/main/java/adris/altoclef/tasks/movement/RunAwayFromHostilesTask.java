@@ -30,6 +30,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, distanceToRun);
     }

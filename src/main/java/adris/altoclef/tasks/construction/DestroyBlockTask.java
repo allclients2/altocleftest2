@@ -433,9 +433,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             }
         }
 
-        // Log the result of the equality check
-        Debug.logInternal("isEqual result: " + isSame);
-
         // Return the result of the equality check
         return isSame;
     }
