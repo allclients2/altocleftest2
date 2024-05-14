@@ -229,7 +229,7 @@ public class AltoClef implements ModInitializer {
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
     public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
     public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
-    public final int HostileAvoidanceRadius = 16; // should avoid placing blocks
+    public final int HostileAvoidanceRadius = 12; // should avoid placing blocks
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
@@ -273,9 +273,9 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().failureTimeoutMS.value = 500L;
 
         // Custom avoidance setting i added
-        getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isAngryAtPlayer(this, entity));
+        getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
-        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 12.0;
+        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 10.0;
 
 
         // For render smoothing

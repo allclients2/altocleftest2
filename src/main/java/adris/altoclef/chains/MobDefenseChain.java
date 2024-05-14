@@ -286,15 +286,6 @@ public class MobDefenseChain extends SingleTaskChain {
             return 65;
         }
 
-        // Dodge all hostiles if we are in danger.
-        if (isInDanger(mod) && !escapeDragonBreath(mod) && !mod.getFoodChain().isShouldStop()) {
-            if (targetEntity == null || WorldHelper.isSurroundedByHostiles(mod)) {
-                runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted, true);
-                setTask(runAwayTask);
-                return 70;
-            }
-        }
-
         // Kill mobs, if settings enabled of course.
         if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // First list the hostiles.
@@ -472,6 +463,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     return 65;
                 } else {
                     // We can't deal with it
+                    doForceField(mod); // To protect our-selves as we escape.
                     runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted, true);
                     setTask(runAwayTask);
                     return 80;
@@ -549,7 +541,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 boolean shouldForce = false;
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof MobEntity) {
-                    if (EntityHelper.isProbablyHostileToPlayer(mod, entity)) {
+                    if (EntityHelper.isProbablyHostileToPlayer(mod, entity) || EntityHelper.isAngryAtPlayer(mod, entity)) {
                         if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
                             shouldForce = true;
                         }
