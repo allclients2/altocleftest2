@@ -4,6 +4,7 @@ public class BeatMinecraftConfig {
     public int targetEyes = 14; // how many eyes of ender to collect
     public int minimumEyes = 12; // the MINIMUM amount of eyes of ender to have, assuming we don't have our stronghold portal opened yet
     public boolean placeSpawnNearEndPortal = false;
+    public boolean renderDistanceManipulation = true;
     public boolean barterPearlsInsteadOfEndermanHunt;
     public boolean sleepThroughNight = false;
     public boolean rePickupCraftingTable = true;

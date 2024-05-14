@@ -136,6 +136,9 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritoneSettings().costHeuristic.value = 5.5;
         mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 16.0;
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 4.25;
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = 10; // No reason to get near mobs
+
 
         _timer.reset();
         mod.getClientBaritone().getPathingBehavior().forceCancel();
@@ -258,6 +261,9 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         mod.getClientBaritoneSettings().costHeuristic.value = mod.DefaultCostHeuristic;
         mod.getClientBaritoneSettings().walkOnWaterOnePenalty.reset();
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 0.0;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty;
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = 0;
+
 
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         if (isFinished(mod)) {

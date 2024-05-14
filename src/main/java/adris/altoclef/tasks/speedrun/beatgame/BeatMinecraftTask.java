@@ -3,8 +3,7 @@ package adris.altoclef.tasks.speedrun.beatgame;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.commands.BlockScanner;
-import adris.altoclef.commands.SetGammaCommand;
+import adris.altoclef.util.BlockScanner;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetRidOfExtraWaterBucketTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
@@ -288,7 +287,7 @@ public class BeatMinecraftTask extends Task {
         locateStrongholdTask = new GoToStrongholdPortalTask(config.targetEyes);
         buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
 
-        SetGammaCommand.changeGamma(20d);
+        //SetGammaCommand.changeGamma(20d);
 
         if (mod.getWorld().getDifficulty() != Difficulty.EASY) {
             mod.logWarning("Detected that the difficulty is other than easy!");

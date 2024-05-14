@@ -1,5 +1,6 @@
+//Doesn't function because i removed the things on baritone for now.
+/*
 package adris.altoclef.tasks.construction;
-
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
@@ -178,31 +179,6 @@ public class SchematicBuildTask extends Task {
     }
 
     private void setupAvoidancePredicate(AltoClef mod) {
-        /*
-        int originX = origin.getX();
-        int originY = origin.getY();
-        int originZ = origin.getZ();
-        int widthMax = schematic.widthX() + originX;
-        int heightMax = schematic.heightY() + originY;
-        int depthMax = schematic.lengthZ() + originZ; // Corrected variable name from widthMax to depthMax
-        mod.getBehaviour().avoidBlockBreaking(block -> {
-            int blockX = block.getX();
-            int blockY = block.getY();
-            int blockZ = block.getZ();
-            // check if the blocks position is in the schematic build area
-            if (
-                blockX >= originX && blockX < widthMax && // X
-                blockY >= originY && blockY < heightMax && // Y
-                blockZ >= originZ && blockZ < depthMax // Z
-            ) {
-                //mod.log("said to avoid breaking at " + blockX + "," + blockY + "," + blockZ + ".");
-                return true;
-            } else {
-                return false;
-            }
-        });
-        */
-
         BlockPos originBlockPos = new BlockPos(origin.getX(), origin.getY(), origin.getZ());
         CubeBounds avoidanceBound = new CubeBounds(originBlockPos, schematic.widthX(), schematic.heightY(), schematic.lengthZ());
         mod.getBehaviour().avoidBlockBreaking(block -> avoidanceBound.inside(block.getX(), block.getY(), block.getZ()));
@@ -231,3 +207,4 @@ public class SchematicBuildTask extends Task {
         return false;
     }
 }
+*/

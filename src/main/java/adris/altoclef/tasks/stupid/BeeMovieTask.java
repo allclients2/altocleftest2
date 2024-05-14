@@ -141,7 +141,7 @@ public class BeeMovieTask extends Task {
 
             // Fortify below
             //BlockState below = MinecraftClient.getInstance().world.getBlockState(currentSignPos.down());
-            boolean canPlace = WorldHelper.isSolid(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
+            boolean canPlace = WorldHelper.isSolidBlock(mod, currentSignPos.down());//isSideSolidFullSquare(MinecraftClient.getInstance().world, currentSignPos.down(), Direction.UP);
             if (loaded && !canPlace) {
                 setDebugState("Placing block below for sign placement...");
                 return new PlaceStructureBlockTask(currentSignPos.down());

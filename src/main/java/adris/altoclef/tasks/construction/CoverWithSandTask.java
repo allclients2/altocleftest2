@@ -15,6 +15,10 @@ import net.minecraft.util.math.BlockPos;
 import java.util.Optional;
 import java.util.function.Predicate;
 
+
+// SIMPLY NOT REMOVED AS FOR AN ARCHIVE
+
+@Deprecated
 public class CoverWithSandTask extends Task {
     private static final TimerGame timer = new TimerGame(30);
     private static final Task getSand = TaskCatalogue.getItemTask(Items.SAND, 128);

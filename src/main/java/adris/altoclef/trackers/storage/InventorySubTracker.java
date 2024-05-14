@@ -180,9 +180,11 @@ public class InventorySubTracker extends Tracker {
 
         if (slot != null) {
             HashMap<Item, List<Slot>> toAdd = isSlotPlayerInventory ? itemToSlotPlayer : itemToSlotContainer;
-            if (!toAdd.containsKey(item))
-                toAdd.put(item, new ArrayList<>());
-            toAdd.get(item).add(slot);
+            if (!toAdd.containsKey(item)) toAdd.put(item, new ArrayList<>());
+            List<Slot> Slots = toAdd.get(item);
+            if (Slots != null) {
+                Slots.add(slot);
+            }
         }
     }
 
