@@ -25,7 +25,6 @@ public abstract class LookAtPos {
     private static boolean isLookingAtPosition(AltoClef mod, Vec3d position) {
         final double LOOK_CLOSENESS_THRESHOLD = 0.99; // is 1.0 when we are looking straight at mob, and -1.0, when we are looking opposite to the mob
         double lookCloseness = LookHelper.getLookCloseness(mod.getPlayer(), position);
-        mod.log("lookCloseness: " + lookCloseness);
         return Math.abs(lookCloseness) > LOOK_CLOSENESS_THRESHOLD;
     }
 
@@ -46,8 +45,6 @@ public abstract class LookAtPos {
 
     public static boolean updatePosLook(AltoClef mod) {
         if (updateFreeLook(mod)) return false; //We don't want camera to look while moving.
-
-        mod.log("active:" + mod.getClientBaritone().getBuilderProcess().isActive());
 
         // Don't interrupt if building or killing.
         Task currentTask = mod.getUserTaskChain().getCurrentTask();

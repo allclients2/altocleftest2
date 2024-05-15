@@ -194,7 +194,7 @@ public class FoodChain extends SingleTaskChain {
             //Then we eat to have regen.
             float damage = (1 - healthLeft); //Health Diff from Max Health
             setTask(new CollectFoodTask(Math.round(0.8 * damage * mod.getPlayer().getMaxHealth())));
-            return 90f * damage; //Priority will be near the multiplier if health is very low.
+            return 65f * damage; //Priority will be near the multiplier if health is very low.
         }
 
 

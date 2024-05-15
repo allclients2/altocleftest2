@@ -135,8 +135,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         //But also don't be really dumb and try to cross an ocean. (it tried to do so when it was set at 21.0)
         mod.getClientBaritoneSettings().costHeuristic.value = 5.5;
         mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 16.0;
-        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 4.25;
+        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 1.25;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 6.25;
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // No reason to get near mobs
 
 
