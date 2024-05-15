@@ -145,7 +145,7 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         return null;
     }
 
-	public boolean place(BlockPos blockPos, Hand hand, int slot) {
+	public boolean place(BlockPos blockPos, Hand hand, int slot, int recursion) {
         if (slot < 0 || slot > 8) return false;
         if (!canPlace(blockPos)) return false;
 
@@ -155,7 +155,10 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         Direction side = getPlaceSide(blockPos);
 
         if (side == null) {
-        	place(blockPos.down(), hand, slot);
+            if (recursion < 6) { //patch
+                return false;
+            }
+        	place(blockPos.down(), hand, slot, recursion + 1); //stackoverflow errr?
         	return false;
         } else {
             neighbour = blockPos.offset(side);
