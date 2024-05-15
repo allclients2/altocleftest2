@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import adris.altoclef.control.LookAtPos;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import net.minecraft.item.*;
@@ -59,7 +60,7 @@ import java.util.*;
 // TODO: Optimise shielding against spiders and skeletons
 
 public class MobDefenseChain extends SingleTaskChain {
-    private static final double DANGER_KEEP_DISTANCE = 8;
+    private static final double DANGER_KEEP_DISTANCE = 9;
     private static final double CREEPER_KEEP_DISTANCE = 10;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;
@@ -72,13 +73,11 @@ public class MobDefenseChain extends SingleTaskChain {
     private static boolean doingFunkyStuff = false;
     private boolean wasPuttingOutFire = false;
     private CustomBaritoneGoalTask runAwayTask;
-    private boolean needsChangeOnAttack = false;
-
     private double prevHealth = 20;
 
     private double dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE;
 
-
+    private boolean evadingHostilesLastTick = false;
 
     private float cachedLastPriority;
 
@@ -204,8 +203,8 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         ClientPlayerEntity Player = mod.getPlayer();
-        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 30;
-
+        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 15;
+        LookAtPos.updatePosLook(mod);
 
         //Variables to update on step
         Weapons.Weapon BestWeapon = Weapons.getBestWeapon(mod);
@@ -311,53 +310,10 @@ public class MobDefenseChain extends SingleTaskChain {
                 synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                     for (Entity hostile : hostiles) {
                         boolean isRangedOrPoisnous = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity || hostile instanceof PillagerEntity || hostile instanceof PiglinEntity || hostile instanceof StrayEntity || hostile instanceof CaveSpiderEntity);
-                        int annoyingRange = 10;
+                        double annoyingRange = dangerKeepDistanceAdjusted;
                         if (isRangedOrPoisnous && !mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
-                            annoyingRange = 35;
-                        else if (isRangedOrPoisnous) annoyingRange = 20;
-                        boolean isClose = hostile.isInRange(Player, annoyingRange);
-                        if (isClose) {
-                            isClose = LookHelper.seesPlayer(hostile, Player, annoyingRange);
-                        }
-                        // Give each hostile a timer, if they're close for too long deal with them.
-                        if (isClose) {
-                            if (!closeAnnoyingEntities.containsKey(hostile)) {
-                                boolean wardenAttacking = hostile instanceof WardenEntity;
-                                boolean witherAttacking = hostile instanceof WitherEntity;
-                                boolean endermanAttacking = hostile instanceof EndermanEntity;
-                                boolean blazeAttacking = hostile instanceof BlazeEntity;
-                                boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
-                                boolean hoglinAttacking = hostile instanceof HoglinEntity;
-                                boolean zoglinAttacking = hostile instanceof ZoglinEntity;
-                                boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
-                                boolean vindicatorAttacking = hostile instanceof VindicatorEntity;
-                                if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking || piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking || vindicatorAttacking) {
-                                    if (Player.getHealth() <= 10) {
-                                        closeAnnoyingEntities.put(hostile, new TimerGame(0));
-                                    } else {
-                                        closeAnnoyingEntities.put(hostile, new TimerGame(Float.POSITIVE_INFINITY));
-                                    }
-                                } else {
-                                    closeAnnoyingEntities.put(hostile, new TimerGame(0));
-                                }
-                                closeAnnoyingEntities.get(hostile).reset();
-                            }
-                            if (closeAnnoyingEntities.get(hostile).elapsed()) {
-                                toDealWith.add(hostile);
-                            }
-                        } else {
-                            closeAnnoyingEntities.remove(hostile);
-                        }
-                    }
-                }
-
-                synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                    for (Entity hostile : hostiles) {
-                        boolean isRangedOrPoisnous = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity || hostile instanceof PillagerEntity || hostile instanceof PiglinEntity || hostile instanceof StrayEntity || hostile instanceof CaveSpiderEntity);
-                        int annoyingRange = 10;
-                        if (isRangedOrPoisnous && !mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
-                            annoyingRange = 35;
-                        else if (isRangedOrPoisnous) annoyingRange = 20;
+                            annoyingRange = dangerKeepDistanceAdjusted * 1.5;
+                        else if (isRangedOrPoisnous) annoyingRange = dangerKeepDistanceAdjusted * 1.25;
 
                         // Give each hostile a timer, if they're close for too long deal with them.
                         if (hostile.isInRange(Player, annoyingRange) && LookHelper.seesPlayer(hostile, Player, annoyingRange)) {
@@ -433,13 +389,13 @@ public class MobDefenseChain extends SingleTaskChain {
                 // full diamond has 8 bonus toughness
                 // full netherite has 12 bonus toughness
 
-                Entity opponentIfFight = toDealWith.get(0);
+                Entity closestOpponent = toDealWith.get(0);
 
                 boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
                 double shield = 0;
                 if (hasShield) {
                     // We will need a shield more with skeletons with bows
-                    if (opponentIfFight instanceof SkeletonEntity && opponentIfFight.getItemsEquipped() == Items.BOW) {
+                    if (closestOpponent instanceof SkeletonEntity && closestOpponent.getItemsEquipped() == Items.BOW) {
                         shield = 2.25;
                     } else {
                         shield = 1.35;
@@ -448,28 +404,40 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 int armor = Player.getArmor();
                 float damage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                int canDealWith = (int) Math.ceil((armor * 3.6 / 20.0) + (damage * 0.8) + (shield));
-                if (needsChangeOnAttack && (Player.getHealth() < prevHealth || killAura.attackedLastTick)) {
-                    needsChangeOnAttack = false;
-                }
+                int canDealWith = (int) Math.ceil(((double) armor / 4) + (damage * 1.45) + (shield));
 
-                if (canDealWith > entityscore && entityscore < 8 && Player.getHealth() > 10) {
-                    // We can deal with it.
-                    if (!(mainTask instanceof KillEntitiesTask)) {
-                        needsChangeOnAttack = true;
+                System.out.println("candealwith: " + canDealWith);
+                System.out.println("entityscore: " + entityscore);
+
+                // Decide if we can fight with them or just run.
+                if (
+                        canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 10 &&
+                        (evadingHostilesLastTick && closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted * 1.25))
+                ) {
+                    // This is self-defense, so only fight if in range.
+                    if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
+                        // We can deal with it; Fight.
+                        runAwayTask = null;
+                        LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
+                        setTask(new KillEntitiesTask(closestOpponent.getClass()));
+                        return 65;
+                    } else {
+                        return 0;
                     }
-                    runAwayTask = null;
-                    setTask(new KillEntitiesTask(opponentIfFight.getClass()));
-                    return 65;
                 } else {
-                    // We can't deal with it
-                    doForceField(mod); // To protect our-selves as we escape.
-                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted, true);
+                    // We can't deal with it; Flight.
+                    evadingHostilesLastTick = true;
+                    LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
+                    doForceField(mod); // To protect ourselves as we escape.
+                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * 1.5, true);
                     setTask(runAwayTask);
                     return 80;
                 }
             }
         }
+
+        evadingHostilesLastTick = false;
+
         // By default, if we aren't "immediately" in danger but were running away, keep
         // running away until we're good.
         if (runAwayTask != null && !runAwayTask.isFinished(mod)) {
@@ -532,7 +500,7 @@ public class MobDefenseChain extends SingleTaskChain {
     }
 
     private void doForceField(AltoClef mod) {
-        killAura.tickStart();
+        killAura.tickStart(mod);
 
         // Hit all hostiles close to us.
         List<Entity> entities = mod.getEntityTracker().getCloseEntities();
@@ -542,8 +510,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof MobEntity) {
                     if (EntityHelper.isProbablyHostileToPlayer(mod, entity) || EntityHelper.isAngryAtPlayer(mod, entity)) {
-                        if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
-                            shouldForce = true;
+                        if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {shouldForce = true;
                         }
                     }
                 } else if (entity instanceof FireballEntity) {
@@ -602,6 +569,7 @@ public class MobDefenseChain extends SingleTaskChain {
             return false;
         }, SkeletonEntity.class);
         */
+
 
         try {
             for (CachedProjectile projectile : projectiles) {

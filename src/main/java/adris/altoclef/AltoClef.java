@@ -275,7 +275,7 @@ public class AltoClef implements ModInitializer {
         // Custom avoidance setting i added
         getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
-        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 10.0;
+        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 5.0;
 
 
         // For render smoothing
