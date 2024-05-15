@@ -228,7 +228,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 }
             } else {
                 doingFunkyStuff = true;
-                runAwayTask = new RunAwayFromCreepersTask(CREEPER_KEEP_DISTANCE);
+                runAwayTask = new RunAwayFromHostilesTask(CREEPER_KEEP_DISTANCE);
                 setTask(runAwayTask);
                 return 50 + blowingUp.getClientFuseTime(1) * 50;
             }
@@ -418,7 +418,6 @@ public class MobDefenseChain extends SingleTaskChain {
                     if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
                         // We can deal with it; Fight.
                         runAwayTask = null;
-                        LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
                         setTask(new KillEntitiesTask(closestOpponent.getClass()));
                         return 65;
                     } else {

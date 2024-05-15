@@ -2,6 +2,7 @@ package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.control.LookAtPos;
 import adris.altoclef.tasks.movement.GetToEntityTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
@@ -96,6 +97,11 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
                 mod.getMobDefenseChain().setForceFieldRange(combatGuardLowerFieldRadius);
             } else {
                 mod.getMobDefenseChain().resetForceField();
+            }
+
+            // If in range of 10 and can see the entity
+            if (entity.getPos().isInRange(mod.getPlayer().getPos(), 10) && mod.getPlayer().canSee(entity)) {
+                LookAtPos.lookAtPos(mod, entity.getEyePos()); // Look at them
             }
 
             // If we don't specify a maintain distance, default to within 1 block of our reach.
