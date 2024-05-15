@@ -26,6 +26,12 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         this(distance, false);
     }
 
+    @Override
+    protected void onStart(AltoClef mod) {
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 45.0; // Make sure later paths don't fall for it.
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
+        _checker.reset();
+    }
 
     @Override
     protected Goal newGoal(AltoClef mod) {
@@ -33,6 +39,12 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, distanceToRun);
+    }
+
+    @Override
+    protected void onStop(AltoClef mod, Task interruptTask) {
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty; // Make sure later paths don't fall for it.
+        mod.getClientBaritone().getPathingBehavior().forceCancel();
     }
 
     @Override

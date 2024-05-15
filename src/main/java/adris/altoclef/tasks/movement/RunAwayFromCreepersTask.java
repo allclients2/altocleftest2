@@ -11,6 +11,7 @@ import net.minecraft.util.math.Vec3d;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
 
@@ -41,6 +42,20 @@ public class RunAwayFromCreepersTask extends CustomBaritoneGoalTask {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromCreepers(mod, _distanceToRun);
+    }
+
+    @Override
+    public boolean isFinished(AltoClef mod) {
+        if (_cachedGoal == null) {
+            _cachedGoal = newGoal(mod);
+        }
+        AtomicBoolean ignited = new AtomicBoolean(false);
+        mod.getEntityTracker().getTrackedEntities(CreeperEntity.class).forEach(creeper -> {
+            if (creeper.isIgnited()) {
+                ignited.set(true);
+            }
+        });
+        return ignited.get();
     }
 
     private static class GoalRunAwayFromCreepers extends GoalRunAwayFromEntities {

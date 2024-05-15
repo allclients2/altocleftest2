@@ -8,6 +8,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
+import baritone.api.Settings;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
@@ -39,6 +40,7 @@ public class KillAura {
     private Entity forceHit = null;
     public boolean attackedLastTick = false;
 
+
     public static void equipWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
         if (!invStacks.isEmpty()) {
@@ -60,7 +62,7 @@ public class KillAura {
         }
     }
 
-    public void tickStart() {
+    public void tickStart(AltoClef mod) {
         targets.clear();
         forceHit = null;
         attackedLastTick = false;
@@ -173,7 +175,7 @@ public class KillAura {
             LookHelper.lookAt(mod, new Vec3d(xAim, yAim, zAim));
         }
         if (Double.isInfinite(forceFieldRange) || entity.squaredDistanceTo(mod.getPlayer()) < forceFieldRange * forceFieldRange ||
-                entity.squaredDistanceTo(mod.getPlayer()) < 40) {
+                entity.squaredDistanceTo(mod.getPlayer()) < 32) {
             if (entity instanceof FireballEntity) {
                 mod.getControllerExtras().attack(entity);
             }

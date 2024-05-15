@@ -6,6 +6,7 @@ import adris.altoclef.Settings;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.speedrun.DragonBreathTracker;
 import adris.altoclef.tasksystem.TaskRunner;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.slots.PlayerSlot;
 import baritone.api.utils.input.Input;
@@ -182,6 +183,7 @@ public class FoodChain extends SingleTaskChain {
 
         // Auto get food if we REALLY NEED it for regen
         if (
+            WorldHelper.getCurrentDimension() == Dimension.OVERWORLD &&
             settings.isautoCollectFoodForRegen() &&
             !hasFood && // No food
             healthLeft < 0.65 && // Is low health
