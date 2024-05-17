@@ -48,9 +48,14 @@ public class CommandStatusOverlay {
 
         float fontHeight = renderer.fontHeight;
         float addX = 4;
-        float addY = fontHeight+2;
+        float addY = fontHeight + 2;
 
-        renderer.draw(mod.getTaskRunner().statusReport, x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        String headerInfo = mod.getTaskRunner().statusReport;
+
+        lastTime = Instant.now().toEpochMilli();
+        String realTime = DATE_TIME_FORMATTER.format(Instant.now().minusMillis(timeRunning));
+
+        renderer.draw(headerInfo + (mod.getModSettings().shouldShowTimer() ? (", timer: " + realTime) : ""), x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
         y += addY;
 
         if (tasks.isEmpty()) {
@@ -63,14 +68,6 @@ public class CommandStatusOverlay {
             return;
         }
 
-        if (mod.getModSettings().shouldShowTimer()) {
-            lastTime = Instant.now().toEpochMilli();
-
-            String realTime = DATE_TIME_FORMATTER.format(Instant.now().minusMillis(timeRunning));
-            renderer.draw("<" + realTime + ">", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-            x += addX;
-            y += addY;
-        }
 
         if (tasks.size() <= maxLines) {
             for (Task task : tasks) {

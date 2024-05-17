@@ -23,6 +23,7 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 public class CollectBlazeRodsTask extends ResourceTask {
 
@@ -69,7 +70,7 @@ public class CollectBlazeRodsTask extends ResourceTask {
             toKill = mod.getEntityTracker().getClosestEntity(BlazeEntity.class);
             if (toKill.isPresent()) {
                 if (mod.getPlayer().getHealth() <= TOO_LITTLE_HEALTH_BLAZE &&
-                        mod.getEntityTracker().getTrackedEntities(BlazeEntity.class).size() >= TOO_MANY_BLAZES) {
+                        mod.getEntityTracker().getCloseEntities().stream().filter(entity -> entity instanceof BlazeEntity).toList().size() >= TOO_MANY_BLAZES) {
                     setDebugState("Running away as there are too many blazes nearby.");
                     return new RunAwayFromHostilesTask(15 * 2, true);
                 }

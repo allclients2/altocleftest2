@@ -2,6 +2,7 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
+import adris.altoclef.control.LookAtPos;
 import adris.altoclef.util.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
@@ -201,6 +202,9 @@ public class AltoClef implements ModInitializer {
             }
         }
 
+        // TODO: should probably move this
+        LookAtPos.updateFreeLook(this);
+
         // TODO: should this go here?
         storageTracker.setDirty();
         containerSubTracker.onServerTick();
@@ -229,7 +233,7 @@ public class AltoClef implements ModInitializer {
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
     public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
     public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
-    public final int HostileAvoidanceRadius = 12; // should avoid placing blocks
+    public final int HostileAvoidanceRadius = 16; // should avoid placing blocks
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
@@ -275,7 +279,7 @@ public class AltoClef implements ModInitializer {
         // Custom avoidance setting i added
         getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
-        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 5.0;
+        getClientBaritoneSettings().mobAvoidanceCoefficient.value = 7.5;
 
 
         // For render smoothing

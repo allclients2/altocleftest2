@@ -133,12 +133,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         //Don't spend too much time on finding an optimized path. Doesn't really matter.
         //But also don't be really dumb and try to cross an ocean. (it tried to do so when it was set at 21.0)
-        mod.getClientBaritoneSettings().costHeuristic.value = 5.5;
-        mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 16.0;
-        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 1.25;
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 6.25;
-        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // No reason to get near mobs
-
+        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 23.5;
 
         _timer.reset();
         mod.getClientBaritone().getPathingBehavior().forceCancel();
@@ -194,14 +190,6 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
             return _unstuckTask;
         }
         if (!_progressChecker.check(mod) || !stuckCheck.check(mod)) {
-            List<Entity> closeEntities = mod.getEntityTracker().getCloseEntities();
-            for (Entity CloseEntities : closeEntities) {
-                if (CloseEntities instanceof MobEntity &&
-                        CloseEntities.getPos().isInRange(mod.getPlayer().getPos(), 1)) {
-                    setDebugState("Killing annoying entity.");
-                    return new KillEntitiesTask(CloseEntities.getClass());
-                }
-            }
             BlockPos blockStuck = stuckInBlock(mod);
             if (blockStuck != null) {
                 _failCounter++;
@@ -258,11 +246,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         //Reset
-        mod.getClientBaritoneSettings().costHeuristic.value = mod.DefaultCostHeuristic;
-        mod.getClientBaritoneSettings().walkOnWaterOnePenalty.reset();
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 0.0;
         mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty;
-        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = 0;
 
 
         mod.getClientBaritone().getPathingBehavior().forceCancel();

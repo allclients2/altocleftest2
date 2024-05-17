@@ -42,7 +42,7 @@ public class TaskRunner {
         }
         cachedCurrentTaskChain = maxChain;
         if (maxChain != null) {
-            statusReport = "Chain: "+maxChain.getName() + ", priority: "+maxPriority;
+            statusReport = "Chain: " + maxChain.getName() + ", priority: " + maxPriority;
             maxChain.tick(mod);
         } else {
             statusReport = " (no chain running) ";
