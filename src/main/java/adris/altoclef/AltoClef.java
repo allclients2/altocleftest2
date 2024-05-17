@@ -283,8 +283,10 @@ public class AltoClef implements ModInitializer {
 
 
         // For render smoothing
-        getClientBaritoneSettings().randomLooking.value = 0.0;
-        getClientBaritoneSettings().randomLooking113.value = 0.0;
+        //getClientBaritoneSettings().randomLooking.value = 0.0;
+        //getClientBaritoneSettings().randomLooking113.value = 0.0;
+        getClientBaritoneSettings().smoothLook.value = true;
+        getClientBaritoneSettings().smoothLookTicks.value = 3;
 
         getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
         getClientBaritoneSettings().avoidBreakingMultiplier.value = AvoidBreakingMultiplier;

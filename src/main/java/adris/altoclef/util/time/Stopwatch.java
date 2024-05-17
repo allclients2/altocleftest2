@@ -14,6 +14,7 @@ public class Stopwatch {
         running = true;
     }
 
+    // Returns time elapsed in MILLISECONDS
     public double time() {
         if (!running) return 0;
         return (currentTime() - startTime);

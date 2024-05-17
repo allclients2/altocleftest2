@@ -298,6 +298,11 @@ public class Settings implements IFailableConfigFile {
     private int netherFastTravelWalkingRange = 600;
 
     /**
+     * If we should look at our enemies while escaping or fighting
+     */
+    private boolean specialLookFeature = true;
+
+    /**
      * If set, will run this command by default when no other commands are running.
      * <p>
      * For example, try setting this to "idle" to make the bot continue surviving/eating/escaping mobs.
@@ -664,6 +669,10 @@ public class Settings implements IFailableConfigFile {
 
     public int getNetherFastTravelWalkingRange() {
         return netherFastTravelWalkingRange;
+    }
+
+    public boolean getSpecialLookFeature() {
+        return specialLookFeature;
     }
 
     public BlockPos getHomeBasePosition() {

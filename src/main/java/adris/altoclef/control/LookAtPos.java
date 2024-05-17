@@ -45,7 +45,7 @@ public abstract class LookAtPos {
     }
 
     public static boolean updatePosLook(AltoClef mod) {
-        if (updateFreeLook(mod)) return false; //We don't want camera to look while moving.
+        if (updateFreeLook(mod) || !mod.getModSettings().getSpecialLookFeature()) return false; //We don't want camera to look while moving.
 
         // Don't interrupt if building or killing.
         Task currentTask = mod.getUserTaskChain().getCurrentTask();
