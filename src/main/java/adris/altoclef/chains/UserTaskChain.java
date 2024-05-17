@@ -12,7 +12,7 @@ import adris.altoclef.util.time.Stopwatch;
 // This basically replaces our old Task Runner.
 public class UserTaskChain extends SingleTaskChain {
 
-    private final Stopwatch taskStopwatch = new Stopwatch();
+    public final Stopwatch taskStopwatch = new Stopwatch();
     private Runnable currentOnFinish = null;
 
     private boolean runningIdleTask;
@@ -59,6 +59,7 @@ public class UserTaskChain extends SingleTaskChain {
             onTaskFinish(mod);
         }
     }
+
 
     @Override
     public float getPriority(AltoClef mod) {

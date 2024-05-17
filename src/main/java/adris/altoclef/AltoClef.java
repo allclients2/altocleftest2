@@ -277,7 +277,7 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().failureTimeoutMS.value = 500L;
 
         // Custom avoidance setting i added
-        getClientBaritoneSettings().shouldAvoidPredicate.value = Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity));
+        getExtraBaritoneSettings().setShouldAvoidPredicate(Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity)));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 7.5;
 
