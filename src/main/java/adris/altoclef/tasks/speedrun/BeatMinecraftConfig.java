@@ -7,17 +7,10 @@ public class BeatMinecraftConfig {
     public boolean barterPearlsInsteadOfEndermanHunt;
     public boolean sleepThroughNight = false;
     public boolean rePickupCraftingTable = true;
-    public boolean searchRuinedPortals = true;
-    public boolean searchDesertTemples = true;
-    public int minFoodUnits = 180;
     public int foodUnits = 220;
     public int requiredBeds = 10;
-    public boolean alwaysCookRawFood = true;
     public int minBuildMaterialCount = 5;
     public int buildMaterialCount = 64;
-    public double dragonHeadCloseEnoughClickBedRange = 5.3;
-    public boolean ironGearBeforeDiamondGear = true;
-    public boolean getShield = true;
     public boolean rePickupSmoker = true;
     public boolean rePickupFurnace = true;
 }
