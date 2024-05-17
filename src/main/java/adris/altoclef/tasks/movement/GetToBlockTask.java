@@ -47,7 +47,7 @@ public class GetToBlockTask extends CustomBaritoneGoalTask implements ITaskRequi
         } else {
             finishedTicks = 0;
         }
-        if (finishedTicks > 10*20) {
+        if (finishedTicks > 100) {
             wanderTimer.reset();
             mod.logWarning("GetToBlock was finished for 10 seconds yet is still being called, wandering");
             finishedTicks = 0;

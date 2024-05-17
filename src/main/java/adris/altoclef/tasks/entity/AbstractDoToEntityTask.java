@@ -99,11 +99,6 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
                 mod.getMobDefenseChain().resetForceField();
             }
 
-            // If in range of 10 and can see the entity
-            if (entity.getPos().isInRange(mod.getPlayer().getPos(), 10) && mod.getPlayer().canSee(entity)) {
-                LookAtPos.lookAtPos(mod, entity.getEyePos()); // Look at them
-            }
-
             // If we don't specify a maintain distance, default to within 1 block of our reach.
             double maintainDistance = this.maintainDistance >= 0 ? this.maintainDistance : playerReach - 1;
 
@@ -121,6 +116,8 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
                     mod.getClientBaritone().getPathingBehavior().isSafeToCancel() &&
                     mod.getPlayer().isOnGround()) {
                 progress.reset();
+                //LookAtPos.lookAtPos(mod, entity.getEyePos()); // Look at entity
+                //LookAtPos.updatePosLook(mod);
                 return onEntityInteract(mod, entity);
             } else if (!tooClose) {
                 setDebugState("Approaching target");

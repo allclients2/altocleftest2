@@ -328,8 +328,6 @@ public class Settings implements IFailableConfigFile {
             // Overworld junk
             Items.DRIPSTONE_BLOCK,
             Items.ROOTED_DIRT,
-            Items.RAW_COPPER,
-            Items.WHEAT_SEEDS,
             Items.GRAVEL,
             Items.SAND,
             Items.DIORITE,
@@ -343,6 +341,7 @@ public class Settings implements IFailableConfigFile {
             // Nether junk, to be fair it's mostly tuned for the "beat game" task
             Items.NETHERRACK,
             Items.MAGMA_BLOCK,
+            Items.MOSS_BLOCK,
             Items.SOUL_SOIL,
             Items.SOUL_SAND,
             Items.NETHER_BRICKS,

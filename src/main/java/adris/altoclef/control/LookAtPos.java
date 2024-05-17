@@ -16,6 +16,7 @@ import net.minecraft.util.math.Vec3d;
 public abstract class LookAtPos {
     private static Vec3d lookPos;
     private static final TimerGame lookTimeOut = new TimerGame(1);
+    private static final TimerGame updateDelay = new TimerGame(0.2);
 
     public static void lookAtPos(AltoClef mod, Vec3d newLookPos) {
         lookPos = newLookPos;
@@ -23,7 +24,7 @@ public abstract class LookAtPos {
     }
 
     private static boolean isLookingAtPosition(AltoClef mod, Vec3d position) {
-        final double LOOK_CLOSENESS_THRESHOLD = 0.99; // is 1.0 when we are looking straight at mob, and -1.0, when we are looking opposite to the mob
+        final double LOOK_CLOSENESS_THRESHOLD = 0.9925; // is 1.0 when we are looking straight at mob, and -1.0, when we are looking opposite to the mob
         double lookCloseness = LookHelper.getLookCloseness(mod.getPlayer(), position);
         return Math.abs(lookCloseness) > LOOK_CLOSENESS_THRESHOLD;
     }
@@ -48,16 +49,19 @@ public abstract class LookAtPos {
 
         // Don't interrupt if building or killing.
         Task currentTask = mod.getUserTaskChain().getCurrentTask();
-        if (currentTask.getClass() == DestroyBlockTask.class || mod.getController().getBlockBreakingProgress() > 0) {
-            return false;
-        } else if (currentTask.getClass() == PlaceBlockTask.class || mod.getPlayer().isBlocking()) {
-            return false;
-        } else if (currentTask.getClass() == KillEntitiesTask.class) {
-            return false;
+        if (currentTask != null) {
+            if (currentTask.getClass() == DestroyBlockTask.class || mod.getController().getBlockBreakingProgress() > 0) {
+                return false;
+            } else if (currentTask.getClass() == PlaceBlockTask.class || mod.getPlayer().isBlocking()) {
+                return false;
+            } else if (currentTask.getClass() == KillEntitiesTask.class) {
+                return false;
+            }
         }
 
-        if (lookPos != null && !isLookingAtPosition(mod, lookPos)) {
+        if (lookPos != null && !isLookingAtPosition(mod, lookPos) && updateDelay.elapsed()) {
             LookHelper.lookAt(mod, lookPos);
+            updateDelay.reset();
             return true;
         }
 

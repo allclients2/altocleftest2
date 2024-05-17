@@ -60,7 +60,7 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
 		if (targetPlacePos != null && !WorldHelper.isSolidBlock(mod, targetPlacePos)) {
 			Optional<adris.altoclef.util.slots.Slot> slot = StorageHelper.getSlotWithThrowawayBlock(this.mod, true);
 			if(slot.isPresent()) {
-				place(targetPlacePos, Hand.MAIN_HAND, slot.get().getInventorySlot());
+				place(targetPlacePos, Hand.MAIN_HAND, slot.get().getInventorySlot(), 0);
 				targetPlacePos = null;
 				setDebugState(null);
 			}
@@ -155,7 +155,7 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         Direction side = getPlaceSide(blockPos);
 
         if (side == null) {
-            if (recursion < 6) { //patch
+            if (recursion < 32) { //patch
                 return false;
             }
         	place(blockPos.down(), hand, slot, recursion + 1); //stackoverflow errr?

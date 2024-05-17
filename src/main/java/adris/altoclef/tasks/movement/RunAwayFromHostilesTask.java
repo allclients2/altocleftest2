@@ -28,7 +28,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     @Override
     protected void onStart(AltoClef mod) {
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 45.0; // Make sure later paths don't fall for it.
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 35.0; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         _checker.reset();
     }
@@ -36,14 +36,12 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
     @Override
     protected Goal newGoal(AltoClef mod) {
         // We want to run away NOW
-        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = mod.HostileAvoidanceRadius; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, distanceToRun);
     }
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
     }
 

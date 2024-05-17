@@ -44,6 +44,12 @@ public class EntityHelper {
             if (mob instanceof ZombifiedPiglinEntity zombifiedPiglin) {
                 return zombifiedPiglin.isAttacking();
             }
+            if (mob instanceof PhantomEntity phantom) {
+                return phantom.isAttacking();
+            }
+            if (mob instanceof WitherSkeletonEntity witherSkeleton) {
+                return witherSkeleton.isAttacking();
+            }
 
             return mob.isAttacking() || mob instanceof HostileEntity;
         }

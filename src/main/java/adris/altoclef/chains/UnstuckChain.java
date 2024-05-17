@@ -153,7 +153,7 @@ public class UnstuckChain extends SingleTaskChain {
             posHistory.removeLast();
         }
 
-        checkStuckInWater(mod);
+        //checkStuckInWater(mod);
         checkStuckInPowderedSnow(mod);
         checkEatingGlitch(mod);
         checkStuckOnEndPortalFrame(mod);

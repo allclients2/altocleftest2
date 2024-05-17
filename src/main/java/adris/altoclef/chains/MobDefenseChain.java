@@ -18,7 +18,6 @@ import adris.altoclef.Debug;
 import adris.altoclef.control.KillAura;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.CustomBaritoneGoalTask;
-import adris.altoclef.tasks.movement.RunAwayFromCreepersTask;
 import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasks.speedrun.DragonBreathTracker;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -55,13 +54,14 @@ import net.minecraft.world.Difficulty;
 import adris.altoclef.util.Weapons;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 // TODO: Optimise shielding against spiders and skeletons
 
 public class MobDefenseChain extends SingleTaskChain {
-    private static final double DANGER_KEEP_DISTANCE = 9;
-    private static final double CREEPER_KEEP_DISTANCE = 10;
+    private static final double DANGER_KEEP_DISTANCE = 6.5;
+    private static final double CREEPER_KEEP_DISTANCE = 15;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;
     private static final double SAFE_KEEP_DISTANCE = 8;
@@ -203,8 +203,7 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         ClientPlayerEntity Player = mod.getPlayer();
-        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 15;
-        LookAtPos.updatePosLook(mod);
+        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 12;
 
         //Variables to update on step
         Weapons.Weapon BestWeapon = Weapons.getBestWeapon(mod);
@@ -273,16 +272,18 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Dodge projectiles, if no shield. Or block.
-        if (Player.getHealth() <= 10 && (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
-            if ((StorageHelper.getNumberOfThrowawayBlocks(mod) - 1) > 1 && mod.getItemStorage().getItemCount(Items.DIRT) > 1 && !mod.getFoodChain().needsToEat()) {
+        if (Player.getHealth() <= 15 && (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+           /* //TODO: replace with something more reliable before uncommenting
+            if ((StorageHelper.getNumberOfThrowawayBlocks(mod) - 1) > 1 && StorageHelper.getNumberOfThrowawayBlocks(mod) > 1 && !mod.getFoodChain().needsToEat()) {
                 doingFunkyStuff = true;
                 setTask(new ProjectileProtectionWallTask(mod));
-                return 65;
+                return 70;
             }
+            */
 
             runAwayTask = new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL);
             setTask(runAwayTask);
-            return 65;
+            return 67;
         }
 
         // Kill mobs, if settings enabled of course.
@@ -291,22 +292,12 @@ public class MobDefenseChain extends SingleTaskChain {
 
             // Deal with hostiles because they are annoying.
             List<Entity> hostiles = mod.getEntityTracker().getHostiles();
-            hostiles.sort(Comparator.comparingDouble((entity) -> Player.distanceTo(entity)));
+            hostiles.sort(Comparator.comparingDouble(Player::distanceTo));
 
             List<Entity> toDealWith = new ArrayList<>();
-            //Count void
-            if (!hostiles.isEmpty()) {
-                if (WorldHelper.isSurroundedByHostiles(mod)) {
-                    mod.getClientBaritoneSettings().avoidance.value = false;
-                    doingFunkyStuff = true;
-                    //Debug.logMessage("We are surrounded. Repositioning...");
-                    stopShielding(mod);
-                    // We can't deal with this as we are getting surrounded so lets reposition...
-                    runAwayTask = new RunAwayFromHostilesTask(6, true);
-                    setTask(runAwayTask);
-                    return 80;
-                }
 
+            // Make sure its correct + add extra things
+            if (!hostiles.isEmpty()) {
                 synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                     for (Entity hostile : hostiles) {
                         boolean isRangedOrPoisnous = (hostile instanceof SkeletonEntity || hostile instanceof WitchEntity || hostile instanceof PillagerEntity || hostile instanceof PiglinEntity || hostile instanceof StrayEntity || hostile instanceof CaveSpiderEntity);
@@ -391,14 +382,21 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 Entity closestOpponent = toDealWith.get(0);
 
+                AtomicBoolean ArmedSkeletonPresent = new AtomicBoolean(false);
+                toDealWith.forEach(entity -> {
+                    if (entity instanceof SkeletonEntity && ((SkeletonEntity) entity).getActiveItem() != null && !entity.isSubmergedInWater()) {
+                        ArmedSkeletonPresent.set(true);
+                    }
+                });
+
                 boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
                 double shield = 0;
                 if (hasShield) {
                     // We will need a shield more with skeletons with bows
-                    if (closestOpponent instanceof SkeletonEntity && closestOpponent.getItemsEquipped() == Items.BOW) {
-                        shield = 2.25;
+                    if (ArmedSkeletonPresent.get()) {
+                        shield = 3.25;
                     } else {
-                        shield = 1.35;
+                        shield = 2.45;
                     }
                 }
 
@@ -411,8 +409,8 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 // Decide if we can fight with them or just run.
                 if (
-                        canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 10 &&
-                        (evadingHostilesLastTick && closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted * 1.25))
+                        (canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 10) &&
+                        (!evadingHostilesLastTick)
                 ) {
                     // This is self-defense, so only fight if in range.
                     if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
@@ -425,12 +423,18 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 } else {
                     // We can't deal with it; Flight.
+                    System.out.println("flee, skeleton:" + ArmedSkeletonPresent.get());
                     evadingHostilesLastTick = true;
                     LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
+                    LookAtPos.updatePosLook(mod);
                     doForceField(mod); // To protect ourselves as we escape.
-                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * 1.5, true);
+                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (ArmedSkeletonPresent.get() ? 2 : 1.5), true);
                     setTask(runAwayTask);
-                    return 80;
+                    return 75;
+                }
+            } else {
+                if (shielding) {
+                    stopShielding(mod);
                 }
             }
         }
@@ -445,6 +449,7 @@ public class MobDefenseChain extends SingleTaskChain {
         } else {
             runAwayTask = null;
         }
+
         return 0;
     }
 
@@ -556,20 +561,6 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean isProjectileClose(AltoClef mod) {
         List<CachedProjectile> projectiles = mod.getEntityTracker().getProjectiles();
 
-        /* //This is complete bull
-        // Find a skeleton that is about to shoot.
-        Optional<Entity> entity = mod.getEntityTracker().getClosestEntity((e) -> {
-            if (e instanceof SkeletonEntity
-                    && (EntityHelper.isAngryAtPlayer(mod, e) || ((SkeletonEntity) e).getItemUseTime() > 18)
-                    && ((((SkeletonEntity) e).distanceTo(mod.getPlayer()) < 7
-                    && ((SkeletonEntity) e).getItemUseTime() > 10)
-                    || ((SkeletonEntity) e).getItemUseTime() > 13))
-                return true;
-            return false;
-        }, SkeletonEntity.class);
-        */
-
-
         try {
             for (CachedProjectile projectile : projectiles) {
                 if (projectile.position.squaredDistanceTo(mod.getPlayer().getPos()) < 150) {
@@ -594,6 +585,9 @@ public class MobDefenseChain extends SingleTaskChain {
                         // not so fancy math... this should work better than the previous approach (I hope just adding the velocity doesn't cause any issues..)
                         PlayerEntity player = mod.getPlayer();
                         if (player.squaredDistanceTo(projectile.position) < player.squaredDistanceTo(projectile.position.add(projectile.velocity))) {
+                            continue;
+                        }
+                        if (projectile.velocity.length() < 0.2) {
                             continue;
                         }
                     }
@@ -621,9 +615,10 @@ public class MobDefenseChain extends SingleTaskChain {
             Debug.logWarning(e.getMessage());
         }
 
+        // TODO: Replace this with something better, because it may lead to not defending against other close range mobs.
         // TODO refactor this into something more reliable for all mobs
         for (SkeletonEntity skeleton : mod.getEntityTracker().getTrackedEntities(SkeletonEntity.class)) {
-            if (skeleton.distanceTo(mod.getPlayer()) > 10 || !skeleton.canSee(mod.getPlayer())) continue;
+            if (skeleton.distanceTo(mod.getPlayer()) > 20 || !skeleton.canSee(mod.getPlayer())) continue;
 
             // when the skeleton is about to shoot (it takes 5 ticks to raise the shield)
             if (skeleton.getItemUseTime() > 15) {
