@@ -51,11 +51,9 @@ public class CommandStatusOverlay {
         float addY = fontHeight + 2;
 
         String headerInfo = mod.getTaskRunner().statusReport;
+        String realTime = DATE_TIME_FORMATTER.format(Instant.ofEpochMilli((long) (mod.getUserTaskChain().taskStopwatch.time())));
 
-        lastTime = Instant.now().toEpochMilli();
-        String realTime = DATE_TIME_FORMATTER.format(Instant.now().minusMillis(timeRunning));
-
-        renderer.draw(headerInfo + (mod.getModSettings().shouldShowTimer() ? (", timer: " + realTime) : ""), x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        renderer.draw(headerInfo + ((mod.getModSettings().shouldShowTimer() && mod.getUserTaskChain().isActive()) ? (", timer: " + realTime) : ""), x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
         y += addY;
 
         if (tasks.isEmpty()) {

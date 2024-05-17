@@ -6,7 +6,7 @@ public class Stopwatch {
     private double startTime = 0;
 
     private static double currentTime() {
-        return (double) System.currentTimeMillis() / 1000.0;
+        return (double) System.currentTimeMillis();
     }
 
     public void begin() {
@@ -16,6 +16,6 @@ public class Stopwatch {
 
     public double time() {
         if (!running) return 0;
-        return currentTime() - startTime;
+        return (currentTime() - startTime);
     }
 }
