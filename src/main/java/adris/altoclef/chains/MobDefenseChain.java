@@ -423,7 +423,6 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 } else {
                     // We can't deal with it; Flight.
-                    System.out.println("flee, skeleton:" + ArmedSkeletonPresent.get());
                     evadingHostilesLastTick = true;
                     LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
                     LookAtPos.updatePosLook(mod);
