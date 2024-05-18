@@ -611,7 +611,7 @@ public class BeatMinecraftTask extends Task {
             resource.data = Optional.of(lootTask);
 
             double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
-            return 30 / dst * 175*10000;
+            return 30 / dst * 175;
         });
 
         gatherResources.add(resource);
@@ -2472,7 +2472,8 @@ public class BeatMinecraftTask extends Task {
                             setDebugState("Getting close to fortress");
 
                             if (cachedFortressTask != null && !fortressTimer.elapsed() &&
-                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d) {
+                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
+                            || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
                                 return cachedFortressTask;
                             }
