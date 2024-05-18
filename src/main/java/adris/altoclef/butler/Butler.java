@@ -6,9 +6,12 @@ import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
+import net.minecraft.client.session.report.log.ReceivedMessage;
 import net.minecraft.network.message.MessageType;
+import net.minecraft.text.Style;
 
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * The butler system lets authorized players send commands to the bot to execute.
@@ -47,19 +50,25 @@ public class Butler {
 
         // Receive system events
         EventBus.subscribe(ChatMessageEvent.class, evt -> {
-            boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
-            String message = evt.messageContent();
-            String sender = evt.senderName();
-            MessageType messageType = evt.messageType();
-            String receiver = mod.getPlayer().getName().getString();
-            if (sender != null && !Objects.equals(sender, receiver) && messageType.chat().style().isItalic()
-                    && messageType.chat().style().getColor() != null
-                    && Objects.equals(messageType.chat().style().getColor().getName(), "gray")) {
-                String wholeMessage = sender + " " + receiver + " " + message;
-                if (debug) {
-                    Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");
+            if (mod.getPlayer() != null) {
+                boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
+                String message = evt.messageContent();
+                Optional<String> sender = evt.messageSender();
+                Style messageStyle = evt.messageStyle();
+                String receiver = mod.getPlayer().getName().getString();;
+                if (sender.isPresent() && !Objects.equals(sender.get(), receiver) && messageStyle.isItalic()
+                        && messageStyle.getColor() != null
+                        && Objects.equals(messageStyle.getColor().getName(), "gray")) {
+                    if (debug) {
+                        Debug.logMessage("got whisper: \"" + message + "\".");
+                    }
+                    this.mod.getButler().receiveMessage(message, receiver);
+                } else {
+                    System.out.println("sender:" + sender);
+                    if (debug) {
+                        Debug.logMessage("whisper failed to check.");
+                    }
                 }
-                this.mod.getButler().receiveMessage(wholeMessage, receiver);
             }
         });
     }

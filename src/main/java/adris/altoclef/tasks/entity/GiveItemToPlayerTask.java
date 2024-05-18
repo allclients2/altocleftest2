@@ -70,16 +70,7 @@ public class GiveItemToPlayerTask extends Task {
                     Optional<Slot> has = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, target.getMatches()).stream().findFirst();
                     if (has.isPresent()) {
                         Slot currentlyPresent = has.get();
-                        if (Slot.isCursor(currentlyPresent)) {
-                            ItemStack stack = StorageHelper.getItemStackInSlot(currentlyPresent);
-                            // Update target
-                            target = new ItemTarget(target, target.getTargetCount() - stack.getCount());
-                            _throwTarget.set(i, target);
-                            Debug.logMessage("THROWING: " + has.get());
-                            mod.getSlotHandler().clickSlot(Slot.UNDEFINED, 0, SlotActionType.PICKUP);
-                        } else {
-                            mod.getSlotHandler().clickSlot(currentlyPresent, 0, SlotActionType.PICKUP);
-                        }
+                        mod.getSlotHandler().clickSlot(currentlyPresent, 0, SlotActionType.PICKUP);
                         return null;
                     }
                 }

@@ -3,16 +3,13 @@ package adris.altoclef;
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.control.LookAtPos;
+import adris.altoclef.eventbus.events.*;
 import adris.altoclef.util.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
 import adris.altoclef.control.SlotHandler;
 import adris.altoclef.eventbus.EventBus;
-import adris.altoclef.eventbus.events.ClientRenderEvent;
-import adris.altoclef.eventbus.events.ClientTickEvent;
-import adris.altoclef.eventbus.events.SendChatEvent;
-import adris.altoclef.eventbus.events.TitleScreenEntryEvent;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.trackers.*;
@@ -28,14 +25,18 @@ import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.message.v1.ClientReceiveMessageEvents;
+import net.fabricmc.fabric.api.message.v1.ServerMessageEvents;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.hud.InGameHud;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -164,7 +165,7 @@ public class AltoClef implements ModInitializer {
             getExtraBaritoneSettings().avoidBlockPlace(blockPos -> settings.isPositionExplicitlyProtected(blockPos));
         });
 
-        // Receive + cancel chat
+        // Receive + cancel chat, client only.
         EventBus.subscribe(SendChatEvent.class, evt -> {
             String line = evt.message;
             if (getCommandExecutor().isClientCommand(line)) {
@@ -172,6 +173,7 @@ public class AltoClef implements ModInitializer {
                 getCommandExecutor().execute(line);
             }
         });
+
 
         // Debug jank/hookup
         Debug.jankModInstance = this;
@@ -201,6 +203,9 @@ public class AltoClef implements ModInitializer {
                 taskRunner.getCurrentTaskChain().stop(this);
             }
         }
+
+        //InGameHud hud = MinecraftClient.getInstance().inGameHud;
+        //System.out.println("test: " + hud.getChatHud().getMessageHistory().getLast());
 
         // TODO: should probably move this
         LookAtPos.updateFreeLook(this);
@@ -429,9 +434,11 @@ public class AltoClef implements ModInitializer {
         return slotHandler;
     }
 
+
     /**
      * Minecraft player client access (could just be static honestly)
      */
+    @Nullable
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }

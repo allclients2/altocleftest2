@@ -35,7 +35,8 @@ public class ButlerConfig {
      * create the following messages.
      */
     public String[] whisperFormats = new String[]{
-            "{from} {to} {message}"
+            "{from} {to} {message}",
+            "{from} whispers to you: {message}"
     };
     /**
      * If set to true, will print information about whispers that are parsed and those
@@ -60,7 +61,7 @@ public class ButlerConfig {
      * <p>
      * Disable this if you want to be able to send normal messages and not butler commands.
      */
-    public boolean requirePrefixMsg = false;
+    public boolean requirePrefixMsg = true;
 
     public static ButlerConfig getInstance() {
         return _instance;

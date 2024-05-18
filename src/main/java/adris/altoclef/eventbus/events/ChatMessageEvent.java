@@ -1,31 +1,43 @@
 package adris.altoclef.eventbus.events;
 
-import com.mojang.authlib.GameProfile;
-import net.minecraft.network.message.MessageType;
-import net.minecraft.network.message.SignedMessage;
+import net.minecraft.text.Style;
+
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import net.minecraft.text.Text;
 
 /**
  * Whenever chat appears
  */
 public class ChatMessageEvent {
-    SignedMessage message;
-    GameProfile sender;
-    MessageType.Parameters messageType;
+    Text content;
 
-    public ChatMessageEvent(SignedMessage message, GameProfile sender, MessageType.Parameters messageType) {
-        this.message = message;
-        this.sender = sender;
-        this.messageType = messageType;
+
+    public ChatMessageEvent(Text content2) {
+        this.content = content2;
     }
     public String messageContent() {
-        return message.getContent().getString();
+        return content.getString();
     }
 
-    public String senderName() {
-        return sender.getName();
+    public Style messageStyle() {
+        return content.getStyle();
     }
 
-    public MessageType messageType() {
-        return messageType.type();
+    public Optional<String> messageSender() {
+        String regex = "^(\\w+)\\s";
+
+        Pattern pattern = Pattern.compile(regex);
+        Matcher matcher = pattern.matcher(messageContent());
+
+        System.out.println("message: |" + messageContent());
+        // Find the username
+        if (matcher.find()) {
+            System.out.println("Matched!");
+            return Optional.of(matcher.group(1));
+        } else {
+            return Optional.empty();
+        }
     }
 }

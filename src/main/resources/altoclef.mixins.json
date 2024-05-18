@@ -20,10 +20,10 @@
   ],
   "client": [
     "ChatInputMixin",
-    "ChatReadMixin",
     "ClientBlockBreakMixin",
     "ClientOpenScreenMixin",
     "ClientTickMixin",
+    "OnChatMixin",
     "EntryMixin",
     "LoadChunkMixin",
     "MixinLocalPlayer",

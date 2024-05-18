@@ -133,8 +133,9 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
 
         //Don't spend too much time on finding an optimized path. Doesn't really matter.
         //But also don't be really dumb and try to cross an ocean. (it tried to do so when it was set at 21.0)
-        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 3.25;
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 23.5;
+        mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 4.25;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = 5.5;
+        mod.getClientBaritoneSettings().walkOnWaterOnePenalty.value = 2.5;
 
         _timer.reset();
         mod.getClientBaritone().getPathingBehavior().forceCancel();

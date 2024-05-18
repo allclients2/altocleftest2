@@ -61,6 +61,8 @@ public class WhisperChecker {
     }
 
     public MessageResult receiveMessage(AltoClef mod, String ourUsername, String msg) {
+        mod.log("Got message: " + msg);
+
         String foundMiddlePart = "";
         int index = -1;
 

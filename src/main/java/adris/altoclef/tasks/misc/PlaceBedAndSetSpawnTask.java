@@ -161,6 +161,7 @@ public class PlaceBedAndSetSpawnTask extends Task {
 
         // Subscribe to respawn point set message event
         respawnPointSetMessageCheck = EventBus.subscribe(ChatMessageEvent.class, evt -> {
+            mod.log("sleeping");
             String msg = evt.toString();
             if (msg.contains("Respawn point set")) {
                 spawnSet = true;
