@@ -588,7 +588,7 @@ public class BeatMinecraftTask extends Task {
         // TODO lower priority is player already has most of the items
 
         GatherResource resource = new GatherResource(999, 999999, null, (item) -> true, Items.BEDROCK)
-                .withCanCache(false).withDescription("looting nearby chest");
+                .withCanCache(false).withDescription("looting nearby chest").withBypassForceCooldown(true);
 
         resource.withPriorityCalculator( (items, count, minCount, maxCount) -> {
             //the chest is open and being looted
@@ -609,14 +609,12 @@ public class BeatMinecraftTask extends Task {
 
             lootTask = new LootContainerTask(chest.get(), lootableItems(mod), noCurseOfBinding);
             resource.data = Optional.of(lootTask);
-            //mod.log(chest.get() + "");
 
             double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
-            return 30 / dst * 175;
+            return 30 / dst * 175*10000;
         });
 
         gatherResources.add(resource);
-
     }
 
     private void addCollectFoodTask(AltoClef mod) {
@@ -2277,23 +2275,26 @@ public class BeatMinecraftTask extends Task {
                 }
 
                 if (toGather != null) {
+                    boolean sameTask = lastGather == toGather;
+
                     setDebugState("Priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
-                    if (prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
+                    if (!sameTask && prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
                         mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
                         prevLastGather = null; //do not force infinitely, 3 sec should be enough I hope
                         setDebugState("Priority: FORCED, "+lastGather.getDescription());
                         return lastTask;
                     }
-                    if (lastGather == toGather && toGather.canCacheTask()) {
+
+
+                    if (sameTask && toGather.canCacheTask()) {
                         return lastTask;
                     }
-                    if (lastGather != toGather) {
+                    if (!sameTask) {
                         taskChanges.add(0,new TaskChange(lastGather,toGather,mod.getPlayer().getBlockPos()));
                     }
 
-
-                    if (taskChanges.size() >= 3) {
+                    if (taskChanges.size() >= 3 && !sameTask) {
                         TaskChange t1 = taskChanges.get(0);
                         TaskChange t2 = taskChanges.get(1);
                         TaskChange t3 = taskChanges.get(2);
@@ -2329,24 +2330,27 @@ public class BeatMinecraftTask extends Task {
                         task = TaskCatalogue.getItemTask(toGather.toCollect[0], toGather.maxCount);
                     }
 
-                    if (lastTask instanceof SmeltInFurnaceTask && !(task instanceof SmeltInFurnaceTask) && !mod.getItemStorage().hasItem(Items.FURNACE)) {
-                        pickupFurnace = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
-                    } else if (lastTask instanceof SmeltInSmokerTask && !(task instanceof SmeltInSmokerTask) && !mod.getItemStorage().hasItem(Items.SMOKER)) {
-                        pickupSmoker = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
-                    } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
-                        pickupCrafting = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
+
+                    if (!sameTask) {
+                        if (lastTask instanceof SmeltInFurnaceTask && !(task instanceof SmeltInFurnaceTask) && !mod.getItemStorage().hasItem(Items.FURNACE)) {
+                            pickupFurnace = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        } else if (lastTask instanceof SmeltInSmokerTask && !(task instanceof SmeltInSmokerTask) && !mod.getItemStorage().hasItem(Items.SMOKER)) {
+                            pickupSmoker = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
+                            pickupCrafting = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        }
                     }
 
                     lastTask = task;
@@ -2354,6 +2358,7 @@ public class BeatMinecraftTask extends Task {
                     changedTaskTimer.reset();
                     return task;
                 }
+
 
                 if (needsBuildingMaterials(mod)) {
                     setDebugState("Collecting building materials.");
