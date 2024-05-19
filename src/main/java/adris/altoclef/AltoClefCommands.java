@@ -20,7 +20,7 @@ public class AltoClefCommands {
                 new StashCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
-                new StatusCommand(),
+                new MiranCommand(),
                 new InventoryCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),

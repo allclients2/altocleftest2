@@ -55,7 +55,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     @Override
     protected String toDebugString() {
-        return "NIGERUNDAYOO, SUMOOKEYY! distance: "+ distanceToRun +", skeletons="+ includeSkeletons;
+        return "NIGERUNDAYOO, SUMOOKEYY! distance: "+ String.format("%.2f", distanceToRun) +", skeletons: "+ includeSkeletons;
     }
 
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {

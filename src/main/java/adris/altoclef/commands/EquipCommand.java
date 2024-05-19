@@ -10,7 +10,7 @@ import net.minecraft.item.Items;
 
 public class EquipCommand extends Command {
     public EquipCommand() throws CommandException {
-        super("equip", "Equips armor", new Arg(ItemList.class, "[armors]"));
+        super("equip", "Equips armor tier", new Arg(ItemList.class, "[armors]"));
     }
 
     @Override
