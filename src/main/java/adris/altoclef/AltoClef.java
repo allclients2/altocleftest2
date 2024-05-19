@@ -34,6 +34,7 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.client.network.ClientPlayerInteractionManager;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.client.world.ClientWorld;
+import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
@@ -152,7 +153,7 @@ public class AltoClef implements ModInitializer {
             // Baritone's `acceptableThrowawayItems` should match our own.
             List<Item> baritoneCanPlace = Arrays.stream(settings.getThrowawayItems(this, true))
                     .filter(item -> item != Items.SOUL_SAND && item != Items.MAGMA_BLOCK && item != Items.SAND && item
-                            != Items.GRAVEL).toList();
+                            != Items.GRAVEL && item instanceof BlockItem).toList();
             getClientBaritoneSettings().acceptableThrowawayItems.value.addAll(baritoneCanPlace);
             // If we should run an idle command...
             if ((!getUserTaskChain().isActive() || getUserTaskChain().isRunningIdleTask()) && getModSettings().shouldRunIdleCommandWhenNotActive()) {
@@ -237,17 +238,19 @@ public class AltoClef implements ModInitializer {
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
+
         getClientBaritoneSettings().freeLook.value = false;
         getClientBaritoneSettings().overshootTraverse.value = false;
-        getClientBaritoneSettings().allowOvershootDiagonalDescend.value = true;
+        getClientBaritoneSettings().allowOvershootDiagonalDescend.value = false;
 
         getClientBaritoneSettings().allowInventory.value = true;
         getClientBaritoneSettings().allowParkour.value = false;
 
-        getClientBaritoneSettings().allowParkourAscend.value = false;
-        getClientBaritoneSettings().allowParkourPlace.value = false;
+        getClientBaritoneSettings().allowParkourAscend.value = true;
+        getClientBaritoneSettings().allowParkourPlace.value = true;
         getClientBaritoneSettings().allowDiagonalDescend.value = false;
         getClientBaritoneSettings().allowDiagonalAscend.value = false;
+
         getClientBaritoneSettings().blocksToAvoid.value = new LinkedList<>(List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
@@ -256,14 +259,12 @@ public class AltoClef implements ModInitializer {
                 Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN,
                 Blocks.ROSE_BUSH, Blocks.PEONY
         ));
+
         // dont try to break nether portal block
         getClientBaritoneSettings().blocksToAvoidBreaking.value.add(Blocks.NETHER_PORTAL);
         getClientBaritoneSettings().blocksToDisallowBreaking.value.add(Blocks.NETHER_PORTAL);
 
         // Let baritone move items to hotbar to use them
-
-        // Reduces a bit of far rendering to save FPS
-        getClientBaritoneSettings().fadePath.value = false;
 
         // Don't let baritone scan dropped items, we handle that ourselves.
         getClientBaritoneSettings().mineScanDroppedItems.value = false;
@@ -283,10 +284,10 @@ public class AltoClef implements ModInitializer {
 
 
         // For render smoothing
-        //getClientBaritoneSettings().randomLooking.value = 0.0;
-        //getClientBaritoneSettings().randomLooking113.value = 0.0;
+        getClientBaritoneSettings().randomLooking.value = 0.2; //randomly look to convince
+        getClientBaritoneSettings().randomLooking113.value = 0.03;
         getClientBaritoneSettings().smoothLook.value = true;
-        getClientBaritoneSettings().smoothLookTicks.value = 3;
+        getClientBaritoneSettings().smoothLookTicks.value = 4;
 
         getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
         getClientBaritoneSettings().avoidBreakingMultiplier.value = AvoidBreakingMultiplier;

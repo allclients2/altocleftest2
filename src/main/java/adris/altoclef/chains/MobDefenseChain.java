@@ -384,7 +384,13 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 AtomicBoolean ArmedSkeletonPresent = new AtomicBoolean(false);
                 toDealWith.forEach(entity -> {
-                    if (entity instanceof SkeletonEntity && ((SkeletonEntity) entity).getActiveItem() != null && !entity.isSubmergedInWater()) {
+                    if (entity instanceof SkeletonEntity && ((SkeletonEntity) entity).getActiveItem() != null && mod.getPlayer().canSee(entity)) {
+                        if (entity.isSubmergedInWater()) {
+                            if (!mod.getPlayer().isSubmergedInWater()) {
+                                return;
+                            }
+                        }
+
                         ArmedSkeletonPresent.set(true);
                     }
                 });
@@ -400,16 +406,19 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 }
 
+                float damage = Player.getMaxHealth() - Player.getHealth();
                 int armor = Player.getArmor();
-                float damage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                int canDealWith = (int) Math.ceil(((double) armor / 4) + (damage * 1.45) + (shield));
+                float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
+                int canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
+
+                canDealWith -= (int) Math.floor(damage * 0.5);
 
                 System.out.println("candealwith: " + canDealWith);
                 System.out.println("entityscore: " + entityscore);
 
                 // Decide if we can fight with them or just run.
                 if (
-                        (canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 10) &&
+                        (canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 7) &&
                         (!evadingHostilesLastTick)
                 ) {
                     // This is self-defense, so only fight if in range.

@@ -2387,7 +2387,7 @@ public class BeatMinecraftTask extends Task {
                 }
 
                 if (toGather != null) {
-                    setDebugState("Priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
+                    setDebugState("Task priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
                     if (prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
                         mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
