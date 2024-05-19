@@ -48,7 +48,8 @@ public class CollectFoodTask extends Task {
             new CookableFoodTarget("beef", CowEntity.class),
             new CookableFoodTarget("porkchop", PigEntity.class),
             new CookableFoodTarget("chicken", ChickenEntity.class),
-            new CookableFoodTarget("mutton", SheepEntity.class)
+            new CookableFoodTarget("mutton", SheepEntity.class),
+            new CookableFoodTarget("rabbit", RabbitEntity.class)
     };
 
     public static final Item[] ITEMS_TO_PICK_UP = new Item[]{
