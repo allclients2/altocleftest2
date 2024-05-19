@@ -120,6 +120,8 @@ public class UselessItems {
                 Items.FLOWERING_AZALEA,
                 Items.COPPER_INGOT,
                 Items.ACACIA_SLAB,
+                Items.RABBIT_HIDE,
+                Items.RABBIT_FOOT,
 
                 // nether stuff
                 Items.SOUL_SAND,
