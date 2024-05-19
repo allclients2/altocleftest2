@@ -6,6 +6,7 @@ import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.BlockState;
@@ -25,6 +26,8 @@ public class UnstuckChain extends SingleTaskChain {
     private boolean isProbablyStuck = false;
     private int eatingTicks = 0;
     private boolean interruptedEating = false;
+    private TimerGame shimmyTaskTimer = new TimerGame(5);
+    private boolean startedShimmying = false;
 
     public UnstuckChain(TaskRunner runner) {
         super(runner);
@@ -72,8 +75,12 @@ public class UnstuckChain extends SingleTaskChain {
         }
 
         if (hasBlockBelow) {
-            if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock() != Blocks.WATER) {
+            if (mod.getPlayer().isOnGround()) {
                 setTask(new SafeRandomShimmyTask());
+                if (!startedShimmying) {
+                    startedShimmying = true;
+                    shimmyTaskTimer.reset();
+                }
                 return;
             }
 
@@ -162,6 +169,12 @@ public class UnstuckChain extends SingleTaskChain {
         if (isProbablyStuck) {
             return 55;
         }
+
+        if (startedShimmying && !shimmyTaskTimer.elapsed()) {
+            setTask(new SafeRandomShimmyTask());
+            return 55;
+        }
+        startedShimmying = false;
 
         return Float.NEGATIVE_INFINITY;
     }
