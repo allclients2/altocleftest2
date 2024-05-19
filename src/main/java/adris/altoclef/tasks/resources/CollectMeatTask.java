@@ -15,10 +15,7 @@ import adris.altoclef.util.time.TimerGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.passive.ChickenEntity;
-import net.minecraft.entity.passive.CowEntity;
-import net.minecraft.entity.passive.PigEntity;
-import net.minecraft.entity.passive.SheepEntity;
+import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ScreenHandler;
@@ -33,7 +30,8 @@ public class CollectMeatTask extends Task {
             new CookableFoodTarget("beef", CowEntity.class),
             new CookableFoodTarget("porkchop", PigEntity.class),
             new CookableFoodTarget("chicken", ChickenEntity.class),
-            new CookableFoodTarget("mutton", SheepEntity.class)
+            new CookableFoodTarget("mutton", SheepEntity.class),
+            new CookableFoodTarget("rabbit", RabbitEntity.class)
     };
     private final double unitsNeeded;
     private final TimerGame checkNewOptionsTimer = new TimerGame(10);
