@@ -205,7 +205,7 @@ public class MobDefenseChain extends SingleTaskChain {
         ClientPlayerEntity Player = mod.getPlayer();
         dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 10;
 
-        int avoidanceRadius = (int) (dangerKeepDistanceAdjusted * 0.9);
+        int avoidanceRadius = (int) (dangerKeepDistanceAdjusted * 1.15);
         mod.HostileAvoidanceRadius = avoidanceRadius;
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = avoidanceRadius;
 
@@ -345,22 +345,19 @@ public class MobDefenseChain extends SingleTaskChain {
             }
 
 
-            // Clear dead/non-existing hostiles
+            // Clear some enemies that can't attack.
             List<Entity> toRemove = new ArrayList<>();
             for (Entity check : closeAnnoyingEntities.keySet()) {
-                if (!check.isAlive()) {
+                if (!check.isAlive() || !Player.canSee(check)) {
                     toRemove.add(check);
                 }
             }
-
             if (!toRemove.isEmpty()) {
                 for (Entity remove : toRemove) closeAnnoyingEntities.remove(remove);
             }
 
             // Count a score based upon the hostiles we have.
-            int entityscore = getEntityscore(toDealWith);
-
-
+            int entityscore = getEntityscore(toDealWith, Player);
             if (entityscore > 0) //Then we fight!
             {
                 // Depending on our weapons/armor, we may choose to straight up kill hostiles if we're not dodging their arrows.
@@ -442,7 +439,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
                     LookAtPos.updatePosLook(mod);
                     doForceField(mod); // To protect ourselves as we escape.
-                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.0), true);
+                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.15), true);
                     setTask(runAwayTask);
                     return 75;
                 }
@@ -467,7 +464,7 @@ public class MobDefenseChain extends SingleTaskChain {
         return 0;
     }
 
-    private static int getEntityscore(List<Entity> toDealWith) {
+    private static int getEntityscore(List<Entity> toDealWith, ClientPlayerEntity player) {
         int entityscore = toDealWith.size();
         if (!toDealWith.isEmpty()) {
             for (Entity ToDealWith : toDealWith) {
@@ -484,7 +481,6 @@ public class MobDefenseChain extends SingleTaskChain {
                     // Drowned with tridents are also REALLY dangerous, maybe we should increase this??
                     entityscore += 5;
                 }
-
             }
         }
         return entityscore;
