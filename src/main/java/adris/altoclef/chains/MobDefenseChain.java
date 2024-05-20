@@ -60,11 +60,11 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // TODO: Optimise shielding against spiders and skeletons
 
 public class MobDefenseChain extends SingleTaskChain {
-    private static final double DANGER_KEEP_DISTANCE = 6.5;
+    private static final double DANGER_KEEP_DISTANCE = 7.0;
     private static final double CREEPER_KEEP_DISTANCE = 15;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;
-    private static final double SAFE_KEEP_DISTANCE = 8;
+    private static final double SAFE_KEEP_DISTANCE = 10;
     private static boolean shielding = false;
     private final DragonBreathTracker dragonBreathTracker = new DragonBreathTracker();
     private final KillAura killAura = new KillAura();
@@ -203,7 +203,11 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         ClientPlayerEntity Player = mod.getPlayer();
-        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 12;
+        dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 10;
+
+        int avoidanceRadius = (int) (dangerKeepDistanceAdjusted * 0.9);
+        mod.HostileAvoidanceRadius = avoidanceRadius;
+        mod.getClientBaritoneSettings().mobAvoidanceRadius.value = avoidanceRadius;
 
         //Variables to update on step
         Weapons.Weapon BestWeapon = Weapons.getBestWeapon(mod);
@@ -382,7 +386,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 Entity closestOpponent = toDealWith.get(0);
 
-                AtomicBoolean ArmedSkeletonPresent = new AtomicBoolean(false);
+                AtomicBoolean RangedPresent = new AtomicBoolean(false);
                 toDealWith.forEach(entity -> {
                     if (entity instanceof SkeletonEntity && ((SkeletonEntity) entity).getActiveItem() != null && mod.getPlayer().canSee(entity)) {
                         if (entity.isSubmergedInWater()) {
@@ -391,7 +395,9 @@ public class MobDefenseChain extends SingleTaskChain {
                             }
                         }
 
-                        ArmedSkeletonPresent.set(true);
+                        RangedPresent.set(true);
+                    } else if (entity instanceof WitchEntity) { //Take no chances
+                        RangedPresent.set(true);
                     }
                 });
 
@@ -399,7 +405,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 double shield = 0;
                 if (hasShield) {
                     // We will need a shield more with skeletons with bows
-                    if (ArmedSkeletonPresent.get()) {
+                    if (RangedPresent.get()) {
                         shield = 3.25;
                     } else {
                         shield = 2.45;
@@ -411,7 +417,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
                 int canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
 
-                canDealWith -= (int) Math.floor(damage * 0.5);
+                canDealWith -= (int) Math.floor(damage * 0.125);
 
                 System.out.println("candealwith: " + canDealWith);
                 System.out.println("entityscore: " + entityscore);
@@ -436,7 +442,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
                     LookAtPos.updatePosLook(mod);
                     doForceField(mod); // To protect ourselves as we escape.
-                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (ArmedSkeletonPresent.get() ? 2 : 1.5), true);
+                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.0), true);
                     setTask(runAwayTask);
                     return 75;
                 }

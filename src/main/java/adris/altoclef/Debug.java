@@ -1,6 +1,8 @@
 package adris.altoclef;
 
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.text.MutableText;
+import net.minecraft.text.StringVisitable;
 import net.minecraft.text.Text;
 
 // TODO: Debug library or use Minecraft's built in debugger
@@ -32,6 +34,21 @@ public class Debug {
 
         } else {
             logInternal(message);
+        }
+    }
+
+    public static void logMessage(Text message, boolean usePrefix) {
+        if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
+            if (usePrefix) {
+                MutableText message2 = message.copy();
+                MutableText prefix = Text.literal("§2§l§o" + getLogPrefix() + "§r");
+                prefix.append(message2); //Add message 2 AFTER prefix (append)
+                message = prefix;
+            }
+            MinecraftClient.getInstance().player.sendMessage(message, false);
+
+        } else {
+            logInternal(message.getString());
         }
     }
 

@@ -32,7 +32,6 @@ public class AltoClefCommands {
                 new MarvionCommand(),
                 new PunkCommand(),
                 new HeroCommand(),
-                new ListCommand(),
                 new CoverWithBlocksCommand(),
                // new BuildCommand(),
                 new FlytoCommand(),

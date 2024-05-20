@@ -234,7 +234,9 @@ public class AltoClef implements ModInitializer {
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
     public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
     public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
-    public final int HostileAvoidanceRadius = 16; // should avoid placing blocks
+
+
+    public int HostileAvoidanceRadius = 10; //avoid mobs, this will be adjusted by the mob defense chain.
 
     private void initializeBaritoneSettings() {
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
@@ -247,9 +249,10 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().allowParkour.value = false;
 
         getClientBaritoneSettings().allowParkourAscend.value = true;
-        getClientBaritoneSettings().allowParkourPlace.value = true;
+        getClientBaritoneSettings().allowParkourPlace.value = false;
         getClientBaritoneSettings().allowDiagonalDescend.value = false;
         getClientBaritoneSettings().allowDiagonalAscend.value = false;
+        getClientBaritoneSettings().walkOnWaterOnePenalty.value = 32.0;
 
         getClientBaritoneSettings().blocksToAvoid.value = new LinkedList<>(List.of(Blocks.FLOWERING_AZALEA, Blocks.AZALEA,
                 Blocks.POWDER_SNOW, Blocks.BIG_DRIPLEAF, Blocks.BIG_DRIPLEAF_STEM, Blocks.CAVE_VINES,
@@ -281,6 +284,7 @@ public class AltoClef implements ModInitializer {
         getExtraBaritoneSettings().setShouldAvoidPredicate(Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity)));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 7.5;
+        getClientBaritoneSettings().avoidance.value = true;
 
 
         // For render smoothing
