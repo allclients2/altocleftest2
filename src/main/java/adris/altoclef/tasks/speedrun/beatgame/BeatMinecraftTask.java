@@ -539,9 +539,10 @@ public class BeatMinecraftTask extends Task {
         boolean taskActive = task.isActive();
         boolean taskFinished = task.isFinished(mod);
 
-        Debug.logInternal("Task is not null");
-        Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
-        Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
+        //Spam
+        //Debug.logInternal("Task is not null");
+        //Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
+        //Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
 
         return taskActive && !taskFinished;
     }
