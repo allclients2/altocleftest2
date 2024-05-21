@@ -326,7 +326,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
         if (mod.getModSettings().shouldLetBaritoneBreakBlocks()) {
             setDebugState("Letting baritone destroy a block.");
-            if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+            if (!mod.getClientBaritone().getBuilderProcess().isActive() || !mod.getClientBaritone().getPathingBehavior().isPathing()) {
                 Debug.logInternal("Run Structure Destroy");
                 ISchematic schematic = new DestroyStructureSchematic();
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, targetPosition);

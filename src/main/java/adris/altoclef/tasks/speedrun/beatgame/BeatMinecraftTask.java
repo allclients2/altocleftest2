@@ -336,7 +336,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        Debug.logInternal("Frame blocks: " + frameBlocks);
+        //Debug.logInternal("Frame blocks: " + frameBlocks);
 
         return frameBlocks;
     }
@@ -424,9 +424,12 @@ public class BeatMinecraftTask extends Task {
         boolean taskActive = task.isActive();
         boolean taskFinished = task.isFinished(mod);
 
+        //Spam
+        /*
         Debug.logInternal("Task is not null");
         Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
         Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
+         */
 
         return taskActive && !taskFinished;
     }
@@ -1061,7 +1064,7 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalCenter == null) {
-            Debug.logInternal("End portal center is null");
+            //Debug.logInternal("End portal center is null");
             return false;
         }
         return true;
@@ -1104,7 +1107,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        Debug.logInternal("End Portal is not opened yet");
+        //Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
@@ -1166,9 +1169,12 @@ public class BeatMinecraftTask extends Task {
                 return false;
             }
 
+            //Spam
+            /*
             Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
             Debug.logInternal("isWithinDistance: " + isWithinDistance);
             Debug.logInternal("isLootableChest: " + isLootableChest);
+             */
 
             return isUnopenedChest && isWithinDistance && isLootableChest;
         }, Blocks.CHEST);
@@ -2136,7 +2142,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Log that there are not enough frames.
-        Debug.logInternal("Not enough frames");
+        //Debug.logInternal("Not enough frames");
 
         return null;
     }
