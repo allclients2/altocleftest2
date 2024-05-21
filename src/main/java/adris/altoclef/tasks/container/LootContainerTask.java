@@ -22,19 +22,19 @@ import java.util.function.Predicate;
 public class LootContainerTask extends Task {
     public final BlockPos chest;
     public final List<Item> targets = new ArrayList<>();
-    private final Predicate<ItemStack> _check;
-    private boolean _weDoneHere = false;
+    private final Predicate<ItemStack> check;
+    private boolean weDoneHere = false;
 
     public LootContainerTask(BlockPos chestPos, List<Item> items) {
         chest = chestPos;
         targets.addAll(items);
-        _check = x -> true;
+        check = x -> true;
     }
 
     public LootContainerTask(BlockPos chestPos, List<Item> items, Predicate<ItemStack> pred) {
         chest = chestPos;
         targets.addAll(items);
-        _check = pred;
+        check = pred;
     }
 
     @Override
@@ -67,7 +67,7 @@ public class LootContainerTask extends Task {
         }
         Optional<Slot> optimal = getAMatchingSlot(mod);
         if (optimal.isEmpty()) {
-            _weDoneHere = true;
+            weDoneHere = true;
             return null;
         }
         setDebugState("Looting items: " + targets);
@@ -96,14 +96,14 @@ public class LootContainerTask extends Task {
 
     @Override
     protected boolean isEqual(Task other) {
-        return other instanceof LootContainerTask && targets == ((LootContainerTask) other).targets;
+        return other instanceof LootContainerTask && targets.equals(((LootContainerTask) other).targets);
     }
 
     private Optional<Slot> getAMatchingSlot(AltoClef mod) {
         for (Item item : targets) {
             List<Slot> slots = mod.getItemStorage().getSlotsWithItemContainer(item);
             if (!slots.isEmpty()) for (Slot slot : slots) {
-                if (_check.test(StorageHelper.getItemStackInSlot(slot))) return Optional.of(slot);
+                if (check.test(StorageHelper.getItemStackInSlot(slot))) return Optional.of(slot);
             }
         }
         return Optional.empty();
@@ -111,7 +111,7 @@ public class LootContainerTask extends Task {
 
     @Override
     public boolean isFinished(AltoClef mod) {
-        return _weDoneHere || (ContainerType.screenHandlerMatchesAny() &&
+        return weDoneHere || (ContainerType.screenHandlerMatchesAny() &&
                 getAMatchingSlot(mod).isEmpty());
     }
 

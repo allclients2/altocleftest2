@@ -114,6 +114,9 @@ public abstract class CraftWithMatchingMaterialsTask extends ResourceTask {
             int toCraftTotal = majorityCraftCount;
             toCraftTotal = Math.min(toCraftTotal, target.getTargetCount());
             Item output = getSpecificItemCorrespondingToMajorityResource(majorityCraftItem);
+
+            toCraftTotal = Math.min(target.getTargetCount(),toCraftTotal+mod.getItemStorage().getItemCount(output));
+
             RecipeTarget recipeTarget = new RecipeTarget(output, toCraftTotal, sameRecipe);
             return recipe.isBig() ? new CraftInTableTask(recipeTarget) : new CraftInInventoryTask(recipeTarget);
         }

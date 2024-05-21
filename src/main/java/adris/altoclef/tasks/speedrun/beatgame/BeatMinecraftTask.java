@@ -3,7 +3,6 @@ package adris.altoclef.tasks.speedrun.beatgame;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.util.BlockScanner;
 import adris.altoclef.tasks.DoToClosestBlockTask;
 import adris.altoclef.tasks.GetRidOfExtraWaterBucketTask;
 import adris.altoclef.tasks.InteractWithBlockTask;
@@ -24,10 +23,7 @@ import adris.altoclef.tasks.speedrun.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
-import adris.altoclef.util.Dimension;
-import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.MiningRequirement;
-import adris.altoclef.util.SmeltTarget;
+import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.slots.Slot;
 import adris.altoclef.util.time.TimerGame;
@@ -104,120 +100,8 @@ public class BeatMinecraftTask extends Task {
         return true;
     };
 
-    //dont even pick up these items
-    private static final Item[] uselessItems = new Item[]{
-            //sapling
-            Items.OAK_SAPLING,
-            Items.SPRUCE_SAPLING,
-            Items.BIRCH_SAPLING,
-            Items.JUNGLE_SAPLING,
-            Items.ACACIA_SAPLING,
-            Items.DARK_OAK_SAPLING,
-            Items.MANGROVE_PROPAGULE,
-            Items.CHERRY_SAPLING,
+    private final UselessItems uselessItems;
 
-            // seeds
-            Items.BEETROOT_SEEDS,
-            Items.MELON_SEEDS,
-            Items.PUMPKIN_SEEDS,
-            Items.WHEAT_SEEDS,
-            Items.TORCHFLOWER_SEEDS,
-
-            // random jung, might add more things in the future
-            Items.FEATHER,
-            Items.EGG,
-            Items.PINK_PETALS,
-            Items.BONE,
-            Items.LEATHER,
-            Items.RAW_COPPER,
-            Items.WARPED_ROOTS,
-            Items.GUNPOWDER,
-            Items.MOSSY_COBBLESTONE,
-            Items.SPRUCE_TRAPDOOR,
-            Items.SANDSTONE_STAIRS,
-            Items.STONE_BRICKS,
-            Items.COARSE_DIRT,
-            Items.SMOOTH_STONE,
-            Items.FLOWER_POT,
-            Items.MANGROVE_ROOTS,
-            Items.POPPY,
-            Items.MUDDY_MANGROVE_ROOTS,
-            Items.SPIDER_EYE,
-            Items.PINK_TULIP,
-
-            Items.SPRUCE_STAIRS,
-            Items.OAK_STAIRS,
-
-            Items.LAPIS_LAZULI,
-            Items.SUNFLOWER,
-            Items.REDSTONE,
-            Items.CRIMSON_ROOTS,
-            Items.OAK_DOOR,
-
-            Items.STRING,
-            Items.WHITE_TERRACOTTA,
-            Items.RED_TERRACOTTA,
-
-            Items.MOSS_BLOCK,
-            Items.MOSS_CARPET,
-            Items.BOW,
-
-            Items.EMERALD,
-            Items.GOLD_NUGGET,
-            Items.IRON_NUGGET,
-            Items.SHORT_GRASS,
-            Items.COBBLESTONE_WALL,
-            Items.COBBLESTONE_STAIRS,
-            Items.COBBLESTONE_SLAB,
-            Items.CLAY_BALL,
-            Items.DANDELION,
-            Items.SUGAR_CANE,
-            Items.CHEST,
-            Items.RAIL,
-            Items.CALCITE,
-            Items.AMETHYST_BLOCK,
-            Items.AMETHYST_CLUSTER,
-            Items.AMETHYST_SHARD,
-            Items.BUDDING_AMETHYST,
-            Items.SMOOTH_BASALT,
-            Items.AZURE_BLUET,
-
-            Items.ACACIA_DOOR,
-            Items.OAK_FENCE,
-            Items.COMPOSTER,
-            Items.OAK_PRESSURE_PLATE,
-            Items.JUNGLE_DOOR,
-            Items.CHISELED_SANDSTONE,
-            Items.CACTUS,
-            Items.MUD,
-            Items.MANGROVE_LEAVES,
-            Items.SMOOTH_SANDSTONE_SLAB,
-            Items.SANDSTONE_WALL,
-            Items.TNT,
-            Items.PRISMARINE_CRYSTALS,
-            Items.SNOWBALL,
-            Items.DRIPSTONE_BLOCK,
-            Items.POINTED_DRIPSTONE,
-            Items.ARROW,
-            Items.YELLOW_TERRACOTTA,
-            Items.TUFF,
-            Items.SPRUCE_STAIRS,
-            Items.SPRUCE_DOOR,
-            Items.SPRUCE_FENCE,
-            Items.SPRUCE_FENCE_GATE,
-            Items.ORANGE_TERRACOTTA,
-            Items.HEART_OF_THE_SEA,
-            Items.POTION,
-            Items.FLOWERING_AZALEA,
-            Items.COPPER_INGOT,
-            Items.ACACIA_SLAB,
-
-            // nether stuff
-            Items.SOUL_SAND,
-            Items.SOUL_SOIL,
-            Items.NETHER_BRICK,
-            Items.NETHER_BRICK_FENCE,
-    };
     private static BeatMinecraftConfig config;
     private static GoToStrongholdPortalTask locateStrongholdTask;
     private static boolean openingEndPortal = false;
@@ -281,11 +165,12 @@ public class BeatMinecraftTask extends Task {
     private record TaskChange(GatherResource original, GatherResource interrupt, BlockPos pos){
     }
 
-    private List<TaskChange> taskChanges = new ArrayList<>();
+    private final List<TaskChange> taskChanges = new ArrayList<>();
 
     public BeatMinecraftTask(AltoClef mod) {
         locateStrongholdTask = new GoToStrongholdPortalTask(config.targetEyes);
         buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
+        uselessItems = new UselessItems(config);
 
         //SetGammaCommand.changeGamma(20d);
 
@@ -451,7 +336,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        //Debug.logInternal("Frame blocks: " + frameBlocks);
+        Debug.logInternal("Frame blocks: " + frameBlocks);
 
         return frameBlocks;
     }
@@ -532,17 +417,16 @@ public class BeatMinecraftTask extends Task {
      */
     public static boolean isTaskRunning(AltoClef mod, Task task) {
         if (task == null) {
-            //Debug.logInternal("Task is null");
+            Debug.logInternal("Task is null");
             return false;
         }
 
         boolean taskActive = task.isActive();
         boolean taskFinished = task.isFinished(mod);
 
-        //Spam
-        //Debug.logInternal("Task is not null");
-        //Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
-        //Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
+        Debug.logInternal("Task is not null");
+        Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
+        Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
 
         return taskActive && !taskFinished;
     }
@@ -699,7 +583,7 @@ public class BeatMinecraftTask extends Task {
         // TODO lower priority is player already has most of the items
 
         GatherResource resource = new GatherResource(999, 999999, null, (item) -> true, Items.BEDROCK)
-                .withCanCache(false).withDescription("looting nearby chest");
+                .withCanCache(false).withDescription("looting nearby chest").withBypassForceCooldown(true);
 
         resource.withPriorityCalculator( (items, count, minCount, maxCount) -> {
             //the chest is open and being looted
@@ -720,14 +604,12 @@ public class BeatMinecraftTask extends Task {
 
             lootTask = new LootContainerTask(chest.get(), lootableItems(mod), noCurseOfBinding);
             resource.data = Optional.of(lootTask);
-            //mod.log(chest.get() + "");
 
             double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
             return 30 / dst * 175;
         });
 
         gatherResources.add(resource);
-
     }
 
     private void addCollectFoodTask(AltoClef mod) {
@@ -1179,7 +1061,7 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalCenter == null) {
-            //Debug.logInternal("End portal center is null");
+            Debug.logInternal("End portal center is null");
             return false;
         }
         return true;
@@ -1217,12 +1099,12 @@ public class BeatMinecraftTask extends Task {
             if (blockTracker != null) {
                 boolean isValid = blockTracker.isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
 
-                //Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
+                Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
                 return isValid;
             }
         }
 
-        //Debug.logInternal("End Portal is not opened yet");
+        Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
@@ -1284,12 +1166,9 @@ public class BeatMinecraftTask extends Task {
                 return false;
             }
 
-            //Spam
-            /*
             Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
             Debug.logInternal("isWithinDistance: " + isWithinDistance);
             Debug.logInternal("isLootableChest: " + isLootableChest);
-             */
 
             return isUnopenedChest && isWithinDistance && isLootableChest;
         }, Blocks.CHEST);
@@ -1650,7 +1529,7 @@ public class BeatMinecraftTask extends Task {
             }
             throwAwayItems(mod, Items.SAND, Items.RED_SAND);
             throwAwayItems(mod, Items.TORCH);
-            throwAwayItems(mod, uselessItems);
+            throwAwayItems(mod, uselessItems.uselessItems);
 
 
             if (mod.getItemStorage().hasItem(Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)) {
@@ -1911,102 +1790,102 @@ public class BeatMinecraftTask extends Task {
 
                 }
             }
-                ranStrongholdLocator = true;
-                // Get beds before starting our portal location.
-                if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
-                    setDebugState("Getting beds before stronghold search.");
-                    if (!mod.getClientBaritone().getExploreProcess().isActive() && timer1.elapsed()) {
-                        timer1.reset();
-                    }
-                    getBedTask = getBedTask(mod);
-                    return getBedTask;
-                } else {
-                    getBedTask = null;
+            ranStrongholdLocator = true;
+            // Get beds before starting our portal location.
+            if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && needsBeds(mod)) {
+                setDebugState("Getting beds before stronghold search.");
+                if (!mod.getClientBaritone().getExploreProcess().isActive() && timer1.elapsed()) {
+                    timer1.reset();
                 }
-                if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                    setDebugState("Getting water bucket.");
-                    return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+                getBedTask = getBedTask(mod);
+                return getBedTask;
+            } else {
+                getBedTask = null;
+            }
+            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                setDebugState("Getting water bucket.");
+                return TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1);
+            }
+            if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                setDebugState("Getting flint and steel.");
+                return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
+            }
+            if (needsBuildingMaterials(mod)) {
+                setDebugState("Collecting building materials.");
+                return buildMaterialsTask;
+            }
+
+            if (!endPortalFound(mod,endPortalCenterLocation)) {
+                // Portal Location
+                setDebugState("Locating End Portal...");
+                return locateStrongholdTask;
+            }
+
+            // WE FOUND END PORTAL AND SHOULD HAVE ALL THE NECESSARY STUFF
+            // Destroy silverfish spawner
+            if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
+                Optional<BlockPos> silverfish = mod.getBlockScanner().getNearestBlock(blockPos -> (WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity)
+                        , Blocks.SPAWNER);
+
+                if (silverfish.isPresent()) {
+                    setDebugState("Breaking silverfish spawner.");
+                    return new DestroyBlockTask(silverfish.get());
                 }
-                if (!mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
-                    setDebugState("Getting flint and steel.");
-                    return TaskCatalogue.getItemTask(Items.FLINT_AND_STEEL, 1);
-                }
+            }
+            if (endPortalOpened(mod, endPortalCenterLocation)) {
+                openingEndPortal = false;
                 if (needsBuildingMaterials(mod)) {
                     setDebugState("Collecting building materials.");
                     return buildMaterialsTask;
                 }
+                if (config.placeSpawnNearEndPortal && mod.getItemStorage().hasItem(ItemHelper.BED) && (!spawnSetNearPortal(mod, endPortalCenterLocation))) {
+                    setDebugState("Setting spawn near end portal");
+                    return setSpawnNearPortalTask(mod);
 
-                if (!endPortalFound(mod,endPortalCenterLocation)) {
-                    // Portal Location
-                    setDebugState("Locating End Portal...");
-                    return locateStrongholdTask;
                 }
-
-                // WE FOUND END PORTAL AND SHOULD HAVE ALL THE NECESSARY STUFF
-                // Destroy silverfish spawner
-                if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
-                    Optional<BlockPos> silverfish = mod.getBlockScanner().getNearestBlock(blockPos -> (WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity)
-                            , Blocks.SPAWNER);
-
-                    if (silverfish.isPresent()) {
-                        setDebugState("Breaking silverfish spawner.");
-                        return new DestroyBlockTask(silverfish.get());
-                    }
+                // We're as ready as we'll ever be, hop into the portal!
+                setDebugState("Entering End");
+                enterindEndPortal = true;
+                if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
+                    mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
                 }
-                if (endPortalOpened(mod, endPortalCenterLocation)) {
-                    openingEndPortal = false;
-                    if (needsBuildingMaterials(mod)) {
-                        setDebugState("Collecting building materials.");
-                        return buildMaterialsTask;
-                    }
-                    if (config.placeSpawnNearEndPortal && mod.getItemStorage().hasItem(ItemHelper.BED) && (!spawnSetNearPortal(mod, endPortalCenterLocation))) {
-                        setDebugState("Setting spawn near end portal");
-                        return setSpawnNearPortalTask(mod);
-
-                    }
-                    // We're as ready as we'll ever be, hop into the portal!
-                    setDebugState("Entering End");
-                    enterindEndPortal = true;
-                    if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
-                        mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
-                    }
-                    return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos.up()), Blocks.END_PORTAL);
-                } else {
-                    if (!mod.getItemStorage().hasItem(Items.OBSIDIAN)) {
-                        if (mod.getBlockScanner().anyFoundWithinDistance(10, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
-                            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                                return new CollectBucketLiquidTask.CollectWaterBucketTask(1);
-                            }
-                            if (!waterPlacedTimer.elapsed()) {
-                                setDebugState("waitin " + waterPlacedTimer.getDuration());
-                                return null;
-                            }
-                            return TaskCatalogue.getItemTask(Items.OBSIDIAN, 1);
-                        } else {
-                            if (repeated > 2 && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                                return new CollectBucketLiquidTask.CollectWaterBucketTask(1);
-                            }
-                            if (waterPlacedTimer.elapsed()) {
-                                if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
-                                    repeated++;
-                                    waterPlacedTimer.reset();
-                                    return null;
-                                } else {
-                                    repeated = 0;
-                                }
-
-                                return new PlaceObsidianBucketTask(
-                                        mod.getBlockScanner().getNearestBlock(WorldHelper.toVec3d(endPortalCenterLocation), (blockPos) -> !blockPos.isWithinDistance(endPortalCenterLocation, 8), Blocks.LAVA).get());
-                            }
-                            setDebugState(waterPlacedTimer.getDuration() + "");
+                return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos.up()), Blocks.END_PORTAL);
+            } else {
+                if (!mod.getItemStorage().hasItem(Items.OBSIDIAN)) {
+                    if (mod.getBlockScanner().anyFoundWithinDistance(10, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
+                        if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                            return new CollectBucketLiquidTask.CollectWaterBucketTask(1);
+                        }
+                        if (!waterPlacedTimer.elapsed()) {
+                            setDebugState("waitin " + waterPlacedTimer.getDuration());
                             return null;
                         }
+                        return TaskCatalogue.getItemTask(Items.OBSIDIAN, 1);
+                    } else {
+                        if (repeated > 2 && !mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                            return new CollectBucketLiquidTask.CollectWaterBucketTask(1);
+                        }
+                        if (waterPlacedTimer.elapsed()) {
+                            if (!mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+                                repeated++;
+                                waterPlacedTimer.reset();
+                                return null;
+                            } else {
+                                repeated = 0;
+                            }
+
+                            return new PlaceObsidianBucketTask(
+                                    mod.getBlockScanner().getNearestBlock(WorldHelper.toVec3d(endPortalCenterLocation), (blockPos) -> !blockPos.isWithinDistance(endPortalCenterLocation, 8), Blocks.LAVA).get());
+                        }
+                        setDebugState(waterPlacedTimer.getDuration() + "");
+                        return null;
                     }
-                    // Open the portal! (we have enough eyes, do it)
-                    setDebugState("Opening End Portal");
-                    openingEndPortal = true;
-                    return new DoToClosestBlockTask(blockPos -> new InteractWithBlockTask(Items.ENDER_EYE, blockPos), blockPos -> !isEndPortalFrameFilled(mod, blockPos), Blocks.END_PORTAL_FRAME);
                 }
+                // Open the portal! (we have enough eyes, do it)
+                setDebugState("Opening End Portal");
+                openingEndPortal = true;
+                return new DoToClosestBlockTask(blockPos -> new InteractWithBlockTask(Items.ENDER_EYE, blockPos), blockPos -> !isEndPortalFrameFilled(mod, blockPos), Blocks.END_PORTAL_FRAME);
+            }
         } else if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
             List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true, COLLECT_IRON_ARMOR);
@@ -2148,12 +2027,9 @@ public class BeatMinecraftTask extends Task {
         int targetBeds = config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
 
         // Output debug information
-        //Spam again
-        /*
         Debug.logInternal("needsToSetSpawn: " + needsToSetSpawn);
         Debug.logInternal("bedsInEnd: " + bedsInEnd);
         Debug.logInternal("targetBeds: " + targetBeds);
-         */
 
         return targetBeds;
     }
@@ -2260,7 +2136,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Log that there are not enough frames.
-        //Debug.logInternal("Not enough frames");
+        Debug.logInternal("Not enough frames");
 
         return null;
     }
@@ -2394,23 +2270,26 @@ public class BeatMinecraftTask extends Task {
                 }
 
                 if (toGather != null) {
-                    setDebugState("Task priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
-                    if (prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
+                    boolean sameTask = lastGather == toGather;
+
+                    setDebugState("Priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
+                    if (!sameTask && prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
                         mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
                         prevLastGather = null; //do not force infinitely, 3 sec should be enough I hope
                         setDebugState("Priority: FORCED, "+lastGather.getDescription());
                         return lastTask;
                     }
-                    if (lastGather == toGather && toGather.canCacheTask()) {
+
+
+                    if (sameTask && toGather.canCacheTask()) {
                         return lastTask;
                     }
-                    if (lastGather != toGather) {
+                    if (!sameTask) {
                         taskChanges.add(0,new TaskChange(lastGather,toGather,mod.getPlayer().getBlockPos()));
                     }
 
-
-                    if (taskChanges.size() >= 3) {
+                    if (taskChanges.size() >= 3 && !sameTask) {
                         TaskChange t1 = taskChanges.get(0);
                         TaskChange t2 = taskChanges.get(1);
                         TaskChange t3 = taskChanges.get(2);
@@ -2446,24 +2325,27 @@ public class BeatMinecraftTask extends Task {
                         task = TaskCatalogue.getItemTask(toGather.toCollect[0], toGather.maxCount);
                     }
 
-                    if (lastTask instanceof SmeltInFurnaceTask && !(task instanceof SmeltInFurnaceTask) && !mod.getItemStorage().hasItem(Items.FURNACE)) {
-                        pickupFurnace = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
-                    } else if (lastTask instanceof SmeltInSmokerTask && !(task instanceof SmeltInSmokerTask) && !mod.getItemStorage().hasItem(Items.SMOKER)) {
-                        pickupSmoker = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
-                    } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
-                        pickupCrafting = true;
-                        lastGather = null;
-                        lastTask = null;
-                        StorageHelper.closeScreen();
-                        return null;
+
+                    if (!sameTask) {
+                        if (lastTask instanceof SmeltInFurnaceTask && !(task instanceof SmeltInFurnaceTask) && !mod.getItemStorage().hasItem(Items.FURNACE)) {
+                            pickupFurnace = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        } else if (lastTask instanceof SmeltInSmokerTask && !(task instanceof SmeltInSmokerTask) && !mod.getItemStorage().hasItem(Items.SMOKER)) {
+                            pickupSmoker = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
+                            pickupCrafting = true;
+                            lastGather = null;
+                            lastTask = null;
+                            StorageHelper.closeScreen();
+                            return null;
+                        }
                     }
 
                     lastTask = task;
@@ -2471,6 +2353,7 @@ public class BeatMinecraftTask extends Task {
                     changedTaskTimer.reset();
                     return task;
                 }
+
 
                 if (needsBuildingMaterials(mod)) {
                     setDebugState("Collecting building materials.");
@@ -2584,7 +2467,8 @@ public class BeatMinecraftTask extends Task {
                             setDebugState("Getting close to fortress");
 
                             if (cachedFortressTask != null && !fortressTimer.elapsed() &&
-                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d) {
+                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
+                                    || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
                                 return cachedFortressTask;
                             }

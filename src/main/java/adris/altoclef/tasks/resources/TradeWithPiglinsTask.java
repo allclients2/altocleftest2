@@ -28,23 +28,23 @@ public class TradeWithPiglinsTask extends ResourceTask {
     private static final double HOGLIN_AVOID_TRADE_RADIUS = 64;
     // If we're too far away from a trading piglin, we risk deloading them and losing the trade.
     private static final double TRADING_PIGLIN_TOO_FAR_AWAY = 64 + 8;
-    private final int _goldBuffer;
-    private final Task _tradeTask = new PerformTradeWithPiglin();
-    private Task _goldTask = null;
+    private final int goldBuffer;
+    private final Task tradeTask = new PerformTradeWithPiglin();
+    private Task goldTask = null;
 
     public TradeWithPiglinsTask(int goldBuffer, ItemTarget[] itemTargets) {
         super(itemTargets);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     public TradeWithPiglinsTask(int goldBuffer, ItemTarget target) {
         super(target);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     public TradeWithPiglinsTask(int goldBuffer, Item item, int targetCount) {
         super(item, targetCount);
-        _goldBuffer = goldBuffer;
+        this.goldBuffer = goldBuffer;
     }
 
     @Override
@@ -60,13 +60,13 @@ public class TradeWithPiglinsTask extends ResourceTask {
     @Override
     protected Task onResourceTick(AltoClef mod) {
         // Collect gold if we don't have it.
-        if (_goldTask != null && _goldTask.isActive() && !_goldTask.isFinished(mod)) {
+        if (goldTask != null && goldTask.isActive() && !goldTask.isFinished(mod)) {
             setDebugState("Collecting gold");
-            return _goldTask;
+            return goldTask;
         }
         if (!mod.getItemStorage().hasItem(Items.GOLD_INGOT)) {
-            if (_goldTask == null) _goldTask = TaskCatalogue.getItemTask(Items.GOLD_INGOT, _goldBuffer);
-            return _goldTask;
+            if (goldTask == null) goldTask = TaskCatalogue.getItemTask(Items.GOLD_INGOT, goldBuffer);
+            return goldTask;
         }
 
         // If we have no piglin nearby, explore until we find piglin.
@@ -79,7 +79,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
         // Find gold and trade with a piglin
         setDebugState("Trading with Piglin");
-        return _tradeTask;
+        return tradeTask;
     }
 
     @Override
