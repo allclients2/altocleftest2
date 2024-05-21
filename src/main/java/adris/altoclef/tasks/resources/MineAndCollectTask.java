@@ -155,18 +155,18 @@ public class MineAndCollectTask extends ResourceTask {
 
     private static class MineOrCollectTask extends AbstractDoToClosestObjectTask<Object> {
 
-        private final Block[] _blocks;
-        private final ItemTarget[] _targets;
-        private final Set<BlockPos> _blacklist = new HashSet<>();
+        private final Block[] blocks;
+        private final ItemTarget[] targets;
+        private final Set<BlockPos> blacklist = new HashSet<>();
         private final MovementProgressChecker _progressChecker = new MovementProgressChecker(1);
-        private final Task _pickupTask;
-        private BlockPos _miningPos;
-        private AltoClef _mod;
+        private final Task pickupTask;
+        private BlockPos miningPos;
+        private AltoClef currentMod;
 
         public MineOrCollectTask(Block[] blocks, ItemTarget[] targets) {
-            _blocks = blocks;
-            _targets = targets;
-            _pickupTask = new PickupDroppedItemTask(_targets, true);
+            this.blocks = blocks;
+            this.targets = targets;
+            pickupTask = new PickupDroppedItemTask(this.targets, true);
         }
 
         @Override
@@ -183,13 +183,13 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
             Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
-                if (_blacklist.contains(check)) return false;
+                if (blacklist.contains(check)) return false;
                 return WorldHelper.canBreak(mod, check);
-            }, _blocks);
+            }, blocks);
 
             Optional<ItemEntity> closestDrop = Optional.empty();
-            if (mod.getEntityTracker().itemDropped(_targets)) {
-                closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, _targets);
+            if (mod.getEntityTracker().itemDropped(targets)) {
+                closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, targets);
             }
 
             double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos);
@@ -214,12 +214,12 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Task onTick(AltoClef mod) {
-            _mod = mod;
-            if (_miningPos != null && !_progressChecker.check(mod)) {
+            currentMod = mod;
+            if (miningPos != null && !_progressChecker.check(mod)) {
                 Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
-                mod.getBlockTracker().requestBlockUnreachable(_miningPos, 2);
-                _blacklist.add(_miningPos);
-                _miningPos = null;
+                mod.getBlockTracker().requestBlockUnreachable(miningPos, 2);
+                blacklist.add(miningPos);
+                miningPos = null;
                 _progressChecker.reset();
             }
             return super.onTick(mod);
@@ -228,20 +228,20 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected Task getGoalTask(Object obj) {
             if (obj instanceof BlockPos newPos) {
-                if (_miningPos == null || !_miningPos.equals(newPos)) {
+                if (miningPos == null || !miningPos.equals(newPos)) {
                     _progressChecker.reset();
                 }
-                _miningPos = newPos;
-                return new DestroyBlockTask(_miningPos);
+                miningPos = newPos;
+                return new DestroyBlockTask(miningPos);
             }
             if (obj instanceof ItemEntity itemEntity) {
-                _miningPos = null;
+                miningPos = null;
 
-                if (_mod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).or(() -> StorageHelper.getGarbageSlot(_mod)).isEmpty()) {
+                if (currentMod.getItemStorage().getSlotThatCanFitInPlayerInventory(itemEntity.getStack(), false).or(() -> StorageHelper.getGarbageSlot(currentMod)).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
 
-                return _pickupTask;
+                return pickupTask;
             }
             throw new UnsupportedOperationException("Shouldn't try to get the goal from object " + obj + " of type " + (obj != null ? obj.getClass().toString() : "(null object)"));
         }
@@ -249,11 +249,11 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected boolean isValid(AltoClef mod, Object obj) {
             if (obj instanceof BlockPos b) {
-                return mod.getBlockTracker().blockIsValid(b, _blocks) && WorldHelper.canBreak(mod, b);
+                return mod.getBlockTracker().blockIsValid(b, blocks) && WorldHelper.canBreak(mod, b);
             }
             if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();
-                for (ItemTarget target : _targets) {
+                for (ItemTarget target : targets) {
                     if (target.matches(item)) return true;
                 }
                 return false;
@@ -264,7 +264,7 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected void onStart(AltoClef mod) {
             _progressChecker.reset();
-            _miningPos = null;
+            miningPos = null;
         }
 
         @Override
@@ -275,7 +275,7 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected boolean isEqual(Task other) {
             if (other instanceof MineOrCollectTask task) {
-                return Arrays.equals(task._blocks, _blocks) && Arrays.equals(task._targets, _targets);
+                return Arrays.equals(task.blocks, blocks) && Arrays.equals(task.targets, targets);
             }
             return false;
         }
@@ -286,11 +286,11 @@ public class MineAndCollectTask extends ResourceTask {
         }
 
         public boolean isMining() {
-            return _miningPos != null;
+            return miningPos != null;
         }
 
         public BlockPos miningPos() {
-            return _miningPos;
+            return miningPos;
         }
     }
 

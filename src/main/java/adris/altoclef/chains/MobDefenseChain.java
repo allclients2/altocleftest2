@@ -60,7 +60,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 // TODO: Optimise shielding against spiders and skeletons
 
 public class MobDefenseChain extends SingleTaskChain {
-    private static final double DANGER_KEEP_DISTANCE = 7.0;
+    private static final double DANGER_KEEP_DISTANCE = 5.5;
     private static final double CREEPER_KEEP_DISTANCE = 15;
     private static final double ARROW_KEEP_DISTANCE_HORIZONTAL = 2;
     private static final double ARROW_KEEP_DISTANCE_VERTICAL = 10;
@@ -205,7 +205,7 @@ public class MobDefenseChain extends SingleTaskChain {
         ClientPlayerEntity Player = mod.getPlayer();
         dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 10;
 
-        int avoidanceRadius = (int) (dangerKeepDistanceAdjusted * 1.15);
+        int avoidanceRadius = (int) (dangerKeepDistanceAdjusted + 1);
         mod.HostileAvoidanceRadius = avoidanceRadius;
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = avoidanceRadius;
 
@@ -357,8 +357,8 @@ public class MobDefenseChain extends SingleTaskChain {
             }
 
             // Count a score based upon the hostiles we have.
-            int entityscore = getEntityscore(toDealWith, Player);
-            if (entityscore > 0) //Then we fight!
+            int entityScore = getEntityscore(toDealWith, Player);
+            if (entityScore > 0) //Then we fight!
             {
                 // Depending on our weapons/armor, we may choose to straight up kill hostiles if we're not dodging their arrows.
                 // we're not dodging their arrows.
@@ -391,38 +391,45 @@ public class MobDefenseChain extends SingleTaskChain {
                                 return;
                             }
                         }
-
                         RangedPresent.set(true);
                     } else if (entity instanceof WitchEntity) { //Take no chances
+                        RangedPresent.set(true);
+                    } else if (entity instanceof DrownedEntity && entity.getItemsEquipped() == Items.TRIDENT) { // Can easily kill us
                         RangedPresent.set(true);
                     }
                 });
 
-                boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
-                double shield = 0;
-                if (hasShield) {
-                    // We will need a shield more with skeletons with bows
-                    if (RangedPresent.get()) {
-                        shield = 3.25;
-                    } else {
-                        shield = 2.45;
+                // Calculating canDealWith
+                int canDealWith; {
+                    boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
+                    double shield = 0;
+                    if (hasShield) {
+                        // We will need a shield more with skeletons with bows
+                        if (RangedPresent.get()) {
+                            shield = 3.25;
+                        } else {
+                            shield = 2.05;
+                        }
+                    }
+
+                    float damage = Player.getMaxHealth() - Player.getHealth();
+                    int armor = Player.getArmor();
+                    float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
+                    canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
+                    canDealWith -= (int) Math.floor(damage * 0.125);
+                    if (mod.getPlayer().isSubmergedInWater()) {
+                        canDealWith -= 1;
                     }
                 }
-
-                float damage = Player.getMaxHealth() - Player.getHealth();
-                int armor = Player.getArmor();
-                float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                int canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
-
-                canDealWith -= (int) Math.floor(damage * 0.125);
 
                 //System.out.println("candealwith: " + canDealWith);
                 //System.out.println("entityscore: " + entityscore);
 
                 // Decide if we can fight with them or just run.
                 if (
-                        (canDealWith > entityscore && entityscore < 12 && Player.getHealth() > 7) &&
-                        (!evadingHostilesLastTick)
+                        (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
+                        (!evadingHostilesLastTick) &&
+                        (!closestOpponent.isSubmergedInWater()) // Because bartione can't pathfind to enemy.
                 ) {
                     // This is self-defense, so only fight if in range.
                     if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
