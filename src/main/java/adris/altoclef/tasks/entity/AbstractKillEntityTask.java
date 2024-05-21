@@ -35,26 +35,26 @@ public abstract class AbstractKillEntityTask extends AbstractDoToEntityTask {
 
     public static Item bestWeapon(AltoClef mod) {
         List<ItemStack> invStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
-        if (!invStacks.isEmpty()) {
-            float handDamage = Float.NEGATIVE_INFINITY;
-            Item bestItem = null;
-            for (ItemStack invStack : invStacks) {
-                if (invStack.getItem() instanceof SwordItem item) {
-                    float itemDamage = item.getMaterial().getAttackDamage();
-                    Item handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
-                    if (handItem instanceof SwordItem handToolItem) {
-                        handDamage = handToolItem.getMaterial().getAttackDamage();
-                    }
-                    if (itemDamage > handDamage) {
-                        bestItem = item;
-                    } else {
-                        bestItem = handItem;
-                    }
-                }
-            }
-            return bestItem;
+
+        Item bestItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
+        float bestDamage = Float.NEGATIVE_INFINITY;
+
+        if (bestItem instanceof SwordItem handToolItem) {
+            bestDamage = handToolItem.getMaterial().getAttackDamage();
         }
-        return null;
+
+        for (ItemStack invStack : invStacks) {
+            if (!(invStack.getItem() instanceof SwordItem item)) continue;
+
+            float itemDamage = item.getMaterial().getAttackDamage();
+
+            if (itemDamage > bestDamage) {
+                bestItem = item;
+                bestDamage = itemDamage;
+            }
+        }
+
+        return bestItem;
     }
 
     public static boolean equipWeapon(AltoClef mod) {
