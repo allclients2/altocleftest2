@@ -14,4 +14,15 @@ public class BeatMinecraftConfig {
     public int buildMaterialCount = 64;
     public boolean rePickupSmoker = true;
     public boolean rePickupFurnace = true;
+
+    // Beat minecraft 2
+    public boolean searchRuinedPortals = true;
+    public boolean searchDesertTemples = false;
+    public boolean alwaysCookRawFood = false;
+    public int minFoodUnits = 4;
+
+    // Marvion
+    public double dragonHeadCloseEnoughClickBedRange = 5.3;
+    public boolean ironGearBeforeDiamondGear = true;
+    public boolean getShield = true;
 }

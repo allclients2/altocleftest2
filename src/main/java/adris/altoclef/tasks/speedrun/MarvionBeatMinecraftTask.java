@@ -123,12 +123,12 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         return true;
     };
-    private static BeatMinecraftConfig _config;
+    private static BeatMinecraftConfig config;
     private static GoToStrongholdPortalTask _locateStrongholdTask;
     private static boolean openingEndPortal = false;
 
     static {
-        ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> _config = newConfig);
+        ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> config = newConfig);
     }
 
     private final HashMap<Item, Integer> _cachedEndItemDrops = new HashMap<>();
@@ -156,8 +156,8 @@ public class MarvionBeatMinecraftTask extends Task {
     private int _cachedFilledPortalFrames = 0;
     // Controls whether we CAN walk on the end portal.
     private static boolean enteringEndPortal;
-    private Task _foodTask;
-    private Task _gearTask;
+    private Task foodTask;
+    private Task gearTask;
     private Task _lootTask;
     private boolean _collectingEyes;
     private boolean _escapingDragonsBreath = false;
@@ -167,16 +167,16 @@ public class MarvionBeatMinecraftTask extends Task {
     private Task _getPorkchopTask;
     private Task _stoneGearTask;
     private Task _logsTask;
-    private Task _starterGearTask;
-    private Task _ironGearTask;
+    private Task starterGearTask;
+    private Task ironGearTask;
     private Task _shieldTask;
     private Task _smeltTask;
     private Task getBedTask;
     private Task getTwistingVines;
 
     public MarvionBeatMinecraftTask() {
-        _locateStrongholdTask = new GoToStrongholdPortalTask(_config.targetEyes);
-        _buildMaterialsTask = new GetBuildingMaterialsTask(_config.buildMaterialCount);
+        _locateStrongholdTask = new GoToStrongholdPortalTask(config.targetEyes);
+        _buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
     }
 
     /**
@@ -184,10 +184,10 @@ public class MarvionBeatMinecraftTask extends Task {
      * @return the BeatMinecraftConfig instance
      */
     public static BeatMinecraftConfig getConfig() {
-        if (_config == null) {
-            _config = new BeatMinecraftConfig();
+        if (config == null) {
+            config = new BeatMinecraftConfig();
         }
-        return _config;
+        return config;
     }
 
     /**
@@ -351,7 +351,7 @@ public class MarvionBeatMinecraftTask extends Task {
         boolean shouldForce = shouldForce(mod, _buildMaterialsTask);
 
         // Return true if the material count is below the minimum required or if the bot should force building
-        return materialCount < _config.minBuildMaterialCount || shouldForce;
+        return materialCount < config.minBuildMaterialCount || shouldForce;
     }
 
     /**
@@ -463,7 +463,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
 
         // Add gold ingot if enough gold ingots are available or if barterPearlsInsteadOfEndermanHunt is true
-        if ((hasEnoughGoldIngots && !isGoldenHelmetEquipped && !hasGoldenHelmet) || _config.barterPearlsInsteadOfEndermanHunt) {
+        if ((hasEnoughGoldIngots && !isGoldenHelmetEquipped && !hasGoldenHelmet) || config.barterPearlsInsteadOfEndermanHunt) {
             lootable.add(Items.GOLD_INGOT);
         }
 
@@ -878,7 +878,7 @@ public class MarvionBeatMinecraftTask extends Task {
         List<BlockPos> smokers = mod.getBlockTracker().getKnownLocations(Blocks.SMOKER);
         if (!smokers.isEmpty()) {
             for (BlockPos smoker : smokers) {
-                if (mod.getItemStorage().hasItem(Items.SMOKER) && _smeltTask == null && _foodTask == null) {
+                if (mod.getItemStorage().hasItem(Items.SMOKER) && _smeltTask == null && foodTask == null) {
                     if (!mod.getBlockTracker().unreachable(smoker)) {
                         Debug.logMessage("Blacklisting extra smoker.");
                         mod.getBlockTracker().requestBlockUnreachable(smoker, 0);
@@ -890,7 +890,7 @@ public class MarvionBeatMinecraftTask extends Task {
         if (!furnaces.isEmpty()) {
             for (BlockPos furnace : furnaces) {
                 if ((mod.getItemStorage().hasItem(Items.FURNACE) || mod.getItemStorage().hasItem(Items.BLAST_FURNACE)) &&
-                        _starterGearTask == null && _shieldTask == null && _ironGearTask == null && _gearTask == null &&
+                        starterGearTask == null && _shieldTask == null && ironGearTask == null && gearTask == null &&
                         !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
                     if (!mod.getBlockTracker().unreachable(furnace)) {
                         Debug.logMessage("Blacklisting extra furnace.");
@@ -902,8 +902,8 @@ public class MarvionBeatMinecraftTask extends Task {
         List<BlockPos> blastFurnaces = mod.getBlockTracker().getKnownLocations(Blocks.BLAST_FURNACE);
         if (!blastFurnaces.isEmpty()) {
             for (BlockPos blastFurnace : blastFurnaces) {
-                if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && _starterGearTask == null && _shieldTask == null &&
-                        _ironGearTask == null && _gearTask == null && !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
+                if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && starterGearTask == null && _shieldTask == null &&
+                        ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
                     if (!mod.getBlockTracker().unreachable(blastFurnace)) {
                         Debug.logMessage("Blacklisting extra blast furnace.");
                         mod.getBlockTracker().requestBlockUnreachable(blastFurnace, 0);
@@ -1024,7 +1024,7 @@ public class MarvionBeatMinecraftTask extends Task {
             if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                     if (_timer1.elapsed()) {
-                        if (_config.renderDistanceManipulation) {
+                        if (config.renderDistanceManipulation) {
                             getInstance().options.getViewDistance().setValue(12);
                         }
                         _timer1.reset();
@@ -1032,18 +1032,18 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
             }
         }
-        if ((_logsTask != null || _foodTask != null || _getOneBedTask.isActive() || _stoneGearTask != null ||
+        if ((_logsTask != null || foodTask != null || _getOneBedTask.isActive() || _stoneGearTask != null ||
                 (_sleepThroughNightTask.isActive() && !mod.getItemStorage().hasItem(ItemHelper.BED))) &&
                 getBedTask == null) {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 if (_timer3.getDuration() >= 30) {
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         getInstance().options.getViewDistance().setValue(12);
                         getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
                 }
                 if (_timer3.elapsed()) {
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         getInstance().options.getViewDistance().setValue(32);
                         getInstance().options.getEntityDistanceScaling().setValue(5.0);
                     }
@@ -1051,13 +1051,13 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
             }
         }
-        if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && _foodTask == null && !_getOneBedTask.isActive()
+        if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && foodTask == null && !_getOneBedTask.isActive()
                 && !_locateStrongholdTask.isActive() && _logsTask == null && _stoneGearTask == null &&
-                _getPorkchopTask == null && searchBiomeTask == null && _config.renderDistanceManipulation &&
+                _getPorkchopTask == null && searchBiomeTask == null && config.renderDistanceManipulation &&
                 !_ranStrongholdLocator && getBedTask == null && !_sleepThroughNightTask.isActive()) {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 if (_timer1.elapsed()) {
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         getInstance().options.getViewDistance().setValue(2);
                         getInstance().options.getEntityDistanceScaling().setValue(0.5);
                     }
@@ -1067,9 +1067,9 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         if (WorldHelper.getCurrentDimension() == Dimension.NETHER) {
             if (!mod.getClientBaritone().getExploreProcess().isActive() && !_locateStrongholdTask.isActive() &&
-                    _config.renderDistanceManipulation) {
+                    config.renderDistanceManipulation) {
                 if (_timer1.elapsed()) {
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         getInstance().options.getViewDistance().setValue(12);
                         getInstance().options.getEntityDistanceScaling().setValue(1.0);
                     }
@@ -1241,7 +1241,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 setDebugState("Waiting for chunks to load");
                 return null;
             }
-            if (_config.renderDistanceManipulation) {
+            if (config.renderDistanceManipulation) {
                 getInstance().options.getViewDistance().setValue(12);
                 getInstance().options.getEntityDistanceScaling().setValue(1.0);
             }
@@ -1322,16 +1322,16 @@ public class MarvionBeatMinecraftTask extends Task {
         if (getBedTask != null) {
             // for smoker
             _smeltTask = null;
-            _foodTask = null;
+            foodTask = null;
             // for furnace
-            _starterGearTask = null;
+            starterGearTask = null;
             _shieldTask = null;
-            _ironGearTask = null;
-            _gearTask = null;
+            ironGearTask = null;
+            gearTask = null;
         }
         // Portable crafting table.
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
-        if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && _config.rePickupCraftingTable &&
+        if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && config.rePickupCraftingTable &&
                 !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
                 && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                 WorldHelper.canReach(mod, blockPos), Blocks.CRAFTING_TABLE) ||
@@ -1339,48 +1339,48 @@ public class MarvionBeatMinecraftTask extends Task {
             setDebugState("Picking up the crafting table while we are at it.");
             return new MineAndCollectTask(Items.CRAFTING_TABLE, 1, new Block[]{Blocks.CRAFTING_TABLE}, MiningRequirement.HAND);
         }
-        if (_config.rePickupSmoker && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
+        if (config.rePickupSmoker && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.SMOKER) &&
                 (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.SMOKER)
                         || mod.getEntityTracker().itemDropped(Items.SMOKER)) && _smeltTask == null &&
-                _foodTask == null) {
+                foodTask == null) {
             setDebugState("Picking up the smoker while we are at it.");
             return new MineAndCollectTask(Items.SMOKER, 1, new Block[]{Blocks.SMOKER}, MiningRequirement.WOOD);
         }
-        if (_config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
+        if (config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.FURNACE) &&
                 (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.FURNACE) ||
-                        mod.getEntityTracker().itemDropped(Items.FURNACE)) && _starterGearTask == null &&
-                _shieldTask == null && _ironGearTask == null && _gearTask == null && !_goToNetherTask.isActive() &&
+                        mod.getEntityTracker().itemDropped(Items.FURNACE)) && starterGearTask == null &&
+                _shieldTask == null && ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() &&
                 !_ranStrongholdLocator && !mod.getModSettings().shouldUseBlastFurnace()) {
             setDebugState("Picking up the furnace while we are at it.");
             return new MineAndCollectTask(Items.FURNACE, 1, new Block[]{Blocks.FURNACE}, MiningRequirement.WOOD);
         }
-        if (_config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
+        if (config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.BLAST_FURNACE) &&
                 (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.BLAST_FURNACE) ||
-                        mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) && _starterGearTask == null &&
-                _shieldTask == null && _ironGearTask == null && _gearTask == null && !_goToNetherTask.isActive() &&
+                        mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) && starterGearTask == null &&
+                _shieldTask == null && ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() &&
                 !_ranStrongholdLocator && mod.getModSettings().shouldUseBlastFurnace()) {
             setDebugState("Picking up the blast furnace while we are at it.");
             return new MineAndCollectTask(Items.BLAST_FURNACE, 1, new Block[]{Blocks.BLAST_FURNACE}, MiningRequirement.WOOD);
         }
 
         // Sleep through night.
-        if (_config.sleepThroughNight && !_endPortalOpened && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
+        if (config.sleepThroughNight && !_endPortalOpened && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             if (WorldHelper.canSleep()) {
                 // for smoker
                 _smeltTask = null;
-                _foodTask = null;
+                foodTask = null;
                 // for furnace
-                _starterGearTask = null;
+                starterGearTask = null;
                 _shieldTask = null;
-                _ironGearTask = null;
-                _gearTask = null;
-                if (_config.renderDistanceManipulation && mod.getItemStorage().hasItem(ItemHelper.BED)) {
+                ironGearTask = null;
+                gearTask = null;
+                if (config.renderDistanceManipulation && mod.getItemStorage().hasItem(ItemHelper.BED)) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
                             getInstance().options.getViewDistance().setValue(2);
@@ -1417,7 +1417,7 @@ public class MarvionBeatMinecraftTask extends Task {
         if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
             if (needsBeds(mod) && anyBedsFound(mod)) {
                 setDebugState("A bed was found, getting it.");
-                if (_config.renderDistanceManipulation) {
+                if (config.renderDistanceManipulation) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
                             getInstance().options.getViewDistance().setValue(2);
@@ -1436,8 +1436,8 @@ public class MarvionBeatMinecraftTask extends Task {
         // Do we need more eyes?
         boolean noEyesPlease = (endPortalOpened(mod, _endPortalCenterLocation) || WorldHelper.getCurrentDimension() == Dimension.END);
         int filledPortalFrames = getFilledPortalFrames(mod, _endPortalCenterLocation);
-        int eyesNeededMin = noEyesPlease ? 0 : _config.minimumEyes - filledPortalFrames;
-        int eyesNeeded = noEyesPlease ? 0 : _config.targetEyes - filledPortalFrames;
+        int eyesNeededMin = noEyesPlease ? 0 : config.minimumEyes - filledPortalFrames;
+        int eyesNeeded = noEyesPlease ? 0 : config.targetEyes - filledPortalFrames;
         int eyes = mod.getItemStorage().getItemCount(Items.ENDER_EYE);
         if (eyes < eyesNeededMin || (!_ranStrongholdLocator && _collectingEyes && eyes < eyesNeeded)) {
             _collectingEyes = true;
@@ -1505,7 +1505,7 @@ public class MarvionBeatMinecraftTask extends Task {
                             setDebugState("Collecting building materials.");
                             return _buildMaterialsTask;
                         }
-                        if (_config.placeSpawnNearEndPortal && mod.getItemStorage().hasItem(ItemHelper.BED)) {
+                        if (config.placeSpawnNearEndPortal && mod.getItemStorage().hasItem(ItemHelper.BED)) {
                             if (!spawnSetNearPortal(mod, _endPortalCenterLocation)) {
                                 setDebugState("Setting spawn near end portal");
                                 return setSpawnNearPortalTask(mod);
@@ -1538,7 +1538,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         setDebugState("Getting beds before stronghold search.");
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
-                                if (_config.renderDistanceManipulation) {
+                                if (config.renderDistanceManipulation) {
                                     getInstance().options.getViewDistance().setValue(32);
                                     getInstance().options.getEntityDistanceScaling().setValue(5.0);
                                 }
@@ -1681,7 +1681,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
 
         // Check if we should barter Pearls instead of hunting Endermen.
-        if (_config.barterPearlsInsteadOfEndermanHunt) {
+        if (config.barterPearlsInsteadOfEndermanHunt) {
             // Check if Golden Helmet is not equipped, and equip it.
             if (!StorageHelper.isArmorEquipped(mod, Items.GOLDEN_HELMET)) {
                 return new EquipArmorTask(Items.GOLDEN_HELMET);
@@ -1732,7 +1732,7 @@ public class MarvionBeatMinecraftTask extends Task {
      */
     private int getTargetBeds(AltoClef mod) {
         // Check if the spawn needs to be set near the end portal
-        boolean needsToSetSpawn = _config.placeSpawnNearEndPortal
+        boolean needsToSetSpawn = config.placeSpawnNearEndPortal
                 && (!spawnSetNearPortal(mod, _endPortalCenterLocation)
                 && !shouldForce(mod, _setBedSpawnTask));
 
@@ -1742,7 +1742,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 .sum();
 
         // Calculate the target number of beds
-        int targetBeds = _config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
+        int targetBeds = config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
 
         return targetBeds;
     }
@@ -1933,7 +1933,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 // If we happen to find beds...
                 if (needsBeds(mod) && anyBedsFound(mod)) {
                     setDebugState("A bed was found, getting it.");
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(2);
@@ -1961,7 +1961,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 }
                 if (shouldForce(mod, _getPorkchopTask)) {
                     setDebugState("Getting pork chop just for fun.");
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             MinecraftClient.getInstance().options.getViewDistance().setValue(32);
                             MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
@@ -1971,20 +1971,20 @@ public class MarvionBeatMinecraftTask extends Task {
                 } else {
                     _getPorkchopTask = null;
                 }
-                if (shouldForce(mod, _starterGearTask)) {
+                if (shouldForce(mod, starterGearTask)) {
                     setDebugState("Getting starter gear.");
-                    return _starterGearTask;
+                    return starterGearTask;
                 } else {
-                    _starterGearTask = null;
+                    starterGearTask = null;
                 }
-                if (shouldForce(mod, _foodTask)) {
+                if (shouldForce(mod, foodTask)) {
                     setDebugState("Getting food for ender eye journey.");
-                    return _foodTask;
+                    return foodTask;
                 } else {
-                    _foodTask = null;
+                    foodTask = null;
                 }
                 if (shouldForce(mod, _smeltTask)) {
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(2);
@@ -1998,7 +1998,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     _smeltTask = null;
                 }
                 // Smelt remaining raw food
-                if (_config.alwaysCookRawFood) {
+                if (config.alwaysCookRawFood) {
                     for (Item raw : ItemHelper.RAW_FOODS) {
                         if (mod.getItemStorage().hasItem(raw)) {
                             Optional<Item> cooked = ItemHelper.getCookedFood(raw);
@@ -2024,17 +2024,17 @@ public class MarvionBeatMinecraftTask extends Task {
                 } else {
                     _shieldTask = null;
                 }
-                if (shouldForce(mod, _ironGearTask) && !StorageHelper.isArmorEquipped(mod, COLLECT_IRON_ARMOR)) {
+                if (shouldForce(mod, ironGearTask) && !StorageHelper.isArmorEquipped(mod, COLLECT_IRON_ARMOR)) {
                     setDebugState("Getting iron gear before diamond gear for defense purposes only.");
-                    return _ironGearTask;
+                    return ironGearTask;
                 } else {
-                    _ironGearTask = null;
+                    ironGearTask = null;
                 }
-                if (shouldForce(mod, _gearTask) && !StorageHelper.isArmorEquipped(mod, COLLECT_EYE_ARMOR)) {
+                if (shouldForce(mod, gearTask) && !StorageHelper.isArmorEquipped(mod, COLLECT_EYE_ARMOR)) {
                     setDebugState("Getting diamond gear for ender eye journey.");
-                    return _gearTask;
+                    return gearTask;
                 } else {
-                    _gearTask = null;
+                    gearTask = null;
                 }
 
                 boolean eyeGearSatisfied = StorageHelper.itemTargetsMet(mod, COLLECT_EYE_GEAR_MIN) && StorageHelper.isArmorEquippedAll(mod, COLLECT_EYE_ARMOR);
@@ -2074,7 +2074,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         _getPorkchopTask = null;
                     }
                     setDebugState("Searching a better place to start with.");
-                    if (_config.renderDistanceManipulation) {
+                    if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
                                 MinecraftClient.getInstance().options.getViewDistance().setValue(32);
@@ -2089,26 +2089,26 @@ public class MarvionBeatMinecraftTask extends Task {
                     searchBiomeTask = null;
                 }
                 // Then get one bed
-                if (!mod.getItemStorage().hasItem(ItemHelper.BED) && _config.sleepThroughNight) {
+                if (!mod.getItemStorage().hasItem(ItemHelper.BED) && config.sleepThroughNight) {
                     return _getOneBedTask;
                 }
                 // Then starter gear
                 if (!StorageHelper.itemTargetsMet(mod, IRON_GEAR_MIN) && !eyeGearSatisfied &&
                         !ironGearSatisfied && !StorageHelper.isArmorEquipped(mod, Items.SHIELD)) {
-                    _starterGearTask = TaskCatalogue.getSquashedItemTask(IRON_GEAR);
-                    return _starterGearTask;
+                    starterGearTask = TaskCatalogue.getSquashedItemTask(IRON_GEAR);
+                    return starterGearTask;
                 } else {
-                    _starterGearTask = null;
+                    starterGearTask = null;
                 }
                 // Then get food
-                if (StorageHelper.calculateInventoryFoodScore(mod) < _config.minFoodUnits) {
-                    _foodTask = new CollectFoodTask(_config.foodUnits);
-                    return _foodTask;
+                if (StorageHelper.calculateInventoryFoodScore(mod) < config.minFoodUnits) {
+                    foodTask = new CollectFoodTask(config.foodUnits);
+                    return foodTask;
                 } else {
-                    _foodTask = null;
+                    foodTask = null;
                 }
                 // Then loot chest if there is any
-                if (_config.searchRuinedPortals) {
+                if (config.searchRuinedPortals) {
                     // Check for ruined portals
                     Optional<BlockPos> chest = locateClosestUnopenedRuinedPortalChest(mod);
                     if (chest.isPresent()) {
@@ -2116,7 +2116,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         return _lootTask;
                     }
                 }
-                if (_config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
+                if (config.searchDesertTemples && StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
                     // Check for desert temples
                     BlockPos temple = WorldHelper.getADesertTemple(mod);
                     if (temple != null) {
@@ -2125,7 +2125,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     }
                 }
                 // Then get shield
-                if (_config.getShield && !shieldSatisfied && !mod.getFoodChain().needsToEat()) {
+                if (config.getShield && !shieldSatisfied && !mod.getFoodChain().needsToEat()) {
                     ItemTarget shield = new ItemTarget(COLLECT_SHIELD);
                     if (mod.getItemStorage().hasItem(shield) && !StorageHelper.isArmorEquipped(mod, COLLECT_SHIELD)) {
                         setDebugState("Equipping shield.");
@@ -2137,7 +2137,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     _shieldTask = null;
                 }
                 // Then get iron
-                if (_config.ironGearBeforeDiamondGear && !ironGearSatisfied && !eyeGearSatisfied &&
+                if (config.ironGearBeforeDiamondGear && !ironGearSatisfied && !eyeGearSatisfied &&
                         !_isEquippingDiamondArmor) {
                     for (Item iron : COLLECT_IRON_ARMOR) {
                         if (mod.getItemStorage().hasItem(iron) && !StorageHelper.isArmorEquipped(mod, iron)) {
@@ -2145,10 +2145,10 @@ public class MarvionBeatMinecraftTask extends Task {
                             return new EquipArmorTask(COLLECT_IRON_ARMOR);
                         }
                     }
-                    _ironGearTask = TaskCatalogue.getSquashedItemTask(Stream.concat(Arrays.stream(COLLECT_IRON_ARMOR).filter(item -> !mod.getItemStorage().hasItem(item) && !StorageHelper.isArmorEquipped(mod, item)).map(item -> new ItemTarget(item, 1)), Arrays.stream(COLLECT_IRON_GEAR)).toArray(ItemTarget[]::new));
-                    return _ironGearTask;
+                    ironGearTask = TaskCatalogue.getSquashedItemTask(Stream.concat(Arrays.stream(COLLECT_IRON_ARMOR).filter(item -> !mod.getItemStorage().hasItem(item) && !StorageHelper.isArmorEquipped(mod, item)).map(item -> new ItemTarget(item, 1)), Arrays.stream(COLLECT_IRON_GEAR)).toArray(ItemTarget[]::new));
+                    return ironGearTask;
                 } else {
-                    _ironGearTask = null;
+                    ironGearTask = null;
                 }
                 // Then get diamond
                 if (!eyeGearSatisfied) {
@@ -2159,10 +2159,10 @@ public class MarvionBeatMinecraftTask extends Task {
                             return new EquipArmorTask(COLLECT_EYE_ARMOR);
                         }
                     }
-                    _gearTask = TaskCatalogue.getSquashedItemTask(Stream.concat(Arrays.stream(COLLECT_EYE_ARMOR).filter(item -> !mod.getItemStorage().hasItem(item) && !StorageHelper.isArmorEquipped(mod, item)).map(item -> new ItemTarget(item, 1)), Arrays.stream(COLLECT_EYE_GEAR)).toArray(ItemTarget[]::new));
-                    return _gearTask;
+                    gearTask = TaskCatalogue.getSquashedItemTask(Stream.concat(Arrays.stream(COLLECT_EYE_ARMOR).filter(item -> !mod.getItemStorage().hasItem(item) && !StorageHelper.isArmorEquipped(mod, item)).map(item -> new ItemTarget(item, 1)), Arrays.stream(COLLECT_EYE_GEAR)).toArray(ItemTarget[]::new));
+                    return gearTask;
                 } else {
-                    _gearTask = null;
+                    gearTask = null;
                     Item[] throwGearItems = {Items.STONE_SWORD, Items.STONE_PICKAXE, Items.IRON_SWORD, Items.IRON_PICKAXE};
                     List<Slot> ironArmors = mod.getItemStorage().getSlotsWithItemPlayerInventory(true,
                             COLLECT_IRON_ARMOR);
