@@ -2,6 +2,7 @@ package adris.altoclef.tasks.speedrun.beatgame;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectFoodTask;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
@@ -66,6 +67,23 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
 
     private double getDistance(AltoClef mod) {
         PlayerEntity player = mod.getPlayer();
+
+        // Pick up food items from ground
+        for (Item item : ITEMS_TO_PICK_UP) {
+            double dist  = this.pickupTaskOrNull(mod, item);
+            if (dist != Double.NEGATIVE_INFINITY) {
+                return dist;
+            }
+        }
+        // Pick up raw/cooked foods on ground
+        for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            double dist = this.pickupTaskOrNull(mod, cookable.getRaw(), 20);
+            if (dist == Double.NEGATIVE_INFINITY) dist = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
+
+            if (dist != Double.NEGATIVE_INFINITY) {
+                return dist;
+            }
+        }
 
         // Hay blocks
         double hayTaskBlock = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK, 300);
@@ -162,6 +180,9 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         return Double.NEGATIVE_INFINITY;
     }
 
+    private double pickupTaskOrNull(AltoClef mod, Item itemToGrab) {
+        return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
+    }
 
     private double pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {
         Optional<ItemEntity> nearestDrop = Optional.empty();

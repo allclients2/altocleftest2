@@ -553,12 +553,6 @@ public class BeatMinecraftTask extends Task {
         return (items, count, minCount, maxCount) -> {
             double closestDist = Integer.MAX_VALUE;
 
-            Optional<ItemEntity> optionalDroppedItem = mod.getEntityTracker().getClosestItemDrop(items);
-
-            if (optionalDroppedItem.isPresent()) {
-                closestDist = optionalDroppedItem.get().distanceTo(mod.getPlayer());
-            }
-
             for (Block block : blocks) {
                 Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(block);
                 if (pos.isPresent()) {
@@ -566,6 +560,12 @@ public class BeatMinecraftTask extends Task {
                     double distance = MathHelper.sqrt((float) bp.getSquaredDistance(mod.getPlayer().getPos()));
                     closestDist = Math.min(distance, closestDist);
                 }
+            }
+
+            Optional<ItemEntity> optionalDroppedItem = mod.getEntityTracker().getClosestItemDrop(items);
+
+            if (optionalDroppedItem.isPresent()) {
+                closestDist = optionalDroppedItem.get().distanceTo(mod.getPlayer());
             }
 
             // no block was found
