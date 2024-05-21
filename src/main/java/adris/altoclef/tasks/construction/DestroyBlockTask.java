@@ -14,6 +14,9 @@ import adris.altoclef.util.progresscheck.MovementProgressChecker;
 import adris.altoclef.util.slots.Slot;
 import baritone.api.pathing.goals.GoalBlock;
 import baritone.api.pathing.goals.GoalNear;
+import baritone.api.schematic.AbstractSchematic;
+import baritone.api.schematic.ISchematic;
+import baritone.api.utils.BlockOptionalMeta;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
 import net.minecraft.block.*;
@@ -23,6 +26,7 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -31,7 +35,7 @@ import java.util.Optional;
 public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
-    private final BlockPos _pos;
+    private final BlockPos targetPosition;
     Block[] annoyingBlocks = new Block[]{
             Blocks.VINE,
             Blocks.NETHER_SPROUTS,
@@ -52,7 +56,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private boolean isMining;
 
     public DestroyBlockTask(BlockPos pos) {
-        _pos = pos;
+        targetPosition = pos;
     }
 
     /**
@@ -247,15 +251,15 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected Task onTick(AltoClef mod) {
         // Check if there is white wool at the specified position
-        if (mod.getWorld().getBlockState(_pos).getBlock() == Blocks.WHITE_WOOL) {
+        if (mod.getWorld().getBlockState(targetPosition).getBlock() == Blocks.WHITE_WOOL) {
             // Iterate over all entities in the world
             Iterable<Entity> entities = mod.getWorld().getEntities();
             for (Entity entity : entities) {
                 // Check if the entity is a PillagerEntity and is within a distance of 144 blocks from the position
-                if (entity instanceof PillagerEntity && _pos.isWithinDistance(entity.getPos(), 144)) {
+                if (entity instanceof PillagerEntity && targetPosition.isWithinDistance(entity.getPos(), 144)) {
                     Debug.logMessage("Blacklisting pillager wool.");
                     // Request the block at the position to be marked as unreachable
-                    mod.getBlockScanner().requestBlockUnreachable(_pos, 0);
+                    mod.getBlockScanner().requestBlockUnreachable(targetPosition, 0);
                 }
             }
         }
@@ -308,58 +312,67 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         if (!_moveChecker.check(mod)) {
             _moveChecker.reset();
             // Request the block at the position to be marked as unreachable
-            mod.getBlockScanner().requestBlockUnreachable(_pos);
+            mod.getBlockScanner().requestBlockUnreachable(targetPosition);
         }
 
         // Check if the block above the position is not solid, the player is above the position,
         // and the player is within a distance of 0.89 blocks from the position
-        if (!WorldHelper.isSolidBlock(mod, _pos.up()) && mod.getPlayer().getPos().y > _pos.getY() && _pos.isWithinDistance(mod.getPlayer().isOnGround() ? mod.getPlayer().getPos() : mod.getPlayer().getPos().add(0, -1, 0), 0.89)) {
-            if (WorldHelper.dangerousToBreakIfRightAbove(mod, _pos)) {
+        if (!WorldHelper.isSolidBlock(mod, targetPosition.up()) && mod.getPlayer().getPos().y > targetPosition.getY() && targetPosition.isWithinDistance(mod.getPlayer().isOnGround() ? mod.getPlayer().getPos() : mod.getPlayer().getPos().add(0, -1, 0), 0.89)) {
+            if (WorldHelper.dangerousToBreakIfRightAbove(mod, targetPosition)) {
                 setDebugState("It's dangerous to break as we're right above it, moving away and trying again.");
-                return new RunAwayFromPositionTask(3, _pos.getY(), _pos);
+                return new RunAwayFromPositionTask(3, targetPosition.getY(), targetPosition);
             }
         }
 
-        Optional<Rotation> reach = LookHelper.getReach(_pos);
-        if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround()) && !mod.getFoodChain().needsToEat() && !WorldHelper.isInNetherPortal(mod) && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-            setDebugState("Block in range, mining...");
-            stuckCheck.reset();
-            isMining = true;
-            mod.getInputControls().release(Input.SNEAK);
-            mod.getInputControls().release(Input.MOVE_BACK);
-            mod.getInputControls().release(Input.MOVE_FORWARD);
-            mod.getClientBaritone().getCustomGoalProcess().onLostControl();
-            mod.getClientBaritone().getBuilderProcess().onLostControl();
-            if (!LookHelper.isLookingAt(mod, reach.get())) {
-                LookHelper.lookAt(mod, reach.get());
+        if (mod.getModSettings().shouldLetBaritoneBreakBlocks()) {
+            setDebugState("Letting baritone destroy a block.");
+            if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+                Debug.logInternal("Run Structure Destroy");
+                ISchematic schematic = new DestroyStructureSchematic();
+                mod.getClientBaritone().getBuilderProcess().build("structure", schematic, targetPosition);
             }
-            // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
-            mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
         } else {
-            setDebugState("Getting to block...");
-            if (isMining && mod.getPlayer().isTouchingWater()) {
-                setDebugState("We are in water... holding break button");
-                isMining = false;
-                mod.getBlockScanner().requestBlockUnreachable(_pos);
-                mod.getInputControls().hold(Input.CLICK_LEFT);
-            } else {
-                isMining = false;
-            }
-            boolean isCloseToMoveBack = _pos.isWithinDistance(mod.getPlayer().getPos(), 2);
-            if (isCloseToMoveBack) {
-                if (!mod.getClientBaritone().getPathingBehavior().isPathing() && !mod.getPlayer().isTouchingWater() &&
-                        !mod.getFoodChain().needsToEat()) {
-                    mod.getInputControls().hold(Input.MOVE_BACK);
-                    mod.getInputControls().hold(Input.SNEAK);
-                } else {
-                    mod.getInputControls().release(Input.MOVE_BACK);
-                    mod.getInputControls().release(Input.SNEAK);
-                }
-            }
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            Optional<Rotation> reach = LookHelper.getReach(targetPosition);
+            if (reach.isPresent() && (mod.getPlayer().isTouchingWater() || mod.getPlayer().isOnGround()) && !mod.getFoodChain().needsToEat() && !WorldHelper.isInNetherPortal(mod) && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                setDebugState("Block in range, mining...");
+                stuckCheck.reset();
+                isMining = true;
+                mod.getInputControls().release(Input.SNEAK);
+                mod.getInputControls().release(Input.MOVE_BACK);
+                mod.getInputControls().release(Input.MOVE_FORWARD);
+                mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(mod.getWorld().getBlockState(_pos.up()).getBlock() ==
-                        Blocks.SNOW ? new GoalBlock(_pos) : new GoalNear(_pos, 1));
+                if (!LookHelper.isLookingAt(mod, reach.get())) {
+                    LookHelper.lookAt(mod, reach.get());
+                }
+                // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
+                mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
+            } else {
+                setDebugState("Getting to block...");
+                if (isMining && mod.getPlayer().isTouchingWater()) {
+                    setDebugState("We are in water... holding break button");
+                    isMining = false;
+                    mod.getBlockScanner().requestBlockUnreachable(targetPosition);
+                    mod.getInputControls().hold(Input.CLICK_LEFT);
+                } else {
+                    isMining = false;
+                }
+                boolean isCloseToMoveBack = targetPosition.isWithinDistance(mod.getPlayer().getPos(), 2);
+                if (isCloseToMoveBack) {
+                    if (!mod.getClientBaritone().getPathingBehavior().isPathing() && !mod.getPlayer().isTouchingWater() &&
+                            !mod.getFoodChain().needsToEat()) {
+                        mod.getInputControls().hold(Input.MOVE_BACK);
+                        mod.getInputControls().hold(Input.SNEAK);
+                    } else {
+                        mod.getInputControls().release(Input.MOVE_BACK);
+                        mod.getInputControls().release(Input.SNEAK);
+                    }
+                }
+                if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+                    mod.getClientBaritone().getBuilderProcess().onLostControl();
+                    mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(mod.getWorld().getBlockState(targetPosition.up()).getBlock() ==
+                            Blocks.SNOW ? new GoalBlock(targetPosition) : new GoalNear(targetPosition, 1));
+                }
             }
         }
         return null;
@@ -400,6 +413,22 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         Debug.logInternal("Released move forward input control");
     }
 
+    private static class DestroyStructureSchematic extends AbstractSchematic {
+        public DestroyStructureSchematic() {
+            super(1, 1, 1);
+        }
+
+        @Override
+        public BlockState desiredState(int x, int y, int z, BlockState blockState, List<BlockState> available) {
+            if (x == 0 && y == 0 && z == 0) {
+                // Destroy!!
+                return new BlockOptionalMeta(Blocks.AIR).getAnyBlockState();
+            }
+            // Don't care.
+            return blockState;
+        }
+    }
+
     /**
      * Checks if the block at the given position is air.
      *
@@ -408,9 +437,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
      */
     @Override
     public boolean isFinished(AltoClef mod) {
-        BlockState blockState = mod.getWorld().getBlockState(_pos);
+        BlockState blockState = mod.getWorld().getBlockState(targetPosition);
         boolean isAir = blockState.isAir();
-        Debug.logInternal("Block at position " + _pos + " is air: " + isAir);
+        Debug.logInternal("Block at position " + targetPosition + " is air: " + isAir);
         return isAir;
     }
 
@@ -428,7 +457,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         if (other instanceof DestroyBlockTask destroyBlockTask) {
 
             // Check if the positions of the tasks are equal
-            if (destroyBlockTask._pos.equals(_pos)) {
+            if (destroyBlockTask.targetPosition.equals(targetPosition)) {
                 isSame = true;
             }
         }
@@ -444,6 +473,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
      */
     @Override
     protected String toDebugString() {
-        return "Destroy block at " + _pos.toShortString();
+        return "Destroy block at " + targetPosition.toShortString();
     }
 }

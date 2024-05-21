@@ -224,6 +224,12 @@ public class Settings implements IFailableConfigFile {
     private boolean killOrAvoidAnnoyingHostiles = true;
 
     /**
+     * If we should let baritone break blocks, and not just
+     * get close and break it manually.
+     */
+    private boolean letBaritoneBreakBlocks = true;
+
+    /**
      * If enabled, the bot will avoid going underwater if baritone
      * isn't giving the bot movement instructions.
      * <p>
@@ -578,6 +584,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldAutoMLGBucket() {
         return autoMLGBucket;
+    }
+
+    public boolean shouldLetBaritoneBreakBlocks() {
+        return letBaritoneBreakBlocks;
     }
 
     public boolean shouldCollectPickaxeFirst() {
