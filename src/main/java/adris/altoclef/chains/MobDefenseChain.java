@@ -416,8 +416,8 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 canDealWith -= (int) Math.floor(damage * 0.125);
 
-                System.out.println("candealwith: " + canDealWith);
-                System.out.println("entityscore: " + entityscore);
+                //System.out.println("candealwith: " + canDealWith);
+                //System.out.println("entityscore: " + entityscore);
 
                 // Decide if we can fight with them or just run.
                 if (

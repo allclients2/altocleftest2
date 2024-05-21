@@ -72,7 +72,7 @@ public class Settings implements IFailableConfigFile {
     /**
      * If true, will show a timer.
      */
-    private boolean showTimer = false;
+    private boolean showTimer = true;
 
 
     /**

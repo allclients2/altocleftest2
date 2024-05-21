@@ -451,7 +451,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        Debug.logInternal("Frame blocks: " + frameBlocks);
+        //Debug.logInternal("Frame blocks: " + frameBlocks);
 
         return frameBlocks;
     }
@@ -532,7 +532,7 @@ public class BeatMinecraftTask extends Task {
      */
     public static boolean isTaskRunning(AltoClef mod, Task task) {
         if (task == null) {
-            Debug.logInternal("Task is null");
+            //Debug.logInternal("Task is null");
             return false;
         }
 
@@ -1179,7 +1179,7 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalCenter == null) {
-            Debug.logInternal("End portal center is null");
+            //Debug.logInternal("End portal center is null");
             return false;
         }
         return true;
@@ -1217,12 +1217,12 @@ public class BeatMinecraftTask extends Task {
             if (blockTracker != null) {
                 boolean isValid = blockTracker.isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
 
-                Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
+                //Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
                 return isValid;
             }
         }
 
-        Debug.logInternal("End Portal is not opened yet");
+        //Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
@@ -1284,9 +1284,12 @@ public class BeatMinecraftTask extends Task {
                 return false;
             }
 
+            //Spam
+            /*
             Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
             Debug.logInternal("isWithinDistance: " + isWithinDistance);
             Debug.logInternal("isLootableChest: " + isLootableChest);
+             */
 
             return isUnopenedChest && isWithinDistance && isLootableChest;
         }, Blocks.CHEST);
@@ -2145,9 +2148,12 @@ public class BeatMinecraftTask extends Task {
         int targetBeds = config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
 
         // Output debug information
+        //Spam again
+        /*
         Debug.logInternal("needsToSetSpawn: " + needsToSetSpawn);
         Debug.logInternal("bedsInEnd: " + bedsInEnd);
         Debug.logInternal("targetBeds: " + targetBeds);
+         */
 
         return targetBeds;
     }
@@ -2254,7 +2260,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Log that there are not enough frames.
-        Debug.logInternal("Not enough frames");
+        //Debug.logInternal("Not enough frames");
 
         return null;
     }
