@@ -12,17 +12,10 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
-    flatDir {
-        dirs '../baritone/dist'
-    }
     mavenCentral()
     maven {
-        name = "GitHubPackages"
-        url = uri("https://maven.pkg.github.com/allclients2/altoclefprivate")
-        credentials {
-            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
-            password = project.findProperty("gpr.token") ?: System.getenv("BARITONE_GITHUB_TOKEN")
-        }
+        name = "allclients2-repo"
+        url = "https://allclients2.github.io/maven/"
     }
     maven {
         name = "MarvionKiritoRepo"
@@ -32,6 +25,12 @@ repositories {
         name = 'babbaj-repo'
         url = 'https://babbaj.github.io/maven/'
     }
+    /*
+    flatDir {
+        dirs '../baritone/dist'
+    }
+
+     */
 }
 
 dependencies {
@@ -69,8 +68,8 @@ dependencies {
     }
     */
     // I know nothing about gradle or what this means i just replaced mod name.
-    modImplementation "allclients2:baritone-unoptimized-fabric:1.20.4-alpha-0.1"
-    include "allclients2:baritone-unoptimized-fabric:1.20.4-alpha-0.1"
+    modImplementation "cabaletta:baritone-unoptimized-fabric:1.20.4-alpha-0.1"
+    include "cabaletta:baritone-unoptimized-fabric:1.20.4-alpha-0.1"
 
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
