@@ -405,6 +405,10 @@ public class MobDefenseChain extends SingleTaskChain {
         } else {
             runAwayTask = null;
         }
+
+        if (needsChangeOnAttack) {
+            return cachedLastPriority;
+        }
         return 0;
     }
 
