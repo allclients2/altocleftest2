@@ -17,6 +17,14 @@ repositories {
     }
     mavenCentral()
     maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/allclients2/altoclefprivate")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.token") ?: System.getenv("BARITONE_GITHUB_TOKEN")
+        }
+    }
+    maven {
         name = "MarvionKiritoRepo"
         url = "https://marvionkirito.github.io/maven/"
     }
