@@ -1,6 +1,10 @@
-package adris.altoclef.tasks.speedrun.beatgame;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.TaskCatalogue;
+import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks.PriorityTask;
+import adris.altoclef.tasksystem.Task;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
@@ -10,7 +14,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 
-public final class GatherResource {
+@Deprecated
+public final class GatherResourceTask extends PriorityTask {
     public final int minCount;
     public final int maxCount;
     public final Item[] toCollect;
@@ -27,13 +32,15 @@ public final class GatherResource {
     private Predicate<AltoClef> needsCraftingOnStart = ((mod) -> false);
     private String description;
 
-    public GatherResource(int minCount, int maxCount, PriorityCalculator priorityCalculator,
-                          Predicate<Item[]> canGather, Item... toCollect) {
+    public GatherResourceTask(int minCount, int maxCount, PriorityCalculator priorityCalculator,
+                              Predicate<Item[]> canGather, Item... toCollect) {
         this(minCount, maxCount, priorityCalculator, canGather, Optional.empty(), toCollect);
     }
 
-    public GatherResource(int minCount, int maxCount, PriorityCalculator priorityCalculator,
-                          Predicate<Item[]> canGather, Optional<Object> data, Item... toCollect) {
+    public GatherResourceTask(int minCount, int maxCount, PriorityCalculator priorityCalculator,
+                              Predicate<Item[]> canGather, Optional<Object> data, Item... toCollect) {
+        super(a -> true, false, false, false);
+
         this.minCount = minCount;
         this.maxCount = maxCount;
         this.priorityCalculator = priorityCalculator;
@@ -76,12 +83,12 @@ public final class GatherResource {
         return priorityCalculator.calculate(toCollect, count, minCount, maxCount);
     }
 
-    public GatherResource withPriorityCalculator(PriorityCalculator calculator) {
+    public GatherResourceTask withPriorityCalculator(PriorityCalculator calculator) {
         this.priorityCalculator = calculator;
         return this;
     }
 
-    public GatherResource withBypassForceCooldown(boolean value) {
+    public GatherResourceTask withBypassForceCooldown(boolean value) {
         this.bypassForceCooldown = value;
         return this;
     }
@@ -90,7 +97,7 @@ public final class GatherResource {
         return description;
     }
 
-    public GatherResource withDescription(String description) {
+    public GatherResourceTask withDescription(String description) {
         this.description = description;
         return this;
     }
@@ -99,7 +106,7 @@ public final class GatherResource {
         return bypassForceCooldown;
     }
 
-    public GatherResource withShouldForce(boolean value) {
+    public GatherResourceTask withShouldForce(boolean value) {
         this.shouldForce = value;
         return this;
     }
@@ -108,7 +115,7 @@ public final class GatherResource {
         return shouldForce;
     }
 
-    public GatherResource withCanCache(boolean value) {
+    public GatherResourceTask withCanCache(boolean value) {
         this.canCache = value;
         return this;
     }
@@ -117,7 +124,7 @@ public final class GatherResource {
         return canCache;
     }
 
-    public GatherResource withNeedsCraftingOnStart(Predicate<AltoClef> value) {
+    public GatherResourceTask withNeedsCraftingOnStart(Predicate<AltoClef> value) {
         this.needsCraftingOnStart = value;
         return this;
     }
@@ -130,7 +137,7 @@ public final class GatherResource {
     public boolean equals(Object obj) {
         if (obj == this) return true;
         if (obj == null || obj.getClass() != this.getClass()) return false;
-        var that = (GatherResource) obj;
+        var that = (GatherResourceTask) obj;
         return this.minCount == that.minCount &&
                 this.maxCount == that.maxCount &&
                 Objects.equals(this.priorityCalculator, that.priorityCalculator) &&
@@ -153,6 +160,42 @@ public final class GatherResource {
                 "canGather=" + canGather + ", " +
                 "data=" + data + ", " +
                 "toCollect=" + Arrays.toString(toCollect) + ']';
+    }
+
+    @Override
+    public Task getTask(AltoClef mod) {
+        Task task;
+
+        if (this.data.isPresent()) {
+            Object data = this.data.get();
+            if (data instanceof String codeName) {
+                task = TaskCatalogue.getItemTask(codeName, this.maxCount);
+            } else if (data instanceof Task buildInTask) {
+                task = buildInTask;
+            } else {
+                throw new IllegalStateException("Invalid gather resource data!");
+            }
+        } else {
+            // if code name isn't present toGather shouldn't have more params
+            task = TaskCatalogue.getItemTask(this.toCollect[0], this.maxCount);
+        }
+
+        return task;
+    }
+
+    @Override
+    public boolean shouldForce() {
+        return shouldForce;
+    }
+
+    @Override
+    public boolean canCache() {
+        return canCache;
+    }
+
+    @Override
+    public String getDebugString() {
+        return "[Deprecated-GatherResource] "+ description;
     }
 
     public interface PriorityCalculator {

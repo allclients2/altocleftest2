@@ -1,8 +1,7 @@
-package adris.altoclef.tasks.speedrun.beatgame;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectFoodTask;
-import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
@@ -26,18 +25,18 @@ import static adris.altoclef.tasks.resources.CollectFoodTask.*;
  * this class is needed because if we calculate the priority to something and then the tasks goes somewhere else it can cause it to get stuck
  */
 
-public class CollectFoodPriorityCalculator implements GatherResource.PriorityCalculator {
+public class CollectFoodPriorityCalculator extends ItemPriorityCalculator {
 
     private final AltoClef mod;
     private final double foodUnits;
 
-    public CollectFoodPriorityCalculator(AltoClef mod, double foodUnits) {
+    public CollectFoodPriorityCalculator(AltoClef mod ,double foodUnits) {
+        super(Integer.MAX_VALUE,Integer.MAX_VALUE);
         this.mod = mod;
         this.foodUnits = foodUnits;
     }
 
-    @Override
-    public double calculate(Item[] items, int count, int minCount, int maxCount) {
+    public double calculatePriority(int count) {
         double distance = getDistance(mod);
 
         double multiplier = 1;
@@ -91,7 +90,7 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
             return hayTaskBlock;
         }
         // Crops
-        for (CollectFoodTask.CropTarget target : CROPS) {
+        for (CropTarget target : CROPS) {
             // If crops are nearby. Do not replant cause we don't care.
             double t = pickupBlockTaskOrNull(mod, target.cropBlock, target.cropItem, (blockPos -> {
                 BlockState s = mod.getWorld().getBlockState(blockPos);
@@ -121,7 +120,7 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         Entity bestEntity = null;
         Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
 
-        for (CollectFoodTask.CookableFoodTarget cookable : COOKABLE_FOODS) {
+        for (CookableFoodTarget cookable : COOKABLE_FOODS) {
             if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
             Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), notBaby, cookable.mobToKill);
             if (nearest.isEmpty()) continue; // ?? This crashed once?
