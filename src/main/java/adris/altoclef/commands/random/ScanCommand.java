@@ -8,12 +8,8 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.World;
 
 import java.lang.reflect.Field;
-import java.util.HashSet;
 
 public class ScanCommand extends Command {
 

@@ -7,9 +7,11 @@ import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculato
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
+import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
+import net.minecraft.item.Items;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -62,6 +64,8 @@ public class MineBlockPriorityTask extends PriorityTask{
 
     @Override
     protected double getPriority(AltoClef mod) {
+        if (!StorageHelper.miningRequirementMet(mod, miningRequirement)) return Double.NEGATIVE_INFINITY;
+
         double closestDist = getClosestDist(mod);
         int itemCount = mod.getItemStorage().getItemCount(droppedItem);
 

@@ -39,7 +39,7 @@ public abstract class PriorityTask {
     // maybe pass distance as well?
     protected abstract double getPriority(AltoClef mod);
 
-    public boolean needCraftingOnStart() {
+    public boolean needCraftingOnStart(AltoClef mod) {
         return false;
     }
 

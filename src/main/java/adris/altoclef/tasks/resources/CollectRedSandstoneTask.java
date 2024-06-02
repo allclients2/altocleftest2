@@ -36,7 +36,7 @@ public class CollectRedSandstoneTask extends ResourceTask {
             ItemTarget s = new ItemTarget(Items.RED_SAND, 1);
             return new CraftInInventoryTask(new RecipeTarget(Items.RED_SANDSTONE, target, CraftingRecipe.newShapedRecipe("red_sandstone", new ItemTarget[]{s, s, s, s}, 1)));
         }
-        return new MineAndCollectTask(new ItemTarget(new Item[]{Items.RED_SANDSTONE, Items.RED_SAND}), new Block[]{Blocks.RED_SANDSTONE, Blocks.RED_SAND}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);
+        return new MineAndCollectTask(new ItemTarget(Items.RED_SANDSTONE, Items.RED_SAND), new Block[]{Blocks.RED_SANDSTONE, Blocks.RED_SAND}, MiningRequirement.WOOD).forceDimension(Dimension.OVERWORLD);
     }
 
     @Override

@@ -19,6 +19,13 @@ public class ResourcePriorityTask extends PriorityTask {
     private final ItemPriorityCalculator priorityCalculator;
     private final ItemTarget[] collect;
     private boolean collected = false;
+    private Task task = null;
+
+    public ResourcePriorityTask(ItemPriorityCalculator priorityCalculator, Function<AltoClef, Boolean> canCall,Task task, ItemTarget... collect) {
+        this(priorityCalculator, canCall, false, true, false, collect);
+        this.task = task;
+
+    }
 
     public ResourcePriorityTask(ItemPriorityCalculator priorityCalculator, Function<AltoClef, Boolean> canCall, ItemTarget... collect) {
         this(priorityCalculator, canCall, false, true, false, collect);
@@ -34,6 +41,8 @@ public class ResourcePriorityTask extends PriorityTask {
 
     @Override
     public Task getTask(AltoClef mod) {
+        if (this.task != null) return task;
+
         return TaskCatalogue.getSquashedItemTask(collect);
     }
 

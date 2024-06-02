@@ -3,15 +3,18 @@ package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
+import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
+import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.helpers.CraftingHelper;
 
 import java.util.function.Function;
 
 /**
- crafts an item with constant priority... Only runs when it has all the ingredients (NOT including the crafting table itself)
+ crafts an item with constant priority...
  */
 public class CraftItemPriorityTask extends PriorityTask{
 
@@ -25,7 +28,7 @@ public class CraftItemPriorityTask extends PriorityTask{
     }
 
     public CraftItemPriorityTask(double priority, RecipeTarget toCraft, Function<AltoClef, Boolean> canCall) {
-        this(priority, toCraft, mod -> true, false, true, true);
+        this(priority, toCraft, canCall, false, true, true);
     }
 
     public CraftItemPriorityTask(double priority, RecipeTarget toCraft, boolean shouldForce, boolean canCache, boolean bypassForceCooldown) {
@@ -54,28 +57,21 @@ public class CraftItemPriorityTask extends PriorityTask{
 
     @Override
     protected double getPriority(AltoClef mod) {
-        if (mod.getItemStorage().hasItem(recipeTarget.getOutputItem())) {
+        if (BeatMinecraftTask.hasItem(mod, recipeTarget.getOutputItem())) {
+            System.out.println("THIS IS SATISFIED "+recipeTarget.getOutputItem());
             satisfied = true;
         }
-        if (!hasAllItems(mod.getItemStorage())) return Double.NEGATIVE_INFINITY;
+        System.out.println("NOT SATISFIED");
+
         if (satisfied) return Double.NEGATIVE_INFINITY;
 
         return priority;
     }
 
-    private boolean hasAllItems(ItemStorageTracker itemStorage) {
-        for (ItemTarget target : recipeTarget.getRecipe().getSlots()) {
-            if (target == ItemTarget.EMPTY) continue;
-
-            if (!itemStorage.hasItem(target.getMatches())) return false;
-        }
-
-        return true;
-    }
 
     @Override
-    public boolean needCraftingOnStart() {
-        return true;
+    public boolean needCraftingOnStart(AltoClef mod) {
+        return CraftingHelper.canCraftItemNow(mod, recipeTarget.getOutputItem());
     }
 
     public boolean isSatisfied() {

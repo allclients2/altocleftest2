@@ -13,11 +13,11 @@ public abstract class DistancePriorityCalculator {
         this.maxCount = maxCount;
     }
 
-    public final void update(int count) {
-        if (count > minCount) {
+    public void update(int count) {
+        if (count >= minCount) {
             minCountSatisfied = true;
         }
-        if (count > maxCount) {
+        if (count >= maxCount) {
             maxCountSatisfied = true;
         }
     }

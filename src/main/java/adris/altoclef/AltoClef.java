@@ -66,6 +66,7 @@ public class AltoClef implements ModInitializer {
     private BlockScanner blockScanner;
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
+    private CraftingRecipeTracker craftingRecipeTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     // Settings
@@ -128,6 +129,7 @@ public class AltoClef implements ModInitializer {
         blockScanner = new BlockScanner(this);
         chunkTracker = new SimpleChunkTracker(this);
         miscBlockTracker = new MiscBlockTracker(this);
+        craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
 
         // Renderers
         commandStatusOverlay = new CommandStatusOverlay();
@@ -304,6 +306,13 @@ public class AltoClef implements ModInitializer {
      */
     public EntityTracker getEntityTracker() {
         return entityTracker;
+    }
+
+    /**
+     * Manages a list of all available recipes
+     */
+    public CraftingRecipeTracker getCraftingRecipeTracker() {
+        return craftingRecipeTracker;
     }
 
     /**
