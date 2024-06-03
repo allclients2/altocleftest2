@@ -17,6 +17,7 @@ import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.speedrun.*;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.DistanceItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.PriorityCalculator;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.StaticItemPriorityCalculator;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks.*;
 import adris.altoclef.tasksystem.Task;
@@ -32,6 +33,7 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.gui.screen.CreditsScreen;
+import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -53,6 +55,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static adris.altoclef.tasks.resources.CollectMeatTask.COOKABLE_FOODS;
@@ -620,32 +623,39 @@ public class BeatMinecraftTask extends Task {
 
     }
 
+
     private void addLootChestsTasks(AltoClef mod) {
         // TODO lower priority is player already has most of the items
-        gatherResources.add(new ActionPriorityTask(
-                a -> new LootContainerTask(locateClosestUnopenedChest(mod).get(), lootableItems(mod), noCurseOfBinding),
-                () -> {
-                    if (mod.getPlayer().currentScreenHandler instanceof GenericContainerScreenHandler && lastTask instanceof LootContainerTask && isTaskRunning(mod, lastTask)) {
-                        return Double.POSITIVE_INFINITY;
-                    }
-                    if (mod.getItemStorage().hasItemAll(Items.DIAMOND_PICKAXE, Items.DIAMOND_SWORD) && CollectFoodTask.calculateFoodPotential(mod) >= 20) {
-                        return Double.NEGATIVE_INFINITY;
-                    }
+        gatherResources.add(new ActionPriorityTask(a -> {
+            Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
 
-                    Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
-                    if (chest.isEmpty()) return Double.NEGATIVE_INFINITY;
+            Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
+            if (chest.isEmpty()) {
+                return pair;
+            }
 
-                    //just dont dig a lot of blocks for a chest
-                    if (Math.abs(chest.get().getY() - mod.getPlayer().getY()) > 30) {
-                        return Double.NEGATIVE_INFINITY;
-                    }
+            double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
+            pair.setRight(30d / dst * 175);
+            pair.setLeft(new GetToBlockTask(chest.get()));
 
-                    double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
-                    return 30 / dst * 175;
-                },
-                a -> locateClosestUnopenedChest(mod).isPresent(),
-                false, false, true
-        ));
+            return pair;
+        }, a -> true, false, false, true));
+
+
+        gatherResources.add(new ActionPriorityTask(m -> {
+            Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
+
+            Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
+            if (chest.isEmpty()) return pair;
+
+            if (LookHelper.cleanLineOfSight(mod.getPlayer(), chest.get(), 10) && chest.get().isWithinDistance(mod.getPlayer().getEyePos(), 5)) {
+                pair.setLeft(new LootContainerTask(chest.get(), lootableItems(mod), noCurseOfBinding));
+                pair.setRight(Double.POSITIVE_INFINITY);
+            }
+
+            return pair;
+        }, a->true, true, false, true));
+
     }
 
     private void addCollectFoodTask(AltoClef mod) {
