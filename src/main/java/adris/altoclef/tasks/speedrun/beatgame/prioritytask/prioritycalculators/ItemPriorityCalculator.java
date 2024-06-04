@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators;
 
 public abstract class ItemPriorityCalculator {
 

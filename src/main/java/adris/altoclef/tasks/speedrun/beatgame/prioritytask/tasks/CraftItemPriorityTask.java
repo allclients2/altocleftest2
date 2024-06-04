@@ -1,13 +1,10 @@
-package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.storage.ItemStorageTracker;
-import adris.altoclef.util.CraftingRecipe;
-import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.CraftingHelper;
 

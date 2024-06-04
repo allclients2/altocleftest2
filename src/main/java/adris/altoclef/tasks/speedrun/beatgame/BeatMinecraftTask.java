@@ -16,10 +16,10 @@ import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.speedrun.*;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.DistanceItemPriorityCalculator;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.PriorityCalculator;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.StaticItemPriorityCalculator;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks.*;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistanceItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.CollectFoodPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.StaticItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
@@ -33,7 +33,6 @@ import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.gui.screen.CreditsScreen;
-import net.minecraft.client.gui.screen.ingame.GenericContainerScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
@@ -42,7 +41,6 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -55,7 +53,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.*;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static adris.altoclef.tasks.resources.CollectMeatTask.COOKABLE_FOODS;
@@ -664,7 +661,7 @@ public class BeatMinecraftTask extends Task {
         food.addAll(List.of(Items.WHEAT, Items.BREAD));
 
         gatherResources.add(new ResourcePriorityTask(
-                new adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.CollectFoodPriorityCalculator(mod, config.foodUnits),
+                new CollectFoodPriorityCalculator(mod, config.foodUnits),
                 a -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE)
                         && mod.getItemStorage().hasItem(Items.STONE_SWORD, Items.IRON_SWORD, Items.DIAMOND_SWORD)
                         && CollectFoodTask.calculateFoodPotential(mod) < config.foodUnits,

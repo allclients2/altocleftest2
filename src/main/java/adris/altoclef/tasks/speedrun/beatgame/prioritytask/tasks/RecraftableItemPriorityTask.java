@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.util.RecipeTarget;

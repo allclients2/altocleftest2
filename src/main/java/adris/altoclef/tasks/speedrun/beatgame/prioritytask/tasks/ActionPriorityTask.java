@@ -1,12 +1,10 @@
-package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.PriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.PriorityCalculator;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.util.Pair;
-import org.lwjgl.openal.AL;
 
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**

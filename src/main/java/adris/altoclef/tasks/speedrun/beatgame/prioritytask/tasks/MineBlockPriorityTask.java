@@ -1,9 +1,9 @@
-package adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.tasks;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.imp.prioritycalculators.DistancePriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistancePriorityCalculator;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.MiningRequirement;
@@ -11,7 +11,6 @@ import adris.altoclef.util.helpers.StorageHelper;
 import net.minecraft.block.Block;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.item.Item;
-import net.minecraft.item.Items;
 import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
