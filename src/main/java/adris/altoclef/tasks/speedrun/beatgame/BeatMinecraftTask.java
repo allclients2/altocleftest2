@@ -2376,8 +2376,10 @@ public class BeatMinecraftTask extends Task {
                             if ((cachedFortressTask != null && !fortressTimer.elapsed() &&
                                 mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
                                 ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-                                mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
-                                return cachedFortressTask;
+                                if (cachedFortressTask != null) {
+                                    mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
+                                    return cachedFortressTask;
+                                }
                             }
 
                             // 'isEqual' is fucking me up here, so I have to reset the task
