@@ -14,6 +14,7 @@ public enum MiningRequirement implements Comparable<MiningRequirement> {
         _minPickaxe = minPickaxe;
     }
 
+    // FIXME this doesnt work for cobwebs because they are broken with shears...
     public static MiningRequirement getMinimumRequirementForBlock(Block block) {
         if (block.getDefaultState().isToolRequired()) {
             for (MiningRequirement req : MiningRequirement.values()) {

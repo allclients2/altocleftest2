@@ -139,6 +139,7 @@ public class StorageHelper {
         //      AVOID  (Don't use silk touch if we can)
         //  }
         Block block = state.getBlock();
+        if (block.getHardness() == 0) return Optional.ofNullable(PlayerSlot.getEquipSlot());
 
         Slot bestToolSlot = null;
         double highestSpeed = Double.NEGATIVE_INFINITY;

@@ -105,6 +105,10 @@ public class ItemStorageTracker extends Tracker {
         }) || inventory.hasItem(true, items);
     }
 
+    public boolean hasItem(boolean playerInventoryOnly, Item... items) {
+        return inventory.hasItem(playerInventoryOnly, items);
+    }
+
     public boolean hasItemInOffhand(Item item) {
         ItemStack offhand = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
         return offhand.getItem() == item;

@@ -23,6 +23,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.item.MiningToolItem;
+import net.minecraft.util.Pair;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
@@ -153,7 +154,7 @@ public class MineAndCollectTask extends ResourceTask {
         }
     }
 
-    private static class MineOrCollectTask extends AbstractDoToClosestObjectTask<Object> {
+    public static class MineOrCollectTask extends AbstractDoToClosestObjectTask<Object> {
 
         private final Block[] blocks;
         private final ItemTarget[] targets;
@@ -182,29 +183,48 @@ public class MineAndCollectTask extends ResourceTask {
 
         @Override
         protected Optional<Object> getClosestTo(AltoClef mod, Vec3d pos) {
-            Optional<BlockPos> closestBlock = mod.getBlockTracker().getNearestTracking(pos, check -> {
-                if (blacklist.contains(check)) return false;
-                return WorldHelper.canBreak(mod, check);
-            }, blocks);
+            Pair<Double, Optional<BlockPos>> closestBlock = getClosestBlock(mod,pos,  blocks);
+            Pair<Double, Optional<ItemEntity>> closestDrop = getClosestItemDrop(mod,pos,  targets);
 
-            Optional<ItemEntity> closestDrop = Optional.empty();
-            if (mod.getEntityTracker().itemDropped(targets)) {
-                closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, targets);
-            }
-
-            double blockSq = closestBlock.isEmpty() ? Double.POSITIVE_INFINITY : closestBlock.get().getSquaredDistance(pos);
-            double dropSq = closestDrop.isEmpty() ? Double.POSITIVE_INFINITY : closestDrop.get().squaredDistanceTo(pos) + 5; // + 5 to make the bot stop mining a bit less
+            double blockSq = closestBlock.getLeft();
+            double dropSq = closestDrop.getLeft();
 
             // We can't mine right now.
             if (mod.getExtraBaritoneSettings().isInteractionPaused()) {
-                return closestDrop.map(Object.class::cast);
+                return closestDrop.getRight().map(Object.class::cast);
             }
 
             if (dropSq <= blockSq) {
-                return closestDrop.map(Object.class::cast);
+                return closestDrop.getRight().map(Object.class::cast);
             } else {
-                return closestBlock.map(Object.class::cast);
+                return closestBlock.getRight().map(Object.class::cast);
             }
+        }
+
+        public static Pair<Double, Optional<ItemEntity>> getClosestItemDrop(AltoClef mod,Vec3d pos, ItemTarget... items) {
+            Optional<ItemEntity> closestDrop = Optional.empty();
+            if (mod.getEntityTracker().itemDropped(items)) {
+                closestDrop = mod.getEntityTracker().getClosestItemDrop(pos, items);
+            }
+
+            return new Pair<>(
+                    // + 5 to make the bot stop mining a bit less
+                    closestDrop.map(itemEntity -> itemEntity.squaredDistanceTo(pos) + 10).orElse(Double.POSITIVE_INFINITY),
+                    closestDrop
+            );
+        }
+
+        public static Pair<Double,Optional<BlockPos> > getClosestBlock(AltoClef mod,Vec3d pos ,Block... blocks) {
+            Optional<BlockPos> closestBlock = mod.getBlockScanner().getNearestBlock(pos, check -> {
+
+                if (mod.getBlockScanner().isUnreachable(check)) return false;
+                return WorldHelper.canBreak(mod, check);
+            }, blocks);
+
+            return new Pair<>(
+                    closestBlock.map(blockPos -> blockPos.getSquaredDistance(pos)).orElse(Double.POSITIVE_INFINITY),
+                    closestBlock
+            );
         }
 
         @Override

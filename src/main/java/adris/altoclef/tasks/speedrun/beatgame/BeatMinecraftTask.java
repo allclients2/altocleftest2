@@ -3,23 +3,23 @@ package adris.altoclef.tasks.speedrun.beatgame;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.GetRidOfExtraWaterBucketTask;
-import adris.altoclef.tasks.InteractWithBlockTask;
-import adris.altoclef.tasks.SafeNetherPortalTask;
+import adris.altoclef.commands.BlockScanner;
+import adris.altoclef.commands.SetGammaCommand;
+import adris.altoclef.tasks.*;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
-import adris.altoclef.tasks.container.DoStuffInContainerTask;
-import adris.altoclef.tasks.container.LootContainerTask;
-import adris.altoclef.tasks.container.SmeltInFurnaceTask;
-import adris.altoclef.tasks.container.SmeltInSmokerTask;
+import adris.altoclef.tasks.container.*;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.speedrun.*;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistanceItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.CollectFoodPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.StaticItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
@@ -41,10 +41,13 @@ import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtElement;
-import net.minecraft.screen.GenericContainerScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
+import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
-import net.minecraft.util.math.*;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.Box;
+import net.minecraft.util.math.Vec3d;
+import net.minecraft.util.math.Vec3i;
 import net.minecraft.world.Difficulty;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -99,9 +102,6 @@ public class BeatMinecraftTask extends Task {
         }
         return true;
     };
-
-    private final UselessItems uselessItems;
-
     private static BeatMinecraftConfig config;
     private static GoToStrongholdPortalTask locateStrongholdTask;
     private static boolean openingEndPortal = false;
@@ -110,6 +110,7 @@ public class BeatMinecraftTask extends Task {
         ConfigHelper.loadConfig("configs/beat_minecraft.json", BeatMinecraftConfig::new, BeatMinecraftConfig.class, newConfig -> config = newConfig);
     }
 
+    private final UselessItems uselessItems;
     private final HashMap<Item, Integer> cachedEndItemDrops = new HashMap<>();
     // For some reason, after death there's a frame where the game thinks there are NO items in the end.
     private final TimerGame cachedEndItemNothingWaitTime = new TimerGame(10);
@@ -123,14 +124,15 @@ public class BeatMinecraftTask extends Task {
     private final TimerGame timer1 = new TimerGame(5);
     private final TimerGame timer2 = new TimerGame(35);
     private final TimerGame timer3 = new TimerGame(60);
-    private final List<GatherResource> gatherResources = new LinkedList<>();
+    private final List<PriorityTask> gatherResources = new LinkedList<>();
     private final TimerGame changedTaskTimer = new TimerGame(3);
     private final TimerGame forcedTaskTimer = new TimerGame(10);
     private final List<BlockPos> blacklistedChests = new LinkedList<>();
     private final TimerGame searchBiomeTask = new TimerGame(20);
     private final TimerGame waterPlacedTimer = new TimerGame(1.5);
     private final TimerGame fortressTimer = new TimerGame(20);
-    private GatherResource lastGather = null;
+    private final AltoClef mod;
+    private PriorityTask lastGather = null;
     private Task lastTask = null;
     private boolean pickupFurnace = false;
     private boolean pickupSmoker = false;
@@ -161,18 +163,17 @@ public class BeatMinecraftTask extends Task {
     private boolean collectingEyes;
     private boolean escapingDragonsBreath = false;
     private Task getBedTask;
-
-    private record TaskChange(GatherResource original, GatherResource interrupt, BlockPos pos){
-    }
-
-    private final List<TaskChange> taskChanges = new ArrayList<>();
+    private List<TaskChange> taskChanges = new ArrayList<>();
+    private PriorityTask prevLastGather = null;
 
     public BeatMinecraftTask(AltoClef mod) {
+        this.mod = mod;
+
         locateStrongholdTask = new GoToStrongholdPortalTask(config.targetEyes);
         buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
         uselessItems = new UselessItems(config);
 
-        //SetGammaCommand.changeGamma(20d);
+        SetGammaCommand.changeGamma(20d);
 
         if (mod.getWorld().getDifficulty() != Difficulty.EASY) {
             mod.logWarning("Detected that the difficulty is other than easy!");
@@ -183,111 +184,77 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        gatherResources.add(new GatherResource(4, 10,
-                getBlockCalculator(mod, ItemHelper.itemsToBlocks(ItemHelper.LOG), 3)
-                , item -> mod.getItemStorage().hasItem(Items.STONE_AXE, Items.IRON_AXE, Items.GOLDEN_AXE, Items.DIAMOND_AXE) &&
-                mod.getItemStorage().getItemCount(ItemHelper.LOG) < 5, Optional.of("log"), ItemHelper.LOG));
 
-        addOreMiningTasks(mod);
+        gatherResources.add(new MineBlockPriorityTask(
+                ItemHelper.itemsToBlocks(ItemHelper.LOG), ItemHelper.LOG, MiningRequirement.STONE,
+                new DistanceItemPriorityCalculator(1050, 450, 5, 4, 10),
+
+                a -> mod.getItemStorage().hasItem(Items.STONE_AXE, Items.IRON_AXE, Items.GOLDEN_AXE, Items.DIAMOND_AXE)
+                        && mod.getItemStorage().getItemCount(ItemHelper.LOG) < 5
+        ));
+
+        addOreMiningTasks();
         addCollectFoodTask(mod);
 
         // gear
-        addStoneToolsTasks(mod);
+        addStoneToolsTasks();
         addPickaxeTasks(mod);
         addDiamondArmorTasks(mod);
         addLootChestsTasks(mod);
         addPickupImportantItemsTask(mod);
 
-        gatherResources.add(new GatherResource(0, 1,
-                getBlockCalculator(mod, new Block[]{Blocks.GRAVEL}, 50)
-                , item -> mod.getItemStorage().hasItem(Items.STONE_SHOVEL) && !mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL), Items.FLINT));
+        gatherResources.add(new MineBlockPriorityTask(new Block[]{Blocks.GRAVEL}, new Item[]{Items.FLINT}, MiningRequirement.STONE,
+                new DistanceItemPriorityCalculator(17500, 7500, 5, 1, 1),
+                a -> mod.getItemStorage().hasItem(Items.STONE_SHOVEL) && !mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)
+        ));
 
-        gatherResources.add(new GatherResource(getTargetBeds(mod), getTargetBeds(mod),
-                getBlockCalculator(mod, ItemHelper.itemsToBlocks(ItemHelper.BED), 45)
-                , item -> true, Optional.of("bed"), ItemHelper.BED));
+        gatherResources.add(new MineBlockPriorityTask(ItemHelper.itemsToBlocks(ItemHelper.BED), ItemHelper.BED, MiningRequirement.HAND,
+                new DistanceItemPriorityCalculator(25_000, 25_000, 5, getTargetBeds(mod), getTargetBeds(mod))
+        ));
 
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (hasItem(mod, Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD) || mod.getItemStorage().hasItem(Items.SHIELD))
-                return Double.NEGATIVE_INFINITY;
+        gatherResources.add(new CraftItemPriorityTask(200, getRecipeTarget(Items.SHIELD),
+                a -> mod.getItemStorage().hasItem(Items.IRON_INGOT)
+        ));
 
-            return 200;
-        }, item -> mod.getItemStorage().hasItem(Items.IRON_INGOT), Items.SHIELD).withBypassForceCooldown(true)
-                .withNeedsCraftingOnStart((m) -> mod.getItemStorage().getItemCount(ItemHelper.PLANKS) + mod.getItemStorage().getItemCount(ItemHelper.LOG) * 4 >= 6));
+        gatherResources.add(new CraftItemPriorityTask(300, mod.getCraftingRecipeTracker().getFirstRecipeTarget(Items.BUCKET, 2),
+                a -> mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 6)
+        );
 
+        gatherResources.add(new CraftItemPriorityTask(100, getRecipeTarget(Items.FLINT_AND_STEEL),
+                a -> mod.getItemStorage().hasItem(Items.IRON_INGOT) && mod.getItemStorage().hasItem(Items.FLINT)
+        ));
 
-        gatherResources.add(new GatherResource(2, 2, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().getItemCount(Items.BUCKET) >= 2)
-                return Double.NEGATIVE_INFINITY;
+        gatherResources.add(new CraftItemPriorityTask(330, getRecipeTarget(Items.DIAMOND_SWORD), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 2 && StorageHelper.miningRequirementMet(mod, MiningRequirement.DIAMOND)));
+        gatherResources.add(new CraftItemPriorityTask(400, getRecipeTarget(Items.GOLDEN_HELMET), a -> mod.getItemStorage().getItemCount(Items.GOLD_INGOT) >= 5));
 
-            return 300;
-        }, item -> mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 6, Items.BUCKET).withNeedsCraftingOnStart(m -> true));
+        gatherResources.add(new ActionPriorityTask(a -> new SleepThroughNightTask(),
+                () -> {
+                    Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
+                    if (pos.isPresent() && pos.get().isWithinDistance(mod.getPlayer().getPos(), 30)) return 1_000_000;
 
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL) || mod.getItemStorage().getItemCount(Items.FIRE_CHARGE) >= 2)
-                return Double.NEGATIVE_INFINITY;
+                    return Double.NEGATIVE_INFINITY;
+                }, a -> WorldHelper.canSleep()
+        ));
 
-            return 100;
-        }, item -> mod.getItemStorage().hasItem(Items.IRON_INGOT) && mod.getItemStorage().hasItem(Items.FLINT), Items.FLINT_AND_STEEL).withNeedsCraftingOnStart((m) -> true));
+        gatherResources.add(new ActionPriorityTask(a -> {
+            Pair<Task, Double> pair = new Pair<>(TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1), Double.NEGATIVE_INFINITY);
 
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.DIAMOND_SWORD) || !mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE))
-                return Double.NEGATIVE_INFINITY;
-
-            return 330;
-        }, item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 2, Items.DIAMOND_SWORD)
-                .withNeedsCraftingOnStart(m -> mod.getItemStorage().hasItem(Items.STICK) || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2));
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.GOLDEN_HELMET)) return Double.NEGATIVE_INFINITY;
-
-            return 400;
-        }, item -> mod.getItemStorage().getItemCount(Items.GOLD_INGOT) >= 5, Items.GOLDEN_HELMET).withNeedsCraftingOnStart((m) -> true));
-
-        gatherResources.add(new GatherResource(999, 999_999, (items, count, minCount, maxCount) -> {
-            Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
-            if (pos.isPresent() && pos.get().isWithinDistance(mod.getPlayer().getPos(), 30)) return 1_000_000;
-
-            return Double.NEGATIVE_INFINITY;
-        }, item -> WorldHelper.canSleep(), Optional.of(new SleepThroughNightTask()), Items.BEDROCK).withDescription("sleeping in nearby bed"));
-
-        GatherResource resource = new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
             if (mod.getItemStorage().hasItem(Items.WATER_BUCKET) || hasItem(mod, Items.WATER_BUCKET))
-                return Double.NEGATIVE_INFINITY;
+                return pair;
 
             Optional<BlockPos> optionalPos = mod.getBlockScanner().getNearestBlock(Blocks.WATER);
-            if (optionalPos.isEmpty()) return Double.NEGATIVE_INFINITY;
+            if (optionalPos.isEmpty()) return pair;
 
             double distance = Math.sqrt(optionalPos.get().getSquaredDistance(mod.getPlayer().getPos()));
-            if (distance > 55) return Double.NEGATIVE_INFINITY;
+            if (distance > 55) return pair;
 
-            return 10 / distance * 77.3;
-        }, item -> mod.getItemStorage().hasItem(Items.BUCKET), Items.WATER_BUCKET).withBypassForceCooldown(true);
-        gatherResources.add(resource);
+            pair.setRight(10 / distance * 77.3);
+
+            return pair;
+        }, a -> mod.getItemStorage().hasItem(Items.BUCKET), false, true, true));
 
         addSmeltTasks(mod);
         addCookFoodTasks(mod);
-    }
-
-    private void addPickupImportantItemsTask(AltoClef mod) {
-        List<Item> importantItems = List.of(Items.IRON_PICKAXE,Items.DIAMOND_PICKAXE,Items.GOLDEN_HELMET,Items.DIAMOND_SWORD,
-                Items.DIAMOND_CHESTPLATE,Items.DIAMOND_LEGGINGS,Items.DIAMOND_BOOTS, Items.FLINT_AND_STEEL);
-
-        GatherResource pickupImportantItems = new GatherResource(99,99,null,item->true,Items.BEDROCK)
-                .withDescription("Picking up important item...");
-
-        pickupImportantItems.withPriorityCalculator((items, count, minCount, maxCount) -> {
-            for (Item item : importantItems) {
-                if (item == Items.IRON_PICKAXE && mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) continue;
-
-                if (!mod.getItemStorage().hasItem(item) && mod.getEntityTracker().itemDropped(item)) {
-                    pickupImportantItems.data = Optional.of(new PickupDroppedItemTask(item,1));
-                    return 8_000;
-                }
-            }
-            return 0;
-        });
-
-        gatherResources.add(pickupImportantItems);
     }
 
     /**
@@ -336,7 +303,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        //Debug.logInternal("Frame blocks: " + frameBlocks);
+        Debug.logInternal("Frame blocks: " + frameBlocks);
 
         return frameBlocks;
     }
@@ -359,7 +326,6 @@ public class BeatMinecraftTask extends Task {
                 // Use the `toArray()` method to convert the stream of `ItemTarget` objects into an array
                 .toArray(ItemTarget[]::new);
     }
-
 
     /**
      * Combines multiple arrays of ItemTarget objects into a single array.
@@ -424,12 +390,9 @@ public class BeatMinecraftTask extends Task {
         boolean taskActive = task.isActive();
         boolean taskFinished = task.isFinished(mod);
 
-        //Spam
-        /*
         Debug.logInternal("Task is not null");
         Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
         Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
-         */
 
         return taskActive && !taskFinished;
     }
@@ -451,392 +414,7 @@ public class BeatMinecraftTask extends Task {
         }
     }
 
-    //TODO add some checks for how many food we already have, how hungry we are etc...
-    private void addCookFoodTasks(AltoClef mod) {
-        GatherResource cookFoodTask = new GatherResource(999, 999_999, null,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),
-                ItemHelper.COOKED_FOODS).withShouldForce(true).withCanCache(false);
-
-        cookFoodTask.withPriorityCalculator((items, c, minCount, maxCount) -> {
-            int rawFoodCount = mod.getItemStorage().getItemCount(ItemHelper.RAW_FOODS);
-            int readyFoodCount = mod.getItemStorage().getItemCount(ItemHelper.COOKED_FOODS) + mod.getItemStorage().getItemCount(Items.BREAD);
-
-            double priority = rawFoodCount >= 8 ? 450 : rawFoodCount * 25;
-
-            if (lastTask instanceof SmeltInSmokerTask) {
-                priority = Double.POSITIVE_INFINITY;
-            }
-
-            if (readyFoodCount > 5 && priority < Double.POSITIVE_INFINITY) {
-                // always smelt the food at some point
-                // smelt all at once to waste as little coal as possible
-                priority = 0.01;
-            }
-
-
-            for (CollectMeatTask.CookableFoodTarget cookable : COOKABLE_FOODS) {
-                int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
-                if (rawCount == 0) continue;
-
-                int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
-
-                SmeltTarget target = new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount));
-                cookFoodTask.data = Optional.of(new SmeltInSmokerTask(target));
-
-                return priority;
-            }
-
-            return Double.NEGATIVE_INFINITY;
-        });
-        gatherResources.add(cookFoodTask);
-    }
-
-    private void addSmeltTasks(AltoClef mod) {
-        GatherResource smeltIronTask = new GatherResource(999, 999_999, null,
-                item -> mod.getItemStorage().hasItem(Items.RAW_IRON), Items.IRON_INGOT).withShouldForce(true);
-
-        smeltIronTask.withPriorityCalculator((items, c, minCount, maxCount) -> {
-
-            int smeltedIronCount = getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON);
-            if (smeltedIronCount + mod.getItemStorage().getItemCount(Items.RAW_IRON) < 3)
-                return Double.NEGATIVE_INFINITY;
-
-            //FIXME hardcoded value (11) for iron count
-            if (getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON) >= 11) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            int count = mod.getItemStorage().getItemCount(Items.RAW_IRON);
-            int includedCount = count + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
-
-            //exactly for one coal
-            if (count >= 8) {
-                includedCount = 8 + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
-                smeltIronTask.data = Optional.of(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
-                return 450;
-            }
-
-            smeltIronTask.data = Optional.of(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
-
-            //for getting iron pickaxe
-            if (!mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE) && count >= 3) {
-                return 460;
-            }
-
-            // if we have pickaxe, shield and one bucket dont smelt until we have 4 iron (3 for bucket, 1 for flint and steel)
-            //FIXME hardcoded value (11; 4) + hardcoded items
-            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.BUCKET, Items.WATER_BUCKET) && count < 4)
-                return Double.NEGATIVE_INFINITY;
-
-            // if we have all the items we need, do not smelt any more iron
-            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)
-                    && mod.getItemStorage().getItemCount(Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET) >= 2 && mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL))
-                return Double.NEGATIVE_INFINITY;
-
-            return count * 25;
-        });
-        gatherResources.add(smeltIronTask);
-
-        //FIXME hardcoded number of gold ingots - 5
-        GatherResource smeltGoldTask = new GatherResource(5, 5, (items, count, minCount, maxCount) -> 140, item -> mod.getItemStorage().getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT) >= 5,
-                Optional.of(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, 5),
-                        new ItemTarget(Items.RAW_GOLD, 5)))),
-                Items.GOLD_INGOT).withShouldForce(true);
-
-        gatherResources.add(smeltGoldTask);
-
-    }
-
-    private GatherResource.PriorityCalculator getBlockCalculator(AltoClef mod, Block[] blocks, float multiplier) {
-        return (items, count, minCount, maxCount) -> {
-            double closestDist = Integer.MAX_VALUE;
-
-            Optional<ItemEntity> optionalDroppedItem = mod.getEntityTracker().getClosestItemDrop(items);
-
-            if (optionalDroppedItem.isPresent()) {
-                closestDist = optionalDroppedItem.get().distanceTo(mod.getPlayer());
-            }
-
-            for (Block block : blocks) {
-                Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(block);
-                if (pos.isPresent()) {
-                    BlockPos bp = pos.get();
-                    double distance = MathHelper.sqrt((float) bp.getSquaredDistance(mod.getPlayer().getPos()));
-                    closestDist = Math.min(distance, closestDist);
-                }
-            }
-
-            // no block was found
-            if (closestDist == Integer.MAX_VALUE) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            if (count >= minCount) {
-                if (closestDist < 5) {
-                    return 10 / closestDist * 15 * multiplier;
-                }
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            return 10 / closestDist * 35 * multiplier;
-        };
-    }
-
-    private void addLootChestsTasks(AltoClef mod) {
-        // TODO lower priority is player already has most of the items
-
-        GatherResource resource = new GatherResource(999, 999999, null, (item) -> true, Items.BEDROCK)
-                .withCanCache(false).withDescription("looting nearby chest").withBypassForceCooldown(true);
-
-        resource.withPriorityCalculator( (items, count, minCount, maxCount) -> {
-            //the chest is open and being looted
-            if (mod.getPlayer().currentScreenHandler instanceof GenericContainerScreenHandler && lastTask instanceof LootContainerTask && isTaskRunning(mod, lastTask)) {
-                return Double.POSITIVE_INFINITY;
-            }
-            if (mod.getItemStorage().hasItemAll(Items.DIAMOND_PICKAXE, Items.DIAMOND_SWORD) && CollectFoodTask.calculateFoodPotential(mod) >= 20) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
-            if (chest.isEmpty()) return Double.NEGATIVE_INFINITY;
-
-            //just dont dig a lot of blocks for a chest
-            if (Math.abs(chest.get().getY() - mod.getPlayer().getY()) > 30) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            lootTask = new LootContainerTask(chest.get(), lootableItems(mod), noCurseOfBinding);
-            resource.data = Optional.of(lootTask);
-
-            double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
-            return 30 / dst * 175;
-        });
-
-        gatherResources.add(resource);
-    }
-
-    private void addCollectFoodTask(AltoClef mod) {
-        List<Item> food = new LinkedList<>(ItemHelper.cookableFoodMap.values());
-        food.addAll(ItemHelper.cookableFoodMap.keySet());
-        food.addAll(List.of(Items.WHEAT, Items.BREAD));
-
-        gatherResources.add(new GatherResource(999, 999_999, new CollectFoodPriorityCalculator(mod, config.foodUnits),
-                item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE) && mod.getItemStorage().hasItem(Items.STONE_SWORD, Items.IRON_SWORD, Items.DIAMOND_SWORD),
-                Optional.of(new CollectFoodTask(9999)), food.toArray(new Item[0])));
-
-
-        //TODO do some more sophisticated calculation including food potential etc
-        //craft bread
-        GatherResource craftWheatTask = new GatherResource(999, 999_999, null,
-                item -> mod.getItemStorage().hasItem(Items.HAY_BLOCK), Items.BREAD);
-
-        craftWheatTask.withPriorityCalculator( (items, count, minCount, maxCount) -> {
-            craftWheatTask.data = Optional.ofNullable(TaskCatalogue.getItemTask(Items.WHEAT, mod.getItemStorage().getItemCount(Items.HAY_BLOCK) * 9 + mod.getItemStorage().getItemCount(Items.WHEAT)));
-
-            if (StorageHelper.calculateInventoryFoodScore(mod) < 5) return 270;
-            return 10;
-        });
-
-        gatherResources.add(craftWheatTask);
-
-        GatherResource craftBreadTask = new GatherResource(999, 999_999, null,
-                item -> mod.getItemStorage().getItemCount(Items.WHEAT) >= 3, Items.BREAD);
-        craftBreadTask.withPriorityCalculator( (items, count, minCount, maxCount) -> {
-            craftBreadTask.data = Optional.ofNullable(TaskCatalogue.getItemTask("bread", mod.getItemStorage().getItemCount(Items.WHEAT) / 3 + mod.getItemStorage().getItemCount(Items.BREAD)));
-
-            if (StorageHelper.calculateInventoryFoodScore(mod) < 5) return 250;
-            return 5;
-        });
-
-        gatherResources.add(craftBreadTask);
-    }
-
-    private void addOreMiningTasks(AltoClef mod) {
-        GatherResource.PriorityCalculator orePriorityCalculator = (items, count, minCount, maxCount) -> {
-            if (items.length != 1) {
-                throw new IllegalStateException("Ore calculator cannot have anything else than one item!");
-            }
-            Item item = items[0];
-            Block[] blocks = mapOreItemToBlocks(item);
-
-            double closestDist = Integer.MAX_VALUE;
-
-            Optional<ItemEntity> optionalDroppedItem = mod.getEntityTracker().getClosestItemDrop(item);
-            if (optionalDroppedItem.isPresent()) {
-                closestDist = optionalDroppedItem.get().distanceTo(mod.getPlayer());
-            }
-
-            for (Block block : blocks) {
-                Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(block);
-                if (pos.isPresent()) {
-                    BlockPos bp = pos.get();
-                    double distance = MathHelper.sqrt((float) bp.getSquaredDistance(mod.getPlayer().getPos()));
-                    closestDist = Math.min(distance, closestDist);
-                }
-            }
-
-            // no ore was found
-            if (closestDist == Integer.MAX_VALUE) {
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            if (count >= minCount) {
-                if (closestDist < 5) {
-                    return 10 / closestDist * 25;
-                }
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            return 30 / closestDist * 35;
-        };
-
-        //arbitrary amount, might change later
-        gatherResources.add(new GatherResource(4, 7, orePriorityCalculator,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE), Items.COAL));
-
-        //min: iron pickaxe, shield, two buckets, flint and steel
-        // max: -
-        gatherResources.add(new GatherResource(11, 11, orePriorityCalculator,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE), Items.RAW_IRON));
-
-
-        //min: golden helmet
-        //max: -
-        gatherResources.add(new GatherResource(5, 5, orePriorityCalculator,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.IRON), Items.RAW_GOLD));
-
-        //min: full dia (no helmet), 2*pickaxe, sword
-        //max: extra pickaxe
-        gatherResources.add(new GatherResource(27, 30, orePriorityCalculator,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.IRON), Items.DIAMOND));
-    }
-
-    /**
-     * Adds stone tools not including pickaxe
-     */
-    private void addStoneToolsTasks(AltoClef mod) {
-        // all at once
-        GatherResource gatherAllResource = new GatherResource(1, 9999,
-                null,
-                (item) -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),
-                Optional.of(TaskCatalogue.getSquashedItemTask(toItemTargets(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE))),
-                Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE).withShouldForce(true);
-
-        gatherAllResource.withPriorityCalculator( (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)) {
-                gatherAllResource.maxCountSatisfied = true;
-                gatherAllResource.minCountSatisfied = true;
-                return Double.NEGATIVE_INFINITY;
-            }
-
-            return 520;
-        });
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.DIAMOND_SWORD,Items.IRON_SWORD)) return Double.NEGATIVE_INFINITY;
-
-            return 300;
-        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),Items.STONE_SWORD));
-
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.DIAMOND_AXE,Items.IRON_AXE)) return Double.NEGATIVE_INFINITY;
-
-            return 300;
-        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),Items.STONE_AXE));
-
-        gatherResources.add(gatherAllResource);
-    }
-
-    /**
-     * adds tasks for CRAFTING diamond armor from already obtained diamonds.
-     * the helmet isnt crafted because we have a golden one
-     */
-
-    private void addDiamondArmorTasks(AltoClef mod) {
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (hasItem(mod, Items.DIAMOND_CHESTPLATE)) return Double.NEGATIVE_INFINITY;
-
-            return 350;
-        }, item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 8, Items.DIAMOND_CHESTPLATE)
-                .withBypassForceCooldown(true).withNeedsCraftingOnStart((a) -> true));
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (hasItem(mod, Items.DIAMOND_LEGGINGS)) return Double.NEGATIVE_INFINITY;
-
-            return 300;
-        }, item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 7, Items.DIAMOND_LEGGINGS)
-                .withBypassForceCooldown(true).withNeedsCraftingOnStart((a) -> true));
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (hasItem(mod, Items.DIAMOND_BOOTS)) return Double.NEGATIVE_INFINITY;
-
-            return 220;
-        }, item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 4, Items.DIAMOND_BOOTS)
-                .withBypassForceCooldown(true).withNeedsCraftingOnStart((a) -> true));
-    }
-
-    private void addPickaxeTasks(AltoClef mod) {
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE))
-                return Double.NEGATIVE_INFINITY;
-
-            return 400;
-        }, item -> true, Items.WOODEN_PICKAXE)
-                .withNeedsCraftingOnStart(m -> mod.getItemStorage().getItemCount(Items.STICK) >= 2 || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2));
-
-        GatherResource stonePickaxe =new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE))
-                return Double.NEGATIVE_INFINITY;
-
-            return 410;
-        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.WOOD), Items.STONE_PICKAXE)
-                .withNeedsCraftingOnStart(m -> mod.getItemStorage().getItemCount(Items.STICK) >= 2 || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2);
-        gatherResources.add(stonePickaxe);
-
-        gatherResources.add(new GatherResource(999, 999, (items, count, minCount, maxCount) -> {
-            List<Slot> list = mod.getItemStorage().getSlotsWithItemPlayerInventory(false, items);
-            boolean hasSafeIronPick = false;
-            for (Slot slot : list) {
-                if (slot.getInventorySlot() == -1) continue;
-                ItemStack stack = mod.getPlayer().getInventory().getStack(slot.getInventorySlot());
-                if (!StorageHelper.shouldSaveStack(mod, Blocks.STONE, stack) && stack.getItem().equals(Items.IRON_PICKAXE)) {
-                    hasSafeIronPick = true;
-                    break;
-                }
-            }
-
-            if (mod.getItemStorage().hasItem(Items.STONE_PICKAXE) || hasSafeIronPick || mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE))
-                return Double.NEGATIVE_INFINITY;
-
-            if (stonePickaxe.minCountSatisfied || stonePickaxe.maxCountSatisfied) return 10_000;
-
-            return 300;
-        }, item -> StorageHelper.miningRequirementMet(mod, MiningRequirement.WOOD),
-                Optional.ofNullable(TaskCatalogue.getItemTask(Items.STONE_PICKAXE, 1)), Items.STONE_PICKAXE));
-
-        gatherResources.add(new GatherResource(1, 1, (items, count, minCount, maxCount) -> {
-            if (mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE))
-                return Double.NEGATIVE_INFINITY;
-
-            return 420;
-        }, item -> mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 3, Items.IRON_PICKAXE).withBypassForceCooldown(true)
-                .withNeedsCraftingOnStart(m -> mod.getItemStorage().getItemCount(Items.STICK) >= 2 || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2));
-
-        GatherResource diamondPickResource = new GatherResource(1, 1, (a, b, c, d) -> 430,
-                item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 3, Items.DIAMOND_PICKAXE);
-        diamondPickResource.withBypassForceCooldown(true);
-        diamondPickResource.withNeedsCraftingOnStart(m -> mod.getItemStorage().getItemCount(Items.STICK) >= 2 || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2);
-
-        GatherResource secondDiamondPickResource = new GatherResource(1, 1, (a, b, c, d) -> 100,
-                item -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 3, Items.DIAMOND_PICKAXE).withBypassForceCooldown(true);
-        secondDiamondPickResource.withNeedsCraftingOnStart(m -> mod.getItemStorage().getItemCount(Items.STICK) >= 2 || mod.getItemStorage().hasItem(ItemHelper.LOG) || mod.getItemStorage().getItemCount(ItemHelper.PLANKS) >= 2);
-
-        gatherResources.add(diamondPickResource);
-        gatherResources.add(secondDiamondPickResource);
-    }
-
-    private static boolean hasItem(AltoClef mod, Item item) {
+    public static boolean hasItem(AltoClef mod, Item item) {
         ClientPlayerEntity player = mod.getPlayer();
         PlayerInventory inv = player.getInventory();
         List<DefaultedList<ItemStack>> combinedInventory = List.of(inv.main, inv.armor, inv.offHand);
@@ -850,7 +428,52 @@ public class BeatMinecraftTask extends Task {
         return false;
     }
 
-    private Block[] mapOreItemToBlocks(Item item) {
+    //TODO move to ItemHelper
+    public static int getCountWithCraftedFromOre(AltoClef mod, Item item) {
+        if (item == Items.COAL) {
+            return mod.getItemStorage().getItemCount(item);
+        } else if (item == Items.RAW_IRON) {
+            int count = mod.getItemStorage().getItemCount(Items.RAW_IRON, Items.IRON_INGOT);
+            count += mod.getItemStorage().getItemCount(Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.AXOLOTL_BUCKET, Items.POWDER_SNOW_BUCKET) * 3;
+            count += hasItem(mod, Items.SHIELD) ? 1 : 0;
+            count += hasItem(mod, Items.FLINT_AND_STEEL) ? 1 : 0;
+
+            count += hasItem(mod, Items.IRON_SWORD) ? 2 : 0;
+            count += hasItem(mod, Items.IRON_PICKAXE) ? 3 : 0;
+
+            count += hasItem(mod, Items.IRON_HELMET) ? 5 : 0;
+            count += hasItem(mod, Items.IRON_CHESTPLATE) ? 8 : 0;
+            count += hasItem(mod, Items.IRON_LEGGINGS) ? 7 : 0;
+            count += hasItem(mod, Items.IRON_BOOTS) ? 4 : 0;
+
+            return count;
+        } else if (item == Items.RAW_GOLD) {
+            int count = mod.getItemStorage().getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT);
+            count += hasItem(mod, Items.GOLDEN_PICKAXE) ? 3 : 0;
+
+            count += hasItem(mod, Items.GOLDEN_HELMET) ? 5 : 0;
+            count += hasItem(mod, Items.GOLDEN_CHESTPLATE) ? 8 : 0;
+            count += hasItem(mod, Items.GOLDEN_LEGGINGS) ? 7 : 0;
+            count += hasItem(mod, Items.GOLDEN_BOOTS) ? 4 : 0;
+
+            return count;
+        } else if (item == Items.DIAMOND) {
+            int count = mod.getItemStorage().getItemCount(Items.DIAMOND);
+            count += hasItem(mod, Items.DIAMOND_SWORD) ? 2 : 0;
+            count += hasItem(mod, Items.DIAMOND_PICKAXE) ? 3 : 0;
+
+            count += hasItem(mod, Items.DIAMOND_HELMET) ? 5 : 0;
+            count += hasItem(mod, Items.DIAMOND_CHESTPLATE) ? 8 : 0;
+            count += hasItem(mod, Items.DIAMOND_LEGGINGS) ? 7 : 0;
+            count += hasItem(mod, Items.DIAMOND_BOOTS) ? 4 : 0;
+
+            return count;
+        }
+
+        throw new IllegalStateException("Invalid ore item: " + item);
+    }
+
+    private static Block[] mapOreItemToBlocks(Item item) {
         if (item.equals(Items.RAW_IRON)) {
             return new Block[]{Blocks.DEEPSLATE_IRON_ORE, Blocks.IRON_ORE};
         } else if (item.equals(Items.RAW_GOLD)) {
@@ -862,6 +485,292 @@ public class BeatMinecraftTask extends Task {
         }
 
         throw new IllegalStateException("Invalid ore: " + item);
+    }
+
+    // FIXME again, this is stupid.. but without a rewrite I cant use CraftingRecipeTracker due to the fact some recipes arent catalogued :')
+    private RecipeTarget getRecipeTarget(Item item) {
+        ResourceTask task = TaskCatalogue.getItemTask(item, 1);
+        if (task instanceof CraftInTableTask craftInTableTask) {
+            return craftInTableTask.getRecipeTargets()[0];
+        } else if (task instanceof CraftInInventoryTask craftInInventoryTask) {
+            return craftInInventoryTask.getRecipeTarget();
+        }
+
+        throw new IllegalStateException("Item isn't cataloged");
+        //  return mod.getCraftingRecipeTracker().getFirstRecipeTarget(item, 1);
+    }
+
+    private void addPickupImportantItemsTask(AltoClef mod) {
+        List<Item> importantItems = List.of(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.GOLDEN_HELMET, Items.DIAMOND_SWORD,
+                Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS, Items.FLINT_AND_STEEL);
+
+        gatherResources.add(new ActionPriorityTask(mod1 -> {
+            Pair<Task, Double> pair = new Pair<>(null, 0d);
+
+            for (Item item : importantItems) {
+                if (item == Items.IRON_PICKAXE && mod1.getItemStorage().hasItem(Items.DIAMOND_PICKAXE)) continue;
+
+                if (!mod1.getItemStorage().hasItem(item) && mod1.getEntityTracker().itemDropped(item)) {
+                    pair.setLeft(new PickupDroppedItemTask(item, 1));
+                    pair.setRight(8000d);
+
+                    return pair;
+                }
+            }
+
+            return pair;
+        }));
+    }
+
+    //TODO add some checks for how many food we already have, how hungry we are etc...
+    private void addCookFoodTasks(AltoClef mod) {
+        gatherResources.add(new ActionPriorityTask(new ActionPriorityTask.TaskAndPriorityProvider() {
+            @Override
+            public Pair<Task, Double> getTaskAndPriority(AltoClef mod) {
+                Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
+
+                int rawFoodCount = mod.getItemStorage().getItemCount(ItemHelper.RAW_FOODS);
+                int readyFoodCount = mod.getItemStorage().getItemCount(ItemHelper.COOKED_FOODS) + mod.getItemStorage().getItemCount(Items.BREAD);
+
+                double priority = rawFoodCount >= 8 ? 450 : rawFoodCount * 25;
+
+                if (lastTask instanceof SmeltInSmokerTask) {
+                    priority = Double.POSITIVE_INFINITY;
+                }
+
+                if (readyFoodCount > 5 && priority < Double.POSITIVE_INFINITY) {
+                    // always smelt the food at some point
+                    // smelt all at once to waste as little coal as possible
+                    priority = 0.01;
+                }
+
+                for (CollectMeatTask.CookableFoodTarget cookable : COOKABLE_FOODS) {
+                    int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
+                    if (rawCount == 0) continue;
+
+                    int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
+
+                    SmeltTarget target = new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount));
+
+                    pair.setLeft(new SmeltInSmokerTask(target));
+                    pair.setRight(priority);
+
+                    return pair;
+                }
+
+                return pair;
+            }
+        }, a -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE), true, false, false));
+    }
+
+    private void addSmeltTasks(AltoClef mod) {
+        gatherResources.add(new ActionPriorityTask(a -> {
+            Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
+
+            int smeltedIronCount = getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON);
+            if (smeltedIronCount + mod.getItemStorage().getItemCount(Items.RAW_IRON) < 3)
+                return pair;
+
+            //FIXME hardcoded value (11) for iron count
+            if (getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON) >= 11) {
+                return pair;
+            }
+
+            int count = mod.getItemStorage().getItemCount(Items.RAW_IRON);
+            int includedCount = count + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
+
+            //exactly for one coal
+            if (count >= 8) {
+                includedCount = 8 + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
+
+                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
+                pair.setRight(450d);
+
+                return pair;
+            }
+
+            pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
+
+            //for getting iron pickaxe
+            if (!mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE) && count >= 3) {
+                pair.setRight(460d);
+                return pair;
+            }
+
+            // if we have pickaxe, shield and one bucket dont smelt until we have 4 iron (3 for bucket, 1 for flint and steel)
+            //FIXME hardcoded value (11; 4) + hardcoded items
+            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.BUCKET, Items.WATER_BUCKET) && count < 4)
+                return pair;
+
+            // if we have all the items we need, do not smelt any more iron
+            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)
+                    && mod.getItemStorage().getItemCount(Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET) >= 2 && mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL))
+                return pair;
+
+            pair.setRight(count * 25d);
+
+            return pair;
+        }, a -> mod.getItemStorage().hasItem(Items.RAW_IRON), true, false, false));
+
+        gatherResources.add(new ActionPriorityTask(
+                a -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, 5), new ItemTarget(Items.RAW_GOLD, 5))),
+                () -> 140, a -> mod.getItemStorage().getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT) >= 5,
+                true, true, false
+        ));
+
+    }
+
+
+    private void addLootChestsTasks(AltoClef mod) {
+        // TODO lower priority is player already has most of the items
+        gatherResources.add(new ActionPriorityTask(a -> {
+            Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
+
+            Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
+            if (chest.isEmpty()) {
+                return pair;
+            }
+
+            double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
+            pair.setRight(30d / dst * 175);
+            pair.setLeft(new GetToBlockTask(chest.get()));
+
+            return pair;
+        }, a -> true, false, false, true));
+
+
+        gatherResources.add(new ActionPriorityTask(m -> {
+            Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
+
+            Optional<BlockPos> chest = locateClosestUnopenedChest(mod);
+            if (chest.isEmpty()) return pair;
+
+            if (LookHelper.cleanLineOfSight(mod.getPlayer(), chest.get(), 10) && chest.get().isWithinDistance(mod.getPlayer().getEyePos(), 5)) {
+                pair.setLeft(new LootContainerTask(chest.get(), lootableItems(mod), noCurseOfBinding));
+                pair.setRight(Double.POSITIVE_INFINITY);
+            }
+
+            return pair;
+        }, a->true, true, false, true));
+
+    }
+
+    private void addCollectFoodTask(AltoClef mod) {
+        List<Item> food = new LinkedList<>(ItemHelper.cookableFoodMap.values());
+        food.addAll(ItemHelper.cookableFoodMap.keySet());
+        food.addAll(List.of(Items.WHEAT, Items.BREAD));
+
+        gatherResources.add(new ResourcePriorityTask(
+                new CollectFoodPriorityCalculator(mod, config.foodUnits),
+                a -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE)
+                        && mod.getItemStorage().hasItem(Items.STONE_SWORD, Items.IRON_SWORD, Items.DIAMOND_SWORD)
+                        && CollectFoodTask.calculateFoodPotential(mod) < config.foodUnits,
+
+                new CollectFoodTask(config.foodUnits), toItemTargets(food.toArray(new Item[]{}))
+        ));
+
+        gatherResources.add(new ActionPriorityTask(mod12 -> {
+            Pair<Task, Double> pair = new Pair<>(null, 0d);
+
+            pair.setLeft(TaskCatalogue.getItemTask(Items.WHEAT, mod12.getItemStorage().getItemCount(Items.HAY_BLOCK) * 9 + mod12.getItemStorage().getItemCount(Items.WHEAT)));
+
+            pair.setRight(10d);
+            if (StorageHelper.calculateInventoryFoodScore(mod12) < 5) {
+                pair.setRight(270d);
+            }
+
+            return pair;
+        }, a -> mod.getItemStorage().hasItem(Items.HAY_BLOCK)));
+
+        gatherResources.add(new ActionPriorityTask(mod1 -> {
+            Pair<Task, Double> pair = new Pair<>(null, 0d);
+
+            pair.setLeft(TaskCatalogue.getItemTask("bread", mod1.getItemStorage().getItemCount(Items.WHEAT) / 3 + mod1.getItemStorage().getItemCount(Items.BREAD)));
+
+            pair.setRight(5d);
+            if (StorageHelper.calculateInventoryFoodScore(mod1) < 5) {
+                pair.setRight(250d);
+            }
+
+            return pair;
+        }, a -> mod.getItemStorage().getItemCount(Items.WHEAT) >= 3));
+    }
+
+    private void addOreMiningTasks() {
+        gatherResources.add(getOrePriorityTask(Items.COAL,MiningRequirement.STONE ,1050, 250, 5, 4, 7));
+        gatherResources.add(getOrePriorityTask(Items.RAW_IRON,MiningRequirement.STONE, 1050, 250, 5, 11, 11));
+        gatherResources.add(getOrePriorityTask(Items.RAW_GOLD,MiningRequirement.IRON, 1050, 250, 5, 5, 5));
+        gatherResources.add(getOrePriorityTask(Items.DIAMOND,MiningRequirement.IRON, 1050, 250, 5, 27, 30));
+    }
+
+    private PriorityTask getOrePriorityTask(Item item,MiningRequirement requirement, int multiplier, int unneededMultiplier, int unneededThreshold, int minCount, int maxCount) {
+        Block[] blocks = mapOreItemToBlocks(item);
+
+        return new MineBlockPriorityTask(blocks, new Item[]{item}, requirement,
+                new DistanceOrePriorityCalculator(item, multiplier, unneededMultiplier, unneededThreshold, minCount, maxCount));
+    }
+
+    /**
+     * Adds stone tools not including pickaxe
+     */
+    private void addStoneToolsTasks() {
+        gatherResources.add(new ResourcePriorityTask(StaticItemPriorityCalculator.of(520),
+                altoClef -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),
+                true, true, false,
+                toItemTargets(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)
+        ));
+
+        gatherResources.add(new CraftItemPriorityTask(300, getRecipeTarget(Items.STONE_SWORD),
+                a -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE)
+                        && !mod.getItemStorage().hasItem(Items.DIAMOND_SWORD, Items.IRON_SWORD)
+        ));
+
+        gatherResources.add(new CraftItemPriorityTask(300, getRecipeTarget(Items.STONE_AXE),
+                a -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE)
+                        && !mod.getItemStorage().hasItem(Items.DIAMOND_AXE, Items.IRON_AXE)
+        ));
+    }
+
+    /**
+     * adds tasks for CRAFTING diamond armor from already obtained diamonds.
+     * the helmet isnt crafted because we have a golden one
+     */
+
+    private void addDiamondArmorTasks(AltoClef mod) {
+        gatherResources.add(new CraftItemPriorityTask(350, getRecipeTarget(Items.DIAMOND_CHESTPLATE), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 8));
+        gatherResources.add(new CraftItemPriorityTask(300, getRecipeTarget(Items.DIAMOND_LEGGINGS), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 7));
+        gatherResources.add(new CraftItemPriorityTask(220, getRecipeTarget(Items.DIAMOND_BOOTS), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 5));
+    }
+
+    private void addPickaxeTasks(AltoClef mod) {
+        gatherResources.add(new ResourcePriorityTask(StaticItemPriorityCalculator.of(400),
+                a -> !(mod.getItemStorage().hasItem(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)),
+                toItemTargets(Items.WOODEN_PICKAXE)));
+
+
+        System.out.println("RAAAH " + Arrays.toString(getRecipeTarget(Items.STONE_PICKAXE).getRecipe().getSlots()));
+
+        gatherResources.add(new RecraftableItemPriorityTask(410, 10_000, getRecipeTarget(Items.STONE_PICKAXE),
+                a -> {
+                    List<Slot> list = mod.getItemStorage().getSlotsWithItemPlayerInventory(false);
+                    boolean hasSafeIronPick = false;
+                    for (Slot slot : list) {
+                        if (slot.getInventorySlot() == -1) continue;
+                        ItemStack stack = mod.getPlayer().getInventory().getStack(slot.getInventorySlot());
+                        if (!StorageHelper.shouldSaveStack(mod, Blocks.STONE, stack) && stack.getItem().equals(Items.IRON_PICKAXE)) {
+                            hasSafeIronPick = true;
+                            break;
+                        }
+                    }
+
+                    return StorageHelper.miningRequirementMet(mod, MiningRequirement.WOOD) && !mod.getItemStorage().hasItem(Items.STONE_PICKAXE) && !hasSafeIronPick && !mod.getItemStorage().hasItem(Items.DIAMOND_PICKAXE);
+                }));
+
+        gatherResources.add(new CraftItemPriorityTask(420, getRecipeTarget(Items.IRON_PICKAXE),
+                a -> !mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE) && mod.getItemStorage().getItemCount(Items.IRON_INGOT) >= 3));
+
+
+        gatherResources.add(new CraftItemPriorityTask(430, getRecipeTarget(Items.DIAMOND_PICKAXE), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 3));
     }
 
     /**
@@ -1064,7 +973,7 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalCenter == null) {
-            //Debug.logInternal("End portal center is null");
+            Debug.logInternal("End portal center is null");
             return false;
         }
         return true;
@@ -1107,7 +1016,7 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        //Debug.logInternal("End Portal is not opened yet");
+        Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
@@ -1169,12 +1078,9 @@ public class BeatMinecraftTask extends Task {
                 return false;
             }
 
-            //Spam
-            /*
             Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
             Debug.logInternal("isWithinDistance: " + isWithinDistance);
             Debug.logInternal("isLootableChest: " + isLootableChest);
-             */
 
             return isUnopenedChest && isWithinDistance && isLootableChest;
         }, Blocks.CHEST);
@@ -1821,7 +1727,7 @@ public class BeatMinecraftTask extends Task {
                 return buildMaterialsTask;
             }
 
-            if (!endPortalFound(mod,endPortalCenterLocation)) {
+            if (!endPortalFound(mod, endPortalCenterLocation)) {
                 // Portal Location
                 setDebugState("Locating End Portal...");
                 return locateStrongholdTask;
@@ -2142,7 +2048,7 @@ public class BeatMinecraftTask extends Task {
         }
 
         // Log that there are not enough frames.
-        //Debug.logInternal("Not enough frames");
+        Debug.logInternal("Not enough frames");
 
         return null;
     }
@@ -2217,7 +2123,6 @@ public class BeatMinecraftTask extends Task {
 
         return false;*/
     }
-    private GatherResource prevLastGather = null;
 
     private Task getEyesOfEnderTask(AltoClef mod, int targetEyes) {
         if (mod.getEntityTracker().itemDropped(Items.ENDER_EYE)) {
@@ -2252,22 +2157,22 @@ public class BeatMinecraftTask extends Task {
         // Get blaze rods + pearls...
         switch (WorldHelper.getCurrentDimension()) {
             case OVERWORLD -> {
-                if (!forcedTaskTimer.elapsed() && isTaskRunning(mod,lastTask)) {
+                if (!forcedTaskTimer.elapsed() && isTaskRunning(mod, lastTask) && lastGather.calculatePriority(mod) > 0) {
                     return lastTask;
                 }
 
-                if (!changedTaskTimer.elapsed() && lastTask != null && !lastGather.bypassesForceCooldown() && isTaskRunning(mod,lastTask)) {
+                if (!changedTaskTimer.elapsed() && lastTask != null && !lastGather.bypassForceCooldown && isTaskRunning(mod, lastTask)) {
                     return lastTask;
                 }
-                if (isTaskRunning(mod, lastTask) && lastGather != null && lastGather.shouldForceTask()) {
+                if (isTaskRunning(mod, lastTask) && lastGather != null && lastGather.shouldForce()) {
                     return lastTask;
                 }
 
                 double maxPriority = 0;
-                GatherResource toGather = null;
+                PriorityTask toGather = null;
 
-                for (GatherResource gatherResource : gatherResources) {
-                    double priority = gatherResource.getPriority(mod);
+                for (PriorityTask gatherResource : gatherResources) {
+                    double priority = gatherResource.calculatePriority(mod);
 
                     if (priority > maxPriority) {
                         maxPriority = priority;
@@ -2278,21 +2183,21 @@ public class BeatMinecraftTask extends Task {
                 if (toGather != null) {
                     boolean sameTask = lastGather == toGather;
 
-                    setDebugState("Priority: " + String.format(Locale.US,"%.2f",maxPriority) + ", "+toGather.getDescription());
-                    if (!sameTask && prevLastGather == toGather && lastTask != null && lastGather.getPriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
+                    setDebugState("Priority: " + String.format(Locale.US, "%.2f", maxPriority) + ", " + toGather);
+                    if (!sameTask && prevLastGather == toGather && lastTask != null && lastGather.calculatePriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
                         mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
                         prevLastGather = null; //do not force infinitely, 3 sec should be enough I hope
-                        setDebugState("Priority: FORCED, "+lastGather.getDescription());
+                        setDebugState("Priority: FORCED, " + lastGather);
                         return lastTask;
                     }
 
 
-                    if (sameTask && toGather.canCacheTask()) {
+                    if (sameTask && toGather.canCache()) {
                         return lastTask;
                     }
                     if (!sameTask) {
-                        taskChanges.add(0,new TaskChange(lastGather,toGather,mod.getPlayer().getBlockPos()));
+                        taskChanges.add(0, new TaskChange(lastGather, toGather, mod.getPlayer().getBlockPos()));
                     }
 
                     if (taskChanges.size() >= 3 && !sameTask) {
@@ -2300,14 +2205,14 @@ public class BeatMinecraftTask extends Task {
                         TaskChange t2 = taskChanges.get(1);
                         TaskChange t3 = taskChanges.get(2);
 
-                        if (t1.original == t2.interrupt && t1.pos.isWithinDistance(t3.pos,5) && t3.original == t1.interrupt) {
+                        if (t1.original == t2.interrupt && t1.pos.isWithinDistance(t3.pos, 5) && t3.original == t1.interrupt) {
                             forcedTaskTimer.reset();
                             mod.logWarning("Probably stuck! Forcing timer...");
                             taskChanges.clear();
                             return lastTask;
                         }
                         if (taskChanges.size() > 3) {
-                            taskChanges.remove(taskChanges.size()-1);
+                            taskChanges.remove(taskChanges.size() - 1);
                         }
                     }
 
@@ -2315,21 +2220,7 @@ public class BeatMinecraftTask extends Task {
                     prevLastGather = lastGather;
                     lastGather = toGather;
 
-                    Task task;
-
-                    if (toGather.data.isPresent()) {
-                        Object data = toGather.data.get();
-                        if (data instanceof String codeName) {
-                            task = TaskCatalogue.getItemTask(codeName, toGather.maxCount);
-                        } else if (data instanceof Task buildInTask) {
-                            task = buildInTask;
-                        } else {
-                            throw new IllegalStateException("Invalid gather resource data!");
-                        }
-                    } else {
-                        // if code name isn't present toGather shouldn't have more params
-                        task = TaskCatalogue.getItemTask(toGather.toCollect[0], toGather.maxCount);
-                    }
+                    Task task = toGather.getTask(mod);
 
 
                     if (!sameTask) {
@@ -2345,7 +2236,8 @@ public class BeatMinecraftTask extends Task {
                             lastTask = null;
                             StorageHelper.closeScreen();
                             return null;
-                        } else if (lastTask != null && task != null && !toGather.needsCraftingOnStart(mod)) {
+                            // TODO implement crafting
+                        } else if (lastTask != null && task != null && !toGather.needCraftingOnStart(mod)) {
                             pickupCrafting = true;
                             lastGather = null;
                             lastTask = null;
@@ -2472,9 +2364,9 @@ public class BeatMinecraftTask extends Task {
 
                             setDebugState("Getting close to fortress");
 
-                            if (cachedFortressTask != null && !fortressTimer.elapsed() &&
-                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
-                                    || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                            if ((cachedFortressTask != null && !fortressTimer.elapsed() &&
+                                mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
+                                ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
                                 return cachedFortressTask;
                             }
@@ -2540,47 +2432,23 @@ public class BeatMinecraftTask extends Task {
         return null;
     }
 
-    //TODO move to ItemHelper
-    public static int getCountWithCraftedFromOre(AltoClef mod, Item item) {
-        if (item == Items.RAW_IRON) {
-            int count = mod.getItemStorage().getItemCount(Items.RAW_IRON, Items.IRON_INGOT);
-            count += mod.getItemStorage().getItemCount(Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET, Items.AXOLOTL_BUCKET, Items.POWDER_SNOW_BUCKET) * 3;
-            count += hasItem(mod, Items.SHIELD) ? 1 : 0;
-            count += hasItem(mod, Items.FLINT_AND_STEEL) ? 1 : 0;
+    private record TaskChange(PriorityTask original, PriorityTask interrupt, BlockPos pos) {
+    }
 
-            count += hasItem(mod, Items.IRON_SWORD) ? 2 : 0;
-            count += hasItem(mod, Items.IRON_PICKAXE) ? 3 : 0;
+    private class DistanceOrePriorityCalculator extends DistanceItemPriorityCalculator {
 
-            count += hasItem(mod, Items.IRON_HELMET) ? 5 : 0;
-            count += hasItem(mod, Items.IRON_CHESTPLATE) ? 8 : 0;
-            count += hasItem(mod, Items.IRON_LEGGINGS) ? 7 : 0;
-            count += hasItem(mod, Items.IRON_BOOTS) ? 4 : 0;
+        private final Item oreItem;
 
-            return count;
-        } else if (item == Items.RAW_GOLD) {
-            int count = mod.getItemStorage().getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT);
-            count += hasItem(mod, Items.GOLDEN_PICKAXE) ? 3 : 0;
-
-            count += hasItem(mod, Items.GOLDEN_HELMET) ? 5 : 0;
-            count += hasItem(mod, Items.GOLDEN_CHESTPLATE) ? 8 : 0;
-            count += hasItem(mod, Items.GOLDEN_LEGGINGS) ? 7 : 0;
-            count += hasItem(mod, Items.GOLDEN_BOOTS) ? 4 : 0;
-
-            return count;
-        } else if (item == Items.DIAMOND) {
-            int count = mod.getItemStorage().getItemCount(Items.DIAMOND);
-            count += hasItem(mod, Items.DIAMOND_SWORD) ? 2 : 0;
-            count += hasItem(mod, Items.DIAMOND_PICKAXE) ? 3 : 0;
-
-            count += hasItem(mod, Items.DIAMOND_HELMET) ? 5 : 0;
-            count += hasItem(mod, Items.DIAMOND_CHESTPLATE) ? 8 : 0;
-            count += hasItem(mod, Items.DIAMOND_LEGGINGS) ? 7 : 0;
-            count += hasItem(mod, Items.DIAMOND_BOOTS) ? 4 : 0;
-
-            return count;
+        public DistanceOrePriorityCalculator(Item oreItem, double multiplier, double unneededMultiplier, double unneededDistanceThreshold, int minCount, int maxCount) {
+            super(multiplier, unneededMultiplier, unneededDistanceThreshold, minCount, maxCount);
+            this.oreItem = oreItem;
         }
 
-        throw new IllegalStateException("Invalid ore item: " + item);
+        @Override
+        public void update(int count) {
+            super.update(getCountWithCraftedFromOre(mod, oreItem));
+        }
+
     }
 
 
