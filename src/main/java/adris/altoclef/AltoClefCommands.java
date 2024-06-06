@@ -23,6 +23,7 @@ public class AltoClefCommands {
                 new MarvionCommand(),
                 new DummyTaskCommand(),
                 new ReloadSettingsCommand(),
+                new GetCommand(),
                 //new CycleTestCommand(),
                 new ScanCommand()
         );
