@@ -191,7 +191,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
 
     public DoCraftInTableTask(RecipeTarget[] targets, boolean collect, boolean ignoreUncataloguedSlots) {
         super(Blocks.CRAFTING_TABLE, new ItemTarget("crafting_table"));
-        _collectTask = new CollectRecipeCataloguedResourcesTask(ignoreUncataloguedSlots, targets);
+        _collectTask = new CollectRecipeCataloguedResourcesTask(false, targets);
         _targets = targets;
         _collect = collect;
     }

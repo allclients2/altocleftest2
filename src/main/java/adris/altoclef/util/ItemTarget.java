@@ -43,7 +43,7 @@ public class ItemTarget {
         this(new Item[]{item}, targetCount);
     }
 
-    public ItemTarget(Item[] items) {
+    public ItemTarget(Item... items) {
         this(items, 1);
     }
 

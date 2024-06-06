@@ -7,11 +7,16 @@ import baritone.api.Settings;
 import baritone.utils.ToolSet;
 import com.llamalad7.mixinextras.sugar.Local;
 import net.minecraft.block.Block;
+import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.ItemStack;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -20,6 +25,7 @@ import java.lang.reflect.InvocationTargetException;
 public class ToolSetMixin {
 
 
+    @Shadow @Final private ClientPlayerEntity player;
     @Unique
     private static final Settings.Setting<Boolean> trueSetting;
 
@@ -37,6 +43,10 @@ public class ToolSetMixin {
         trueSetting =  instance;
     }
 
+    @Inject(method = "getBestSlot(Lnet/minecraft/block/Block;ZZ)I", at = @At("HEAD"), cancellable = true)
+    public void inject(Block b, boolean preferSilkTouch, boolean pathingCalculation, CallbackInfoReturnable<Integer> cir) {
+        if (b.getHardness() == 0) cir.setReturnValue(this.player.getInventory().selectedSlot);
+    }
 
 
     @Redirect(method = "getBestSlot(Lnet/minecraft/block/Block;ZZ)I",at = @At(value = "INVOKE", target = "Lnet/minecraft/item/ItemStack;getDamage()I"))

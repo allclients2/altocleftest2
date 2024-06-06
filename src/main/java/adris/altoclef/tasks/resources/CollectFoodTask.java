@@ -444,7 +444,7 @@ public class CollectFoodTask extends Task {
             return Objects.requireNonNull(TaskCatalogue.getItemMatches(rawFood))[0];
         }
 
-        private Item getCooked() {
+        public Item getCooked() {
             return Objects.requireNonNull(TaskCatalogue.getItemMatches(cookedFood))[0];
         }
 

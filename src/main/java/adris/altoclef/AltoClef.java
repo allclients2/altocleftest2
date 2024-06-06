@@ -69,6 +69,7 @@ public class AltoClef implements ModInitializer {
     private BlockScanner blockScanner;
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
+    private CraftingRecipeTracker craftingRecipeTracker;
     private BlockTracker blockTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
@@ -134,6 +135,7 @@ public class AltoClef implements ModInitializer {
         blockScanner = new BlockScanner(this);
         chunkTracker = new SimpleChunkTracker(this);
         miscBlockTracker = new MiscBlockTracker(this);
+        craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
         blockTracker = new BlockTracker(this, trackerManager);
 
         // Renderers
@@ -218,10 +220,6 @@ public class AltoClef implements ModInitializer {
 
         inputControls.onTickPost();
         butler.tick();
-        messageSender.tick();
-
-        inputControls.onTickPost();
-
     }
 
     /// GETTERS AND SETTERS
@@ -360,6 +358,13 @@ public class AltoClef implements ModInitializer {
     }
 
     /**
+     * Manages a list of all available recipes
+     */
+    public CraftingRecipeTracker getCraftingRecipeTracker() {
+        return craftingRecipeTracker;
+    }
+
+    /**
      * Tracks blocks and their positions - better version of BlockTracker
      */
     public BlockScanner getBlockScanner() {
@@ -440,7 +445,6 @@ public class AltoClef implements ModInitializer {
     public ClientPlayerEntity getPlayer() {
         return MinecraftClient.getInstance().player;
     }
-
 
     /**
      * Minecraft world access (could just be static honestly)

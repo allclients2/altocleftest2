@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.speedrun.beatgame;
+package adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectFoodTask;
@@ -25,18 +25,18 @@ import static adris.altoclef.tasks.resources.CollectFoodTask.*;
  * this class is needed because if we calculate the priority to something and then the tasks goes somewhere else it can cause it to get stuck
  */
 
-public class CollectFoodPriorityCalculator implements GatherResource.PriorityCalculator {
+public class CollectFoodPriorityCalculator extends ItemPriorityCalculator {
 
     private final AltoClef mod;
     private final double foodUnits;
 
-    public CollectFoodPriorityCalculator(AltoClef mod, double foodUnits) {
+    public CollectFoodPriorityCalculator(AltoClef mod ,double foodUnits) {
+        super(Integer.MAX_VALUE,Integer.MAX_VALUE);
         this.mod = mod;
         this.foodUnits = foodUnits;
     }
 
-    @Override
-    public double calculate(Item[] items, int count, int minCount, int maxCount) {
+    public double calculatePriority(int count) {
         double distance = getDistance(mod);
 
         double multiplier = 1;
@@ -67,13 +67,30 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
     private double getDistance(AltoClef mod) {
         PlayerEntity player = mod.getPlayer();
 
+        // Pick up food items from ground
+        for (Item item : ITEMS_TO_PICK_UP) {
+            double dist  = this.pickupTaskOrNull(mod, item);
+            if (dist != Double.NEGATIVE_INFINITY) {
+                return dist;
+            }
+        }
+        // Pick up raw/cooked foods on ground
+        for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            double dist = this.pickupTaskOrNull(mod, cookable.getRaw(), 20);
+            if (dist == Double.NEGATIVE_INFINITY) dist = this.pickupTaskOrNull(mod, cookable.getCooked(), 40);
+
+            if (dist != Double.NEGATIVE_INFINITY) {
+                return dist;
+            }
+        }
+
         // Hay blocks
         double hayTaskBlock = this.pickupBlockTaskOrNull(mod, Blocks.HAY_BLOCK, Items.HAY_BLOCK, 300);
         if (hayTaskBlock != Double.NEGATIVE_INFINITY) {
             return hayTaskBlock;
         }
         // Crops
-        for (CollectFoodTask.CropTarget target : CROPS) {
+        for (CropTarget target : CROPS) {
             // If crops are nearby. Do not replant cause we don't care.
             double t = pickupBlockTaskOrNull(mod, target.cropBlock, target.cropItem, (blockPos -> {
                 BlockState s = mod.getWorld().getBlockState(blockPos);
@@ -103,7 +120,7 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         Entity bestEntity = null;
         Predicate<Entity> notBaby = entity -> entity instanceof LivingEntity livingEntity && !livingEntity.isBaby();
 
-        for (CollectFoodTask.CookableFoodTarget cookable : COOKABLE_FOODS) {
+        for (CookableFoodTarget cookable : COOKABLE_FOODS) {
             if (!mod.getEntityTracker().entityFound(cookable.mobToKill)) continue;
             Optional<Entity> nearest = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(), notBaby, cookable.mobToKill);
             if (nearest.isEmpty()) continue; // ?? This crashed once?
@@ -162,6 +179,9 @@ public class CollectFoodPriorityCalculator implements GatherResource.PriorityCal
         return Double.NEGATIVE_INFINITY;
     }
 
+    private double pickupTaskOrNull(AltoClef mod, Item itemToGrab) {
+        return pickupTaskOrNull(mod, itemToGrab, Double.POSITIVE_INFINITY);
+    }
 
     private double pickupTaskOrNull(AltoClef mod, Item itemToGrab, double maxRange) {
         Optional<ItemEntity> nearestDrop = Optional.empty();
