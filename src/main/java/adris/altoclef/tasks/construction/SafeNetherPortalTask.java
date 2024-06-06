@@ -1,7 +1,6 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.time.TimerGame;

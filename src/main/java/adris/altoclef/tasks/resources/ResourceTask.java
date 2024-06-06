@@ -1,12 +1,11 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.container.PickupFromContainerTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
-import adris.altoclef.tasks.resources.MineAndCollectTask;
-import adris.altoclef.tasks.slot.EnsureFreePlayerCraftingGridTask;
-import adris.altoclef.tasks.slot.MoveInaccessibleItemToInventoryTask;
+import adris.altoclef.tasks.inventory.EnsureFreePlayerCraftingGridTask;
+import adris.altoclef.tasks.inventory.MoveInaccessibleItemToInventoryTask;
 import adris.altoclef.tasksystem.ITaskCanForce;
 import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;

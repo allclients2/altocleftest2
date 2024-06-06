@@ -1,7 +1,7 @@
 package adris.altoclef;
 
-import adris.altoclef.tasks.CraftInInventoryTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.inventory.CraftInInventoryTask;
+import adris.altoclef.tasks.resources.ResourceTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.UpgradeInSmithingTableTask;

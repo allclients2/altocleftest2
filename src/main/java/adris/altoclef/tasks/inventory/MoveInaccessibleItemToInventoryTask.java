@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.slot;
+package adris.altoclef.tasks.inventory;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasksystem.Task;

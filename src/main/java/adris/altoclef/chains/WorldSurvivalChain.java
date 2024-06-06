@@ -1,8 +1,8 @@
 package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.InteractWithBlockTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.PutOutFireTask;
 import adris.altoclef.tasks.movement.EnterNetherPortalTask;
 import adris.altoclef.tasks.movement.EscapeFromLavaTask;

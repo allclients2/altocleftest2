@@ -1,9 +1,7 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.inventory;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.slot.EnsureFreePlayerCraftingGridTask;
-import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
 import adris.altoclef.tasksystem.ITaskUsesCraftingGrid;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.JankCraftingRecipeMapping;

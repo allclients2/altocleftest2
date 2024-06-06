@@ -6,7 +6,7 @@ import adris.altoclef.TaskCatalogue;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.Subscription;
 import adris.altoclef.eventbus.events.BlockBrokenEvent;
-import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;

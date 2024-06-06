@@ -2,7 +2,6 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.construction.PutOutFireTask;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
@@ -23,7 +22,6 @@ import net.minecraft.world.RaycastContext;
 
 import java.util.Optional;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 public class CollectBlazeRodsTask extends ResourceTask {
 

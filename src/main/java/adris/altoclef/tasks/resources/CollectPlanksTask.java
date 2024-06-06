@@ -2,13 +2,11 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.CraftInInventoryTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.inventory.CraftInInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.util.*;
 import adris.altoclef.util.helpers.ItemHelper;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.item.Item;
 
 import java.util.ArrayList;

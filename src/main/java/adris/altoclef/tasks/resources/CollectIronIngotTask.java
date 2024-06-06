@@ -1,18 +1,11 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.container.SmeltInBlastFurnaceTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.SmeltTarget;
-import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
-
-import java.util.Optional;
 
 public class CollectIronIngotTask extends ResourceTask {
 

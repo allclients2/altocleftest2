@@ -1,9 +1,8 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.DoToClosestBlockTask;
-import adris.altoclef.tasks.InteractWithBlockTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasksystem.Task;

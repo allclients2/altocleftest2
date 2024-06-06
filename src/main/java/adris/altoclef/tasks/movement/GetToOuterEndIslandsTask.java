@@ -2,7 +2,7 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.InteractWithBlockTask;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.resources.GetBuildingMaterialsTask;
 import adris.altoclef.tasks.speedrun.BeatMinecraft2Task;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;

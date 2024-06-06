@@ -2,9 +2,9 @@ package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.ResourceTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
-import adris.altoclef.tasks.slot.MoveItemToSlotFromInventoryTask;
+import adris.altoclef.tasks.resources.ResourceTask;
+import adris.altoclef.tasks.inventory.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.inventory.MoveItemToSlotFromInventoryTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;

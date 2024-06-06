@@ -3,13 +3,11 @@ package adris.altoclef.tasks.speedrun.beatgame;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.commands.BlockScanner;
-import adris.altoclef.commands.SetGammaCommand;
-import adris.altoclef.tasks.*;
-import adris.altoclef.tasks.construction.DestroyBlockTask;
-import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
-import adris.altoclef.tasks.construction.PlaceObsidianBucketTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
+import adris.altoclef.tasks.construction.*;
 import adris.altoclef.tasks.container.*;
+import adris.altoclef.tasks.inventory.CraftInInventoryTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
@@ -173,7 +171,6 @@ public class BeatMinecraftTask extends Task {
         buildMaterialsTask = new GetBuildingMaterialsTask(config.buildMaterialCount);
         uselessItems = new UselessItems(config);
 
-        SetGammaCommand.changeGamma(20d);
 
         if (mod.getWorld().getDifficulty() != Difficulty.EASY) {
             mod.logWarning("Detected that the difficulty is other than easy!");

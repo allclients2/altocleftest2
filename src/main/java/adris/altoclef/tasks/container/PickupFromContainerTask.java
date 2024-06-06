@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.inventory.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;
 import adris.altoclef.util.ItemTarget;

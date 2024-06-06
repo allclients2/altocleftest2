@@ -33,6 +33,7 @@ public class AltoClefCommands {
                 new PunkCommand(),
                 new HeroCommand(),
                 new CoverWithBlocksCommand(),
+                new ScanCommand(),
                // new BuildCommand(),
                 new FlytoCommand(),
                 new BranchMineCommand(),
