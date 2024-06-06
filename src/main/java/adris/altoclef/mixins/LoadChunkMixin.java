@@ -49,7 +49,13 @@ public class LoadChunkMixin {
             method = "unload",
             at = @At("TAIL")
     )
+    //#if MC > 12001
     private void onChunkUnload(ChunkPos pos, CallbackInfo ci) {
         EventBus.publish(new ChunkUnloadEvent(pos));
     }
+    //#else
+    //$$ private void onChunkUnload(int x, int z, CallbackInfo ci) {
+    //$$     EventBus.publish(new ChunkUnloadEvent(new ChunkPos(x,z)));
+    //$$ }
+    //#endif
 }
