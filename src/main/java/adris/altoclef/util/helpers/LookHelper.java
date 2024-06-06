@@ -47,7 +47,7 @@ public interface LookHelper {
         // Check if the side is null
         if (side == null) {
             // Calculate the reachable rotation from the player's position to the target position
-            reachableRotation = RotationUtils.reachable(context, target, context.playerController().getBlockReachDistance());
+            reachableRotation = RotationUtils.reachable(context.player(), target, context.playerController().getBlockReachDistance());
         } else {
             // Calculate the center offset vector based on the side direction
             Vec3i sideVector = side.getVector();
@@ -58,7 +58,7 @@ public interface LookHelper {
             Vec3d sidePoint = centerOffset.add(target.getX(), target.getY(), target.getZ());
 
             // Calculate the reachable rotation from the player's position to the side point
-            reachableRotation = RotationUtils.reachableOffset(context, target, sidePoint,
+            reachableRotation = RotationUtils.reachableOffset(context.player(), target, sidePoint,
                     context.playerController().getBlockReachDistance(), false);
 
             // Check if the reachable rotation is present
@@ -242,7 +242,15 @@ public interface LookHelper {
         Objects.requireNonNull(rotation, "Rotation cannot be null");
 
         // calculate the look direction from the rotation
-        return RotationUtils.calcLookDirectionFromRotation(rotation);
+        return calcLookDirectionFromRotation(rotation);
+    }
+
+    static Vec3d calcLookDirectionFromRotation(Rotation rotation) {
+        float flatZ = MathHelper.cos(-rotation.getYaw() * 0.017453292F - 3.1415927F);
+        float flatX = MathHelper.sin(-rotation.getYaw() * 0.017453292F - 3.1415927F);
+        float pitchBase = -MathHelper.cos(-rotation.getPitch() * 0.017453292F);
+        float pitchHeight = MathHelper.sin(-rotation.getPitch() * 0.017453292F);
+        return new Vec3d(flatX * pitchBase, pitchHeight, flatZ * pitchBase);
     }
 
     /**
