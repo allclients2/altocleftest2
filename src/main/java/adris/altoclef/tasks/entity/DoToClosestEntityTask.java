@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.entity;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.AbstractDoToClosestObjectTask;
+import adris.altoclef.tasks.block.AbstractDoToClosestObjectTask;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.entity.Entity;
 import net.minecraft.util.math.Vec3d;

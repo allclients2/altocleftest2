@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.slot;
+package adris.altoclef.tasks.inventory;
 
 import java.util.Arrays;
 import java.util.List;

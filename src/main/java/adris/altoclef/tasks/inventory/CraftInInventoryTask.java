@@ -1,8 +1,8 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.inventory;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.CollectRecipeCataloguedResourcesTask;
-import adris.altoclef.tasks.slot.ReceiveCraftingOutputSlotTask;
+import adris.altoclef.tasks.resources.ResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;

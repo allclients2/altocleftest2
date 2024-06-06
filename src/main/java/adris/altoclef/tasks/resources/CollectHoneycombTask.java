@@ -1,8 +1,7 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.InteractWithBlockTask;
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockTask;
 import adris.altoclef.tasks.movement.GetCloseToBlockTask;
 import adris.altoclef.tasks.movement.SearchChunkForBlockTask;

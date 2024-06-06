@@ -15,7 +15,7 @@ import java.util.Set;
  */
 public class ItemTarget {
 
-    private static final int BASICALLY_INFINITY = 99999999;
+    private static final int BASICALLY_INFINITY = 2147483647;
 
     public static ItemTarget EMPTY = new ItemTarget(new Item[0], 0);
     private Item[] itemMatches;

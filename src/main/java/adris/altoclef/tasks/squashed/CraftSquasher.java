@@ -1,6 +1,6 @@
 package adris.altoclef.tasks.squashed;
 
-import adris.altoclef.tasks.ResourceTask;
+import adris.altoclef.tasks.resources.ResourceTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.util.RecipeTarget;
 

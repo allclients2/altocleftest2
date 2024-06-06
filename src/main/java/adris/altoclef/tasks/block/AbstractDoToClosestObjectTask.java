@@ -1,4 +1,4 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.block;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;

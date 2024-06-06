@@ -1,11 +1,12 @@
-package adris.altoclef.commands.random;
+package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.commands.BlockScanner;
+
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.util.BlockScanner;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 
@@ -37,12 +38,12 @@ public class ScanCommand extends Command {
         }
 
         if (block == null) {
-            mod.logWarning("Block named: " + blockStr + " not found :(");
+            mod.logWarning("Block named: " + blockStr + " not found :((");
             return;
         }
 
         BlockScanner blockScanner = mod.getBlockScanner();
-        mod.log(blockScanner.getNearestBlock(block,mod.getPlayer().getPos())+"");
+        mod.log(blockScanner.getNearestBlock(block,mod.getPlayer().getPos()) + "");
     }
 
 }

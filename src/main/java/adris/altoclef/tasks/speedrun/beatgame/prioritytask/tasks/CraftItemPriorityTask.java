@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.CraftInInventoryTask;
+import adris.altoclef.tasks.inventory.CraftInInventoryTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
 import adris.altoclef.tasks.speedrun.beatgame.BeatMinecraftTask;
 import adris.altoclef.tasksystem.Task;

@@ -1,6 +1,7 @@
-package adris.altoclef.tasks;
+package adris.altoclef.tasks.construction;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.resources.CollectBucketLiquidTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;

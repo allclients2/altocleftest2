@@ -1,7 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalBucketTask;
 import adris.altoclef.tasks.construction.compound.ConstructNetherPortalObsidianTask;
 import adris.altoclef.tasksystem.Task;

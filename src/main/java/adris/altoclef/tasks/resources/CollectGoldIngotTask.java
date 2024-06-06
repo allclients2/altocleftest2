@@ -1,10 +1,7 @@
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.ResourceTask;
 import adris.altoclef.tasks.container.CraftInTableTask;
-import adris.altoclef.tasks.container.SmeltInBlastFurnaceTask;
 import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasksystem.Task;
@@ -13,9 +10,6 @@ import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.item.Items;
-import net.minecraft.util.math.BlockPos;
-
-import java.util.Optional;
 
 public class CollectGoldIngotTask extends ResourceTask {
 

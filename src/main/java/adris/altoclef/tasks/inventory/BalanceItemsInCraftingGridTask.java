@@ -1,16 +1,12 @@
-package adris.altoclef.tasks.slot;
+package adris.altoclef.tasks.inventory;
 
 import java.util.Optional;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
-import adris.altoclef.util.RecipeTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
-import adris.altoclef.util.slots.CraftingTableSlot;
-import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;

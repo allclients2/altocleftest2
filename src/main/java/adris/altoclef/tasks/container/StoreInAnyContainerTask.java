@@ -3,7 +3,7 @@ package adris.altoclef.tasks.container;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.tasks.DoToClosestBlockTask;
+import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.trackers.storage.ContainerCache;

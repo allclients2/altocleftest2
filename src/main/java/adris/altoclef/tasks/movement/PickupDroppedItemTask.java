@@ -2,9 +2,9 @@ package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
-import adris.altoclef.tasks.AbstractDoToClosestObjectTask;
+import adris.altoclef.tasks.block.AbstractDoToClosestObjectTask;
 import adris.altoclef.tasks.resources.SatisfyMiningRequirementTask;
-import adris.altoclef.tasks.slot.EnsureFreeInventorySlotTask;
+import adris.altoclef.tasks.inventory.EnsureFreeInventorySlotTask;
 import adris.altoclef.tasksystem.ITaskRequiresGrounded;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
