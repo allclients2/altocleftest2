@@ -5,6 +5,7 @@
 - Allow any bed color when crafting beds from wool.
 - Add cherry blossom wood as a valid wood type or something? It doesn't seem to work properly atm.
 - Maybe add some sort of system that finds and uses seed of the current world?
+- Implement build command (finish branch)
 
 ### Common death causes
 - Improve escaping from lava.
@@ -15,3 +16,10 @@
 
 ### Getting stuck
 - If you are in a 1x1 hole that's more than a block deep, with an entity inside with bot it can fail to place a block to escape hole.
+
+### Chores
+- Remove Log Spam from miran
+
+
+## Images:
+![img.png](.github/MDFiles/img.png)
