@@ -10,10 +10,12 @@ public class TaskRunner {
     private final ArrayList<TaskChain> chains = new ArrayList<>();
     private final AltoClef mod;
     private boolean active;
-
     private TaskChain cachedCurrentTaskChain = null;
 
-    public String statusReport = " (no chain running) ";
+    private static final boolean shouldSpecifyNoChainRunning = false;
+    private static final String noChainRunning = shouldSpecifyNoChainRunning ? " (no chain running) " : "";
+
+    public String statusReport = noChainRunning;
 
     public TaskRunner(AltoClef mod) {
         this.mod = mod;
@@ -22,7 +24,7 @@ public class TaskRunner {
 
     public void tick() {
         if (!active || !AltoClef.inGame()) {
-            statusReport = " (no chain running) ";
+            statusReport = shouldSpecifyNoChainRunning ? " (no chain running) " : "";
             return;
         }
 
@@ -44,8 +46,10 @@ public class TaskRunner {
         if (maxChain != null) {
             statusReport = "Chain: " + maxChain.getName() + ", priority: " + maxPriority;
             maxChain.tick(mod);
+        } else if (shouldSpecifyNoChainRunning) {
+            statusReport = noChainRunning;
         } else {
-            statusReport = " (no chain running) ";
+            statusReport = "";
         }
     }
 
