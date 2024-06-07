@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import adris.altoclef.control.LookAtPos;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import net.minecraft.item.*;
@@ -443,8 +442,6 @@ public class MobDefenseChain extends SingleTaskChain {
                 } else {
                     // We can't deal with it; Flight.
                     evadingHostilesLastTick = true;
-                    LookAtPos.lookAtPos(mod, closestOpponent.getEyePos()); // Look at them
-                    LookAtPos.updatePosLook(mod);
                     doForceField(mod); // To protect ourselves as we escape.
                     runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.15), true);
                     setTask(runAwayTask);
