@@ -43,6 +43,18 @@ def baritoneVersions = [
         12004: "1.20.4-beta1",
 ]
 
+def baritoneApiPaths = [
+        12001: "baritone-unoptimized",
+        12002: "baritone-unoptimized-fabric",
+        12004: "baritone-unoptimized-fabric",
+]
+
+def baritonePaths = [
+        12001: "baritone-unoptimized",
+        12002: "baritone-unoptimized",
+        12004: "baritone-unoptimized-fabric",
+]
+
 repositories {
     mavenCentral()
     maven {
@@ -86,21 +98,11 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        if (mcVersion > 12001) {
-            modImplementation "baritone-api-fabric:baritone-unoptimized-fabric-${baritoneVersions[mcVersion]}"
-            include "baritone-api-fabric:baritone-unoptimized-fabric-${baritoneVersions[mcVersion]}"
-        } else {
-            modImplementation "baritone-api-fabric:baritone-unoptimized-${baritoneVersions[mcVersion]}"
-            include "baritone-api-fabric:baritone-unoptimized-${baritoneVersions[mcVersion]}"
-        }
+        modImplementation "baritone-api-fabric:${baritoneApiPaths[mcVersion]}-${baritoneVersions[mcVersion]}"
+        include "baritone-api-fabric:${baritoneApiPaths[mcVersion]}-${baritoneVersions[mcVersion]}"
     } else {
-        if (mcVersion == 12004) {
-            modImplementation "cabaletta:baritone-unoptimized-fabric:${baritoneVersions[mcVersion]}"
-            include "cabaletta:baritone-unoptimized-fabric:${baritoneVersions[mcVersion]}"
-        } else {
-            modImplementation "cabaletta:baritone-unoptimized:${baritoneVersions[mcVersion]}"
-            include "cabaletta:baritone-unoptimized:${baritoneVersions[mcVersion]}"
-        }
+        modImplementation "cabaletta:${baritonePaths[mcVersion]}:${baritoneVersions[mcVersion]}"
+        include "cabaletta:${baritonePaths[mcVersion]}:${baritoneVersions[mcVersion]}"
     }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
