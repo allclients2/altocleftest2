@@ -313,13 +313,10 @@ public class BeatMinecraftTask extends Task {
      */
     public static ItemTarget[] toItemTargets(Item... items) {
         // Use the `Arrays.stream()` method to create a stream of `Item` objects
+        // Add logging statement to print the item being converted
         return Arrays.stream(items)
                 // Use the `map()` method to convert each `Item` object into an `ItemTarget` object
-                .map(item -> {
-                    // Add logging statement to print the item being converted
-                    Debug.logInternal("Converting item: " + item);
-                    return new ItemTarget(item);
-                })
+                .map(ItemTarget::new)
                 // Use the `toArray()` method to convert the stream of `ItemTarget` objects into an array
                 .toArray(ItemTarget[]::new);
     }
@@ -367,7 +364,6 @@ public class BeatMinecraftTask extends Task {
 
         boolean isFilled = blockState.get(EndPortalFrameBlock.EYE);
 
-        Debug.logInternal("End Portal Frame is " + (isFilled ? "filled" : "not filled"));
         return isFilled;
     }
 
@@ -380,16 +376,11 @@ public class BeatMinecraftTask extends Task {
      */
     public static boolean isTaskRunning(AltoClef mod, Task task) {
         if (task == null) {
-            Debug.logInternal("Task is null");
             return false;
         }
 
         boolean taskActive = task.isActive();
         boolean taskFinished = task.isFinished(mod);
-
-        Debug.logInternal("Task is not null");
-        Debug.logInternal("Task is " + (taskActive ? "active" : "not active"));
-        Debug.logInternal("Task is " + (taskFinished ? "finished" : "not finished"));
 
         return taskActive && !taskFinished;
     }
@@ -745,8 +736,6 @@ public class BeatMinecraftTask extends Task {
                 toItemTargets(Items.WOODEN_PICKAXE)));
 
 
-        System.out.println("RAAAH " + Arrays.toString(getRecipeTarget(Items.STONE_PICKAXE).getRecipe().getSlots()));
-
         gatherResources.add(new RecraftableItemPriorityTask(410, 10_000, getRecipeTarget(Items.STONE_PICKAXE),
                 a -> {
                     List<Slot> list = mod.getItemStorage().getSlotsWithItemPlayerInventory(false);
@@ -788,7 +777,6 @@ public class BeatMinecraftTask extends Task {
             return true;
         }
 
-        Debug.logInternal("isFinished - Returning false");
         return false;
     }
 
@@ -928,11 +916,7 @@ public class BeatMinecraftTask extends Task {
 
         mod.getBehaviour().pop();
 
-        Debug.logInternal("Stopped onStop method");
-        Debug.logInternal("canWalkOnEndPortal set to false");
-        Debug.logInternal("Behaviour popped");
-        Debug.logInternal("Stopped tracking BED blocks");
-        Debug.logInternal("Stopped tracking TRACK_BLOCKS");
+        Debug.logInternal("onStop method called");
     }
 
     /**
@@ -970,7 +954,6 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalFound(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalCenter == null) {
-            Debug.logInternal("End portal center is null");
             return false;
         }
         return true;
@@ -1013,7 +996,6 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        Debug.logInternal("End Portal is not opened yet");
         return false;
     }
 
@@ -1074,10 +1056,6 @@ public class BeatMinecraftTask extends Task {
                 blacklistedChests.add(blockPos);
                 return false;
             }
-
-            Debug.logInternal("isUnopenedChest: " + isUnopenedChest);
-            Debug.logInternal("isWithinDistance: " + isWithinDistance);
-            Debug.logInternal("isLootableChest: " + isLootableChest);
 
             return isUnopenedChest && isWithinDistance && isLootableChest;
         }, Blocks.CHEST);
@@ -1935,11 +1913,6 @@ public class BeatMinecraftTask extends Task {
         // Calculate the target number of beds
         int targetBeds = config.requiredBeds + (needsToSetSpawn ? 1 : 0) - bedsInEnd;
 
-        // Output debug information
-        Debug.logInternal("needsToSetSpawn: " + needsToSetSpawn);
-        Debug.logInternal("bedsInEnd: " + bedsInEnd);
-        Debug.logInternal("targetBeds: " + targetBeds);
-
         return targetBeds;
     }
 
@@ -2043,9 +2016,6 @@ public class BeatMinecraftTask extends Task {
 
             return new BlockPos(new Vec3i((int) average.x, (int) average.y, (int) average.z));
         }
-
-        // Log that there are not enough frames.
-        Debug.logInternal("Not enough frames");
 
         return null;
     }
@@ -2420,7 +2390,6 @@ public class BeatMinecraftTask extends Task {
 
                     return getEnderPearlTask(mod, enderPearlTarget);
                 }
-                setDebugState("TIMEOUT.. SHIT");
 
                 return new TimeoutWanderTask();
             }

@@ -31,11 +31,6 @@ public abstract class Task {
         if (stopped) return;
 
         Task newSub = onTick(mod);
-        // Debug state print
-        if (!oldDebugState.equals(debugState)) {
-            Debug.logInternal(toString());
-            oldDebugState = debugState;
-        }
         // We have a sub task
         if (newSub != null) {
             if (!newSub.isEqual(sub)) {
