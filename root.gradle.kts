@@ -21,5 +21,5 @@ preprocess {
     val mc12001 = createNode("1.20.1", 12001, "yarn")
 
     mc12004.link(mc12002)
-    mc12002.link(mc12001, file("versions/mapping-1.20.2-1.20.1.txt"))
+    mc12002.link(mc12001)
 }
