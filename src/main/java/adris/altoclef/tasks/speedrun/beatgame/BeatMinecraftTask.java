@@ -300,8 +300,6 @@ public class BeatMinecraftTask extends Task {
             }
         }
 
-        Debug.logInternal("Frame blocks: " + frameBlocks);
-
         return frameBlocks;
     }
 
