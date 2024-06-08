@@ -41,7 +41,7 @@ configurations will interfere with altoclef and introduce bugs. This will be fix
 
 ### Versions
 
-This is a **fabric only** mod, currently only available only for **Minecraft versions 1.20.2 and 1.20.4**.
+This is a **fabric only** mod, currently available for **Minecraft versions 1.20.1, 1.20.2 and 1.20.4**.
 
 ## [Usage Guide](usage.md)
 

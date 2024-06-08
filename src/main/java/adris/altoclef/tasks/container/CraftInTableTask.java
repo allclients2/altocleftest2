@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.container;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.recipemanager.WrappedRecipeEntry;
 import adris.altoclef.tasks.inventory.CraftGenericManuallyTask;
 import adris.altoclef.tasks.inventory.CraftGenericWithRecipeBooksTask;
 import adris.altoclef.tasks.inventory.CraftInInventoryTask;
@@ -23,7 +24,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.screen.CraftingScreenHandler;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.math.BlockPos;
@@ -395,7 +395,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             }
 
             // Get the recipe to send based on the target recipe and output item
-            Optional<RecipeEntry<?>> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(target.getRecipe(), target.getOutputItem());
+            Optional<WrappedRecipeEntry> recipeToSend = JankCraftingRecipeMapping.getMinecraftMappedRecipe(target.getRecipe(), target.getOutputItem());
 
             // Get the client player entity
             ClientPlayerEntity player = MinecraftClient.getInstance().player;
@@ -403,7 +403,7 @@ class DoCraftInTableTask extends DoStuffInContainerTask {
             // If crafting book is enabled, the recipe to send exists, and the player has the recipe in their recipe book, return a CraftGenericWithRecipeBooksTask
             if (mod.getModSettings().shouldUseCraftingBookToCraft() && recipeToSend.isPresent()) {
                 assert player != null;
-                if (player.getRecipeBook().contains(recipeToSend.get())) {
+                if (player.getRecipeBook().contains(recipeToSend.get().id())) {
                     return new CraftGenericWithRecipeBooksTask(target);
                 }
             }
