@@ -1237,15 +1237,6 @@ public class BeatMinecraftTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        double blockPlacementPenalty = 10;
-        if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 128) {
-            blockPlacementPenalty = 5;
-        } else if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 64) {
-            blockPlacementPenalty = 7.5;
-        }
-
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = blockPlacementPenalty;
-
         if (mod.getPlayer().getMainHandStack().getItem() instanceof EnderEyeItem && !openingEndPortal) {
             List<ItemStack> itemStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
             for (ItemStack itemStack : itemStacks) {
