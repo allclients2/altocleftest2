@@ -1239,6 +1239,15 @@ public class BeatMinecraftTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
+        double blockPlacementPenalty = 10;
+        if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 128) {
+            blockPlacementPenalty = 5;
+        } else if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 64) {
+            blockPlacementPenalty = 7.5;
+        }
+
+        mod.getClientBaritoneSettings().blockPlacementPenalty.value = blockPlacementPenalty;
+
         if (mod.getPlayer().getMainHandStack().getItem() instanceof EnderEyeItem && !openingEndPortal) {
             List<ItemStack> itemStacks = mod.getItemStorage().getItemStacksPlayerInventory(true);
             for (ItemStack itemStack : itemStacks) {
@@ -2334,8 +2343,10 @@ public class BeatMinecraftTask extends Task {
                             if ((cachedFortressTask != null && !fortressTimer.elapsed() &&
                                 mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
                                 ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-                                mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
-                                return cachedFortressTask;
+                                if (cachedFortressTask != null) {
+                                    mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
+                                    return cachedFortressTask;
+                                }
                             }
 
                             // 'isEqual' is fucking me up here, so I have to reset the task
