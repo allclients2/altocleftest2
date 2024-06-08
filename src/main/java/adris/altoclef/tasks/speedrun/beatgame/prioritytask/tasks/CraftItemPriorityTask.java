@@ -55,10 +55,8 @@ public class CraftItemPriorityTask extends PriorityTask{
     @Override
     protected double getPriority(AltoClef mod) {
         if (BeatMinecraftTask.hasItem(mod, recipeTarget.getOutputItem())) {
-            System.out.println("THIS IS SATISFIED "+recipeTarget.getOutputItem());
             satisfied = true;
         }
-        System.out.println("NOT SATISFIED");
 
         if (satisfied) return Double.NEGATIVE_INFINITY;
 
