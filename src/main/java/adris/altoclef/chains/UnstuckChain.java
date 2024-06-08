@@ -6,6 +6,7 @@ import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
+import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.time.TimerGame;
 import baritone.api.utils.Rotation;
 import baritone.api.utils.input.Input;
@@ -16,9 +17,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.util.hit.BlockHitResult;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 
 import java.util.LinkedList;
+import java.util.Optional;
 
 public class UnstuckChain extends SingleTaskChain {
 
@@ -103,7 +106,23 @@ public class UnstuckChain extends SingleTaskChain {
 
         if (player.inPowderSnow) {
             isProbablyStuck = true;
-            setTask(new DestroyBlockTask(mod.getBlockScanner().getNearestBlock(Blocks.POWDER_SNOW).get()));
+            BlockPos destroyPos = null;
+
+            Optional<BlockPos> nearest = mod.getBlockScanner().getNearestBlock(Blocks.POWDER_SNOW);
+            if (nearest.isPresent()) {
+                destroyPos = nearest.get();
+            }
+
+            BlockPos headPos = WorldHelper.toBlockPos(player.getEyePos()).down();
+            if (mod.getWorld().getBlockState(headPos).getBlock() == Blocks.POWDER_SNOW) {
+                destroyPos = headPos;
+            } else if (mod.getWorld().getBlockState(player.getBlockPos()).getBlock() == Blocks.POWDER_SNOW) {
+                destroyPos = player.getBlockPos();
+            }
+
+            if (destroyPos != null) {
+                setTask(new DestroyBlockTask(destroyPos));
+            }
         }
     }
 
