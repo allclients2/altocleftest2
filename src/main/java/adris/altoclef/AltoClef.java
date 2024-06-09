@@ -58,7 +58,6 @@ public class AltoClef implements ModInitializer {
     private FoodChain foodChain;
     private MobDefenseChain mobDefenseChain;
     private MLGBucketFallChain mlgBucketChain;
-    private UnstuckChain unstuckChain;
     // Trackers
     private ItemStorageTracker storageTracker;
     private ContainerSubTracker containerSubTracker;
@@ -119,7 +118,8 @@ public class AltoClef implements ModInitializer {
         new DeathMenuChain(taskRunner);
         new PlayerInteractionFixChain(taskRunner);
         mlgBucketChain = new MLGBucketFallChain(taskRunner);
-        unstuckChain = new UnstuckChain(taskRunner);
+        new UnstuckChain(taskRunner);
+        new PreEquipItemChain(taskRunner);
         new WorldSurvivalChain(taskRunner);
         foodChain = new FoodChain(taskRunner);
 
@@ -458,10 +458,6 @@ public class AltoClef implements ModInitializer {
      */
     public MLGBucketFallChain getMLGBucketChain() {
         return mlgBucketChain;
-    }
-
-    public UnstuckChain getUnstuckChain() {
-        return unstuckChain;
     }
 
     public void log(String message) {
