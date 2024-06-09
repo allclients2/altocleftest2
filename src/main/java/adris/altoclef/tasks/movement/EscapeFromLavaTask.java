@@ -105,6 +105,11 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
                 return super.onTick(mod);
             }
 
+            if (mod.getPlayer().isBlocking()) {
+                mod.log("want to place block, trying to stop shielding...");
+                mod.getInputControls().release(Input.CLICK_RIGHT);
+            }
+
             for (float pitch = 25; pitch < 90; pitch += 1f) {
                 for (float yaw = -180; yaw < 180; yaw += 1f) {
                     HitResult result = raycast(mod, 4, pitch, yaw);
