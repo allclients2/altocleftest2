@@ -747,9 +747,6 @@ public class BeatMinecraftTask extends Task {
                 a -> !(mod.getItemStorage().hasItem(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)),
                 toItemTargets(Items.WOODEN_PICKAXE)));
 
-
-        System.out.println("RAAAH " + Arrays.toString(getRecipeTarget(Items.STONE_PICKAXE).getRecipe().getSlots()));
-
         gatherResources.add(new RecraftableItemPriorityTask(410, 10_000, getRecipeTarget(Items.STONE_PICKAXE),
                 a -> {
                     List<Slot> list = mod.getItemStorage().getSlotsWithItemPlayerInventory(false);
