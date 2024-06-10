@@ -4,6 +4,7 @@
   "package": "adris.altoclef.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
+    "MovementHelperMixin",
     "AbstractFurnaceScreenHandlerAccessor",
     "BlockModifiedByPlayerMixin",
     "ClientBlockBreakAccessor",
