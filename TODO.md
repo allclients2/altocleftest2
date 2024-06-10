@@ -6,6 +6,8 @@
 - Add cherry blossom wood as a valid wood type or something? It doesn't seem to work properly atm.
 - Maybe add some sort of system that finds and uses seed of the current world?
 - Implement build command (finish branch)
+- Fix eating priority (it will eat while its fighting and die)
+- Implement a proper resource builder task, like it will mine diamonds like #mine diamond_ore even if you did @get diamond, its only targeting a specific diamond ore, not all of them like baritone does, it needs multiple goals, and for that a custom provided resource task that can be given via a generic type to the destoryblocktask (i think)  
 
 ### Common death causes
 - Improve escaping from lava.
