@@ -18,8 +18,18 @@ plugins {
 apply plugin: 'fabric-loom'
 apply plugin: 'com.replaymod.preprocess'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+preprocess {
+    patternAnnotation.set("adris.altoclef.multiversion.Pattern")
+}
+
+sourceCompatibility = mcVersion >= 12006 ?  JavaVersion.VERSION_21 : JavaVersion.VERSION_17
+targetCompatibility = sourceCompatibility
+
+
+
+tasks.withType(JavaCompile).configureEach {
+    options.release = mcVersion >= 12006 ?  21 : 17
+}
 
 archivesBaseName = project.archives_base_name
 version = "${project.name}-${project.mod_version}"
@@ -29,38 +39,43 @@ def mappingsVersions = [
         12001: "1.20.1+build.10",
         12002: "1.20.2+build.4",
         12004: "1.20.4+build.3",
+        12006: "1.20.6+build.3",
 ]
 
 def fabricApiVersions = [
         12001: "0.92.2+1.20.1",
         12002: "0.91.2+1.20.2",
         12004: "0.96.3+1.20.4",
+        12006: "0.100.0+1.20.6",
 ]
 
 def baritoneVersions = [
         12001: "1.20.1-beta1",
         12002: "1.20.2-beta1",
         12004: "1.20.4-beta1",
+        12006: "1.20.6-beta1",
 ]
 
 def baritoneApiPaths = [
         12001: "baritone-unoptimized",
         12002: "baritone-unoptimized-fabric",
         12004: "baritone-unoptimized-fabric",
+        12006: "baritone-unoptimized-fabric",
 ]
 
 def baritonePaths = [
         12001: "baritone-unoptimized",
         12002: "baritone-unoptimized",
         12004: "baritone-unoptimized-fabric",
+        12006: "baritone-unoptimized-fabric",
 ]
 
 repositories {
     mavenCentral()
     maven {
-        name = "MarvionKiritoRepo"
-        url = "https://marvionkirito.github.io/maven/"
-        artifactUrls("https://marvionkirito.github.io/maven/cabaletta/baritone-unoptimized/${baritoneVersions[mcVersion]}")
+        name = "MiranCZRepo"
+        url = "https://mirancz.github.io/maven/"
+        artifactUrls("https://mirancz.github.io/maven/cabaletta/baritone-unoptimized/${baritoneVersions[mcVersion]}")
     }
     maven {
         name = 'babbaj-repo'

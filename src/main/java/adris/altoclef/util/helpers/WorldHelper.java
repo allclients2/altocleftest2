@@ -18,6 +18,7 @@ import net.minecraft.block.enums.ChestType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.network.ClientConnection;
 import net.minecraft.registry.entry.RegistryEntry;
 import net.minecraft.util.math.*;
@@ -442,12 +443,12 @@ public interface WorldHelper {
     }
 
     static boolean isSurroundedByHostiles(AltoClef mod) {
-        List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+        List<LivingEntity> hostiles = mod.getEntityTracker().getHostiles();
         return isSurrounded(mod, hostiles);
     }
 
     // Function to check if the player is surrounded on two or more sides
-    static boolean isSurrounded(AltoClef mod, List<Entity> entities) {
+    static boolean isSurrounded(AltoClef mod, List<LivingEntity> entities) {
 
         BlockPos playerPos = mod.getPlayer().getBlockPos();
 

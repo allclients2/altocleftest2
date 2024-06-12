@@ -4,6 +4,8 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.mixins.AbstractFurnaceScreenHandlerAccessor;
+import adris.altoclef.multiversion.ItemVer;
+import adris.altoclef.multiversion.ToolMaterialVer;
 import adris.altoclef.tasks.CraftInInventoryTask;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
@@ -148,7 +150,7 @@ public class StorageHelper {
                 continue;
             ItemStack stack = getItemStackInSlot(slot);
             if (stack.getItem() instanceof ToolItem) {
-                if (stack.getItem().isSuitableFor(state)) {
+                if (stack.getItem().getDefaultStack().isSuitableFor(state)) {
                     if (shouldSaveStack(mod, block, stack)) continue;
 
                     double speed = ToolSet.calculateSpeedVsBlock(stack, state);
@@ -238,7 +240,7 @@ public class StorageHelper {
 
             Class clazz = tool.getClass();
 
-            int level = tool.getMaterial().getMiningLevel();
+            int level = ToolMaterialVer.getMiningLevel(tool);
             int prevBest = bestMaterials.getOrDefault(clazz, 0);
 
             if (level > prevBest) {
@@ -276,8 +278,8 @@ public class StorageHelper {
                 if (ItemHelper.canThrowAwayStack(mod, stack)) {
                     possibleSlots.add(slot);
                 }
-                if (stack.getItem().isFood()) {
-                    calcTotalFoodScore += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger();
+                if (ItemVer.isFood(stack)) {
+                    calcTotalFoodScore += Objects.requireNonNull(ItemVer.getFoodComponent(stack.getItem())).getHunger();
                 }
             }
 
@@ -299,17 +301,16 @@ public class StorageHelper {
                         // Prioritize material type, then durability.
                         ToolItem leftTool = (ToolItem) left.getItem();
                         ToolItem rightTool = (ToolItem) right.getItem();
-                        if (leftTool.getMaterial().getMiningLevel() != rightTool.getMaterial().getMiningLevel()) {
-                            return leftTool.getMaterial().getMiningLevel() - rightTool.getMaterial().getMiningLevel();
-                        }
+                        if (ToolMaterialVer.getMiningLevel(leftTool) != ToolMaterialVer.getMiningLevel(rightTool))
+                            return ToolMaterialVer.getMiningLevel(leftTool) - ToolMaterialVer.getMiningLevel(rightTool);
                         // We want less damage.
                         return left.getDamage() - right.getDamage();
                     }
 
                     // Prioritize food over other things if we lack food.
                     boolean lacksFood = totalFoodScore < 8;
-                    boolean leftIsFood = left.getItem().isFood() && left.getItem() != Items.SPIDER_EYE;
-                    boolean rightIsFood = right.getItem().isFood() && right.getItem() != Items.SPIDER_EYE;
+                    boolean leftIsFood = ItemVer.isFood(left) && left.getItem() != Items.SPIDER_EYE;
+                    boolean rightIsFood = ItemVer.isFood(right) && right.getItem() != Items.SPIDER_EYE;
                     if (lacksFood) {
                         if (rightIsFood && !leftIsFood) {
                             return -1;
@@ -319,10 +320,10 @@ public class StorageHelper {
                     }
                     // If both are food, pick the better cost.
                     if (leftIsFood && rightIsFood) {
-                        assert left.getItem().getFoodComponent() != null;
-                        assert right.getItem().getFoodComponent() != null;
-                        int leftCost = left.getItem().getFoodComponent().getHunger() * left.getCount(),
-                                rightCost = right.getItem().getFoodComponent().getHunger() * right.getCount();
+                        assert ItemVer.getFoodComponent(left.getItem()) != null;
+                        assert ItemVer.getFoodComponent(right.getItem()) != null;
+                        int leftCost = ItemVer.getFoodComponent(left.getItem()).getHunger() * left.getCount(),
+                                rightCost = ItemVer.getFoodComponent(right.getItem()).getHunger() * right.getCount();
                         return -1 * (leftCost - rightCost);
                     }
 
@@ -474,8 +475,8 @@ public class StorageHelper {
         int result = 0;
         if (!mod.getItemStorage().getItemStacksPlayerInventory(true).isEmpty()) {
             for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
-                if (stack.isFood())
-                    result += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
+                if (ItemVer.isFood(stack))
+                    result += Objects.requireNonNull(ItemVer.getFoodComponent(stack.getItem())).getHunger() * stack.getCount();
             }
         }
         return result;

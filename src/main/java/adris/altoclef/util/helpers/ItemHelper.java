@@ -1,6 +1,7 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.util.WoodType;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -390,7 +391,7 @@ public class ItemHelper {
     private static boolean isStackProtected(AltoClef mod, ItemStack stack) {
         if (stack.hasEnchantments() && mod.getModSettings().getDontThrowAwayEnchantedItems())
             return true;
-        if (stack.hasCustomName() && mod.getModSettings().getDontThrowAwayCustomNameItems())
+        if (ItemVer.hasCustomName(stack) && mod.getModSettings().getDontThrowAwayCustomNameItems())
             return true;
         return mod.getBehaviour().isProtected(stack.getItem()) || mod.getModSettings().isImportant(stack.getItem());
     }

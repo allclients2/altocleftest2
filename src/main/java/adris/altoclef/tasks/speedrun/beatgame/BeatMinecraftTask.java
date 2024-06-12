@@ -34,6 +34,7 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.*;
@@ -93,15 +94,8 @@ public class BeatMinecraftTask extends Task {
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
 
     // We don't want curse of binding
-    private static final Predicate<ItemStack> noCurseOfBinding = stack -> {
-        for (NbtElement elm : stack.getEnchantments()) {
-            NbtCompound comp = (NbtCompound) elm;
-            if (comp.getString("id").equals("minecraft:binding_curse")) {
-                return false;
-            }
-        }
-        return true;
-    };
+    private static final Predicate<ItemStack> noCurseOfBinding = stack -> !EnchantmentHelper.hasBindingCurse(stack);
+
     private static BeatMinecraftConfig config;
     private static GoToStrongholdPortalTask locateStrongholdTask;
     private static boolean openingEndPortal = false;

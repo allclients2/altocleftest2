@@ -2,6 +2,8 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Settings;
+import adris.altoclef.multiversion.FoodComponentWrapper;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasks.speedrun.DragonBreathTracker;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -13,7 +15,6 @@ import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.HostileEntity;
-import net.minecraft.item.FoodComponent;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -243,7 +244,8 @@ public class FoodChain extends SingleTaskChain {
         if (foodLevel < config.alwaysEatWhenBelowHungerAndPerfectFit && cachedPerfectFood.isPresent()) {
             int need = 20 - foodLevel;
             Item best = cachedPerfectFood.get();
-            int fills = (best.getFoodComponent() != null) ? best.getFoodComponent().getHunger() : -1;
+
+            int fills = (ItemVer.getFoodComponent(best) != null) ? ItemVer.getFoodComponent(best).getHunger() : -1;
             return fills == need;
         }
 
@@ -261,7 +263,7 @@ public class FoodChain extends SingleTaskChain {
         float saturation = player != null ? player.getHungerManager().getSaturationLevel() : 20;
         // Get best food item + calculate food total
         for (ItemStack stack : mod.getItemStorage().getItemStacksPlayerInventory(true)) {
-            if (stack.isFood()) {
+            if (ItemVer.isFood(stack)) {
                 // Ignore protected items
                 if (!ItemHelper.canThrowAwayStack(mod, stack)) continue;
 
@@ -270,7 +272,7 @@ public class FoodChain extends SingleTaskChain {
                     continue;
                 }
 
-                FoodComponent food = stack.getItem().getFoodComponent();
+                FoodComponentWrapper food = ItemVer.getFoodComponent(stack.getItem());
 
                 assert food != null;
                 float hungerIfEaten = Math.min(hunger + food.getHunger(), 20);
@@ -298,7 +300,7 @@ public class FoodChain extends SingleTaskChain {
                     bestFood = stack.getItem();
                 }
 
-                foodTotal += Objects.requireNonNull(stack.getItem().getFoodComponent()).getHunger() * stack.getCount();
+                foodTotal += Objects.requireNonNull(ItemVer.getFoodComponent(stack.getItem())).getHunger() * stack.getCount();
             }
         }
 

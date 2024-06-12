@@ -3,6 +3,7 @@ package adris.altoclef.chains;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.control.KillAura;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
 import adris.altoclef.tasks.movement.CustomBaritoneGoalTask;
@@ -22,6 +23,7 @@ import net.minecraft.block.AbstractFireBlock;
 import net.minecraft.block.Block;
 import net.minecraft.client.network.ClientPlayerEntity;
 import net.minecraft.entity.Entity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.boss.WitherEntity;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
@@ -83,7 +85,7 @@ public class MobDefenseChain extends SingleTaskChain {
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
-            if (handItem.isFood()) {
+            if (ItemVer.isFood(handItem)) {
                 List<ItemStack> spaceSlots = mod.getItemStorage().getItemStacksPlayerInventory(false);
                 for (ItemStack spaceSlot : spaceSlots) {
                     if (spaceSlot.isEmpty()) {
@@ -99,13 +101,13 @@ public class MobDefenseChain extends SingleTaskChain {
         mod.getInputControls().hold(Input.CLICK_RIGHT);
     }
 
-    private static int getDangerousnessScore(List<Entity> toDealWithList) {
+    private static int getDangerousnessScore(List<LivingEntity> toDealWithList) {
         int numberOfProblematicEntities = toDealWithList.size();
-        for (Entity toDealWith : toDealWithList) {
+        for (LivingEntity toDealWith : toDealWithList) {
             if (toDealWith instanceof EndermanEntity || toDealWith instanceof SlimeEntity || toDealWith instanceof BlazeEntity) {
 
                 numberOfProblematicEntities += 1;
-            } else if (toDealWith instanceof DrownedEntity && toDealWith.getItemsEquipped() == Items.TRIDENT) {
+            } else if (toDealWith instanceof DrownedEntity && toDealWith.getEquippedItems() == Items.TRIDENT) {
                 // Drowned with tridents are also REALLY dangerous, maybe we should increase this??
                 numberOfProblematicEntities += 5;
             }
@@ -123,7 +125,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private void stopShielding(AltoClef mod) {
         if (shielding) {
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-            if (cursor.isFood()) {
+            if (ItemVer.isFood(cursor)) {
                 Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
                 if (toMoveTo.isPresent()) {
                     Slot garbageSlot = toMoveTo.get();
@@ -266,12 +268,12 @@ public class MobDefenseChain extends SingleTaskChain {
 
         if (mod.getModSettings().shouldDealWithAnnoyingHostiles()) {
             // Deal with hostiles because they are annoying.
-            List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+            List<LivingEntity> hostiles = mod.getEntityTracker().getHostiles();
 
-            List<Entity> toDealWithList = new ArrayList<>();
+            List<LivingEntity> toDealWithList = new ArrayList<>();
 
             synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-                for (Entity hostile : hostiles) {
+                for (LivingEntity hostile : hostiles) {
                     boolean isRangedOrPoisonous = (hostile instanceof SkeletonEntity
                             || hostile instanceof WitchEntity || hostile instanceof PillagerEntity
                             || hostile instanceof PiglinEntity || hostile instanceof StrayEntity
@@ -577,7 +579,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // If hostile mobs are nearby...
             try {
                 ClientPlayerEntity player = mod.getPlayer();
-                List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+                List<LivingEntity> hostiles = mod.getEntityTracker().getHostiles();
 
                 synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                     for (Entity entity : hostiles) {
