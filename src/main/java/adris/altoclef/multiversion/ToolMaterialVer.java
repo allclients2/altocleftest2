@@ -11,24 +11,18 @@ public class ToolMaterialVer {
     }
 
     public static int getMiningLevel(ToolMaterial material) {
-        switch (material) {
-            case ToolMaterials.WOOD, ToolMaterials.GOLD -> {
-                return 0;
-            }
-            case ToolMaterials.STONE -> {
-                return 1;
-            }
-            case ToolMaterials.IRON -> {
-                return 2;
-            }
-            case ToolMaterials.DIAMOND -> {
-                return 3;
-            }
-            case ToolMaterials.NETHERITE -> {
-                return 4;
-            }
-            default -> throw new IllegalStateException("Unexpected value: " + material);
+        if (material.equals(ToolMaterials.WOOD) || material.equals(ToolMaterials.GOLD)) {
+            return 0;
+        } else if (material.equals(ToolMaterials.STONE)) {
+            return 1;
+        } else if (material.equals(ToolMaterials.IRON)) {
+            return 2;
+        } else if (material.equals(ToolMaterials.DIAMOND)) {
+            return 3;
+        } else if (material.equals(ToolMaterials.NETHERITE)) {
+            return 4;
         }
+        throw new IllegalStateException("Unexpected value: " + material);
     }
 
 }
