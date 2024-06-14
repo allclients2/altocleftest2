@@ -1,6 +1,7 @@
 # TODO
 
 ### Misc
+- Stabilize commit e67aa6cf9....
 - Implement configs.
 - Allow any bed color when crafting beds from wool.
 - Add cherry blossom wood as a valid wood type or something? It doesn't seem to work properly atm.
