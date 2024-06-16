@@ -3,7 +3,7 @@ package adris.altoclef.commands;
 import adris.altoclef.AltoClef;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
-import adris.altoclef.tasks.speedrun.MarvionBeatMinecraftTask;
+import adris.altoclef.tasks.speedrun.maintasks.MarvionBeatMinecraftTask;
 
 public class MarvionCommand extends Command {
     public MarvionCommand() {

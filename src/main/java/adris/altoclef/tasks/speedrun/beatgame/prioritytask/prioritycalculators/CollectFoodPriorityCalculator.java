@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
@@ -196,16 +197,16 @@ public class CollectFoodPriorityCalculator extends ItemPriorityCalculator {
                     // tf am I supposed to do if its empty
                     if (slot.isPresent()) {
                         ItemStack stack = StorageHelper.getItemStackInSlot(slot.get());
-                        if (stack.getItem().isFood()) {
+                        if (ItemVer.isFood(stack.getItem())) {
                             // calculate priority, if the item laying on the ground has lower priority than the one we are gonna throw out because of it
                             // dont pick it up, otherwise we would get stuck in an infinite loop
-                            int inventoryCost = stack.getItem().getFoodComponent().getHunger() * stack.getCount();
+                            int inventoryCost = ItemVer.getFoodComponent(stack.getItem()).getHunger() * stack.getCount();
 
                             double hunger = 0;
-                            if (itemToGrab.isFood()) {
-                                hunger = itemToGrab.getFoodComponent().getHunger();
+                            if (ItemVer.isFood(itemToGrab)) {
+                                hunger = ItemVer.getFoodComponent(itemToGrab).getHunger();
                             } else if (itemToGrab.equals(Items.WHEAT)) {
-                                hunger += Items.BREAD.getFoodComponent().getHunger() / 3d;
+                                hunger += ItemVer.getFoodComponent(Items.BREAD).getHunger() / 3d;
                             } else {
                                 mod.log("unknown food item: " + itemToGrab);
                             }

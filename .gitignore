@@ -1,7 +1,7 @@
 # User-specific stuff
 .idea/
 .vs/
-run/
+run12004/
 
 *.iml
 *.ipr
@@ -116,7 +116,10 @@ gradle-app.setting
 **/build/
 
 # Common working directory
-run/
+run12001/
+run12002/
+run12004/
+run12006/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar
