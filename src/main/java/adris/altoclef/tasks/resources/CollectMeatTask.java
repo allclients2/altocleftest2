@@ -2,6 +2,7 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.container.SmeltInSmokerTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
@@ -48,8 +49,8 @@ public class CollectMeatTask extends Task {
         if (count <= 0) return 0;
         for (CookableFoodTarget cookable : COOKABLE_FOODS) {
             if (food.getItem() == cookable.getRaw()) {
-                assert cookable.getCooked().getFoodComponent() != null;
-                return count * cookable.getCooked().getFoodComponent().getHunger();
+                assert ItemVer.getFoodComponent(cookable.getCooked()) != null;
+                return count * ItemVer.getFoodComponent(cookable.getCooked()).getHunger();
             }
         }
         return 0;
@@ -228,8 +229,8 @@ public class CollectMeatTask extends Task {
         }
 
         public int getCookedUnits() {
-            assert getCooked().getFoodComponent() != null;
-            return getCooked().getFoodComponent().getHunger();
+            assert ItemVer.getFoodComponent(getCooked()) != null;
+            return ItemVer.getFoodComponent(getCooked()).getHunger();
         }
     }
 }

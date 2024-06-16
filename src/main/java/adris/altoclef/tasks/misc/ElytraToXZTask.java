@@ -91,7 +91,7 @@ public class ElytraToXZTask extends Task {
         }
 
         // Always equip Elytra
-        if (CurrentElytra.getDamage() > Items.ELYTRA.getMaxDamage() * 0.95) {
+        if (CurrentElytra.getDamage() > Items.ELYTRA.getDefaultStack().getMaxDamage() * 0.95) {
             mod.log("Low Elytra health warning, equip new elytra..");
             FailToStart = true;
             return _test_task_;

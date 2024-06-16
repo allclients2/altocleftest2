@@ -15,17 +15,23 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 ## About this fork
 This fork aims to optimize `MarvionBeatMinecraftTask` (I will just refer to it as `BeatMinecraftTask`) from [Marvion's fork](https://github.com/MarvionKirito/altoclef) by trying to fix a lot of cases where the bot gets stuck and improving some of the tasks.
 
-You can look at the [changelog](miranchangelog.md) if you are interested.
+You can look at the [changelog](changelog.md) if you are interested.
 
 Because I rewrote a good portion of the `BeatMinecraftTask` a lot of the config settings don't work. Although I plan to implement configs in the future of course.  
 
-### The preprocessor
-I am currently experimentaly using the [replay mod preprocessor](https://github.com/ReplayMod/preprocessor) to keep the mod updated across multiple versions at the same time.
-The thing that is holding me back right now, is that I am using [Marvions releases for baritone](https://github.com/MarvionKirito/baritone) to go along AltoClef, so I should be able to at least keep up with [his fork](https://github.com/MarvionKirito/altoclef) for now.
+## The preprocessor
+I am currently using the [replay mod preprocessor](https://github.com/ReplayMod/preprocessor) to keep the mod updated across multiple versions at the same time.
 
-...
+### Versions
+Thanks to that, the mod is currently available on **fabric** for the following versions:
+- 1.20.1
+- 1.20.2
+- 1.20.4
+- 1.20.6
 
-(Section not finished)
+*note: All the versions use the "same release" of Alto clef, although some of them use older versions of baritone.* 
+
+
 ## How it works
 
 Take a look at this [Guide from the wiki](https://github.com/MiranCZ/altoclef/wiki/1:-Documentation:-Big-Picture)
@@ -35,16 +41,12 @@ or this [Video explanation](https://youtu.be/q5OmcinQ2ck?t=387)
 ## Download
 
 **Note:** After installing, please move/delete your old baritone configurations if you have any. Preexisting baritone
-configurations will interfere with altoclef and introduce bugs. This will be fixed in the future.
+configurations will interfere with alto clef and introduce bugs. This will be fixed in the future.
 
 [Check releases](https://github.com/MiranCZ/altoclef/releases)
 
-### Versions
-
-This is a **fabric only** mod, currently available for **Minecraft versions 1.20.1, 1.20.2 and 1.20.4**.
-
 ## [Usage Guide](usage.md)
 
-## [TODO's/Future Features](TODO.md)
+## [TODOs/Future Features](TODO.md)
 
 ## [Development Guide](develop.md)

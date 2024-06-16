@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.speedrun;
+package adris.altoclef.tasks.speedrun.maintasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -15,6 +15,7 @@ import adris.altoclef.tasks.misc.PlaceBedAndSetSpawnTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
+import adris.altoclef.tasks.speedrun.*;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -31,14 +32,13 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.CreditsScreen;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.SilverfishEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
@@ -83,16 +83,8 @@ public class BeatMinecraft2Task extends Task {
     private static final int END_PORTAL_FRAME_COUNT = 12;
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
     // We don't want curse of binding
-    private static final Predicate<ItemStack> _noCurseOfBinding = stack -> {
-        boolean hasBinding = false;
-        for (NbtElement elm : stack.getEnchantments()) {
-            NbtCompound comp = (NbtCompound) elm;
-            if (comp.getString("id").equals("minecraft:binding_curse")) {
-                return false;
-            }
-        }
-        return true;
-    };
+    private static final Predicate<ItemStack> _noCurseOfBinding = stack -> !EnchantmentHelper.hasBindingCurse(stack);
+
     private static BeatMinecraftConfig config;
 
     static {

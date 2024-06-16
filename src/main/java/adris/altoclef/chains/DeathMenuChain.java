@@ -127,7 +127,7 @@ public class DeathMenuChain extends TaskChain {
                     Debug.logWarning("Failed to re-connect to server, no server entry cached.");
                 } else {
                     MinecraftClient client = MinecraftClient.getInstance();
-                    ConnectScreen.connect(screen, client, ServerAddress.parse(prevServerEntry.address), prevServerEntry, false);
+                    ConnectScreen.connect(screen, client, ServerAddress.parse(prevServerEntry.address), prevServerEntry, false,null);
                     //ConnectScreen.connect(screen, client, ServerAddress.parse(_prevServerEntry.address), _prevServerEntry);
                     //client.setScreen(new ConnectScreen(screen, client, _prevServerEntry));
                 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import net.minecraft.item.*;
@@ -100,7 +101,7 @@ public class MobDefenseChain extends SingleTaskChain {
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
-            if (handItem.isFood()) {
+            if (ItemVer.isFood(handItem)) {
                 List<ItemStack> spaceSlots = mod.getItemStorage().getItemStacksPlayerInventory(false);
                 for (ItemStack spaceSlot : spaceSlots) {
                     if (spaceSlot.isEmpty()) {
@@ -126,7 +127,7 @@ public class MobDefenseChain extends SingleTaskChain {
     private void stopShielding(AltoClef mod) {
         if (shielding) {
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-            if (cursor.isFood()) {
+            if (ItemVer.isFood(cursor)) {
                 Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
                 if (toMoveTo.isPresent()) {
                     Slot garbageSlot = toMoveTo.get();
@@ -294,7 +295,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // First list the hostiles.
 
             // Deal with hostiles because they are annoying.
-            List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+            List<LivingEntity> hostiles = mod.getEntityTracker().getHostiles();
             hostiles.sort(Comparator.comparingDouble(Player::distanceTo));
 
             List<Entity> toDealWith = new ArrayList<>();
@@ -393,33 +394,33 @@ public class MobDefenseChain extends SingleTaskChain {
                         RangedPresent.set(true);
                     } else if (entity instanceof WitchEntity) { //Take no chances
                         RangedPresent.set(true);
-                    } else if (entity instanceof DrownedEntity && entity.getItemsEquipped() == Items.TRIDENT) { // Can easily kill us
+                    } else if (entity instanceof DrownedEntity && ((DrownedEntity) entity).getHandItems() == Items.TRIDENT) { // Can easily kill us
                         RangedPresent.set(true);
                     }
                 });
 
                 // Calculating canDealWith
                 int canDealWith; {
-                    boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
-                    double shield = 0;
-                    if (hasShield) {
-                        // We will need a shield more with skeletons with bows
-                        if (RangedPresent.get()) {
-                            shield = 3.25;
-                        } else {
-                            shield = 2.05;
-                        }
-                    }
-
-                    float damage = Player.getMaxHealth() - Player.getHealth();
-                    int armor = Player.getArmor();
-                    float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                    canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
-                    canDealWith -= (int) Math.floor(damage * 0.125);
-                    if (mod.getPlayer().isSubmergedInWater()) {
-                        canDealWith -= 1;
+                boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
+                double shield = 0;
+                if (hasShield) {
+                    // We will need a shield more with skeletons with bows
+                    if (RangedPresent.get()) {
+                        shield = 3.25;
+                    } else {
+                        shield = 2.05;
                     }
                 }
+
+                float damage = Player.getMaxHealth() - Player.getHealth();
+                int armor = Player.getArmor();
+                float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
+                canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
+                canDealWith -= (int) Math.floor(damage * 0.125);
+                if (mod.getPlayer().isSubmergedInWater()) {
+                    canDealWith -= 1;
+                }
+            }
 
                 //System.out.println("candealwith: " + canDealWith);
                 //System.out.println("entityscore: " + entityscore);
@@ -427,8 +428,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 // Decide if we can fight with them or just run.
                 if (
                         (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
-                        (!evadingHostilesLastTick) &&
-                        (!closestOpponent.isSubmergedInWater()) // Because bartione can't pathfind to enemy.
+                                (!evadingHostilesLastTick) &&
+                                (!closestOpponent.isSubmergedInWater()) // Because bartione can't pathfind to enemy.
                 ) {
                     // This is self-defense, so only fight if in range.
                     if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
@@ -472,16 +473,16 @@ public class MobDefenseChain extends SingleTaskChain {
         int entityscore = toDealWith.size();
         if (!toDealWith.isEmpty()) {
             for (Entity ToDealWith : toDealWith) {
-                if (ToDealWith.getClass() == SlimeEntity.class || ToDealWith.getClass() == MagmaCubeEntity.class || ToDealWith.getItemsEquipped() != null && !(ToDealWith instanceof SkeletonEntity) && !(ToDealWith instanceof EndermanEntity) && !(ToDealWith instanceof DrownedEntity)) {
+                if (ToDealWith.getClass() == SlimeEntity.class || ToDealWith.getClass() == MagmaCubeEntity.class || !(ToDealWith instanceof SkeletonEntity) && !(ToDealWith instanceof EndermanEntity) && !(ToDealWith instanceof DrownedEntity)) {
                     // Entities that have a sword or can split into more entities after being killed count as two entities as they are more dangerous then one entity of same type
                     entityscore += 2;
-                } else if (ToDealWith instanceof SkeletonEntity && ToDealWith.getItemsEquipped() == Items.BOW) {
+                } else if (ToDealWith instanceof SkeletonEntity && ((SkeletonEntity) ToDealWith).getHandItems() == Items.BOW) {
                     // Any skeleton with a bow is REALLY dangerous so we'll count them as 5 entities
                     entityscore += 5;
                 } else if (ToDealWith instanceof EndermanEntity) {
                     // Enderman can be also really dangerous as they hit hard.
                     entityscore += 3;
-                } else if (ToDealWith instanceof DrownedEntity && ToDealWith.getItemsEquipped() == Items.TRIDENT) {
+                } else if (ToDealWith instanceof DrownedEntity && ((DrownedEntity) ToDealWith).getHandItems() == Items.TRIDENT) {
                     // Drowned with tridents are also REALLY dangerous, maybe we should increase this??
                     entityscore += 5;
                 }
@@ -680,7 +681,7 @@ public class MobDefenseChain extends SingleTaskChain {
             // If hostile mobs are nearby...
             try {
                 ClientPlayerEntity player = mod.getPlayer();
-                List<Entity> hostiles = mod.getEntityTracker().getHostiles();
+                List<LivingEntity> hostiles = mod.getEntityTracker().getHostiles();
 
                 synchronized (BaritoneHelper.MINECRAFT_LOCK) {
                     for (Entity entity : hostiles) {

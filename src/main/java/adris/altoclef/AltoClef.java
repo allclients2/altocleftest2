@@ -61,7 +61,6 @@ public class AltoClef implements ModInitializer {
     private FoodChain foodChain;
     private MobDefenseChain mobDefenseChain;
     private MLGBucketFallChain mlgBucketChain;
-    private UnstuckChain unstuckChain;
     // Trackers
     private ItemStorageTracker storageTracker;
     private ContainerSubTracker containerSubTracker;
@@ -125,7 +124,8 @@ public class AltoClef implements ModInitializer {
         new DeathMenuChain(taskRunner);
         new PlayerInteractionFixChain(taskRunner);
         mlgBucketChain = new MLGBucketFallChain(taskRunner);
-        unstuckChain = new UnstuckChain(taskRunner);
+        new UnstuckChain(taskRunner);
+        new PreEquipItemChain(taskRunner);
         new WorldSurvivalChain(taskRunner);
         foodChain = new FoodChain(taskRunner);
 
@@ -279,17 +279,20 @@ public class AltoClef implements ModInitializer {
         getClientBaritoneSettings().failureTimeoutMS.value = 500L;
 
         // Custom avoidance setting i added
-        getExtraBaritoneSettings().setShouldAvoidPredicate(Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity)));
+        // getExtraBaritoneSettings().setShouldAvoidPredicate(Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity)));
         getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 7.5;
         getClientBaritoneSettings().avoidance.value = true;
 
 
-        // For render smoothing
-        getClientBaritoneSettings().randomLooking.value = 0.2; //randomly look to convince
-        getClientBaritoneSettings().randomLooking113.value = 0.03;
+        // For smooth camera turning, baritone 1.20.1 does not have smooth look so we use random look instead.
+        //#if MC>12001
         getClientBaritoneSettings().smoothLook.value = true;
         getClientBaritoneSettings().smoothLookTicks.value = 4;
+        //#else
+        //$$    getClientBaritoneSettings().randomLooking.value = 0.2; //randomly look to convince
+        //$$    getClientBaritoneSettings().randomLooking113.value = 0.03;
+        //#endif
 
         getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
         getClientBaritoneSettings().avoidBreakingMultiplier.value = AvoidBreakingMultiplier;
@@ -522,10 +525,6 @@ public class AltoClef implements ModInitializer {
      */
     public MLGBucketFallChain getMLGBucketChain() {
         return mlgBucketChain;
-    }
-
-    public UnstuckChain getUnstuckChain() {
-        return unstuckChain;
     }
 
     public void log(String message) {

@@ -1,4 +1,4 @@
-package adris.altoclef.tasks.speedrun.beatgame;
+package adris.altoclef.tasks.speedrun.maintasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -14,8 +14,9 @@ import adris.altoclef.tasks.misc.SleepThroughNightTask;
 import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.speedrun.*;
-import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistanceItemPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.UselessItems;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.CollectFoodPriorityCalculator;
+import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistanceItemPriorityCalculator;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.StaticItemPriorityCalculator;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks.*;
 import adris.altoclef.tasksystem.Task;
@@ -32,13 +33,12 @@ import net.minecraft.block.Blocks;
 import net.minecraft.block.EndPortalFrameBlock;
 import net.minecraft.client.gui.screen.CreditsScreen;
 import net.minecraft.client.network.ClientPlayerEntity;
+import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.mob.*;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.*;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
 import net.minecraft.screen.slot.SlotActionType;
 import net.minecraft.util.Pair;
 import net.minecraft.util.collection.DefaultedList;
@@ -91,15 +91,8 @@ public class BeatMinecraftTask extends Task {
     private static final double END_PORTAL_BED_SPAWN_RANGE = 8;
 
     // We don't want curse of binding
-    private static final Predicate<ItemStack> noCurseOfBinding = stack -> {
-        for (NbtElement elm : stack.getEnchantments()) {
-            NbtCompound comp = (NbtCompound) elm;
-            if (comp.getString("id").equals("minecraft:binding_curse")) {
-                return false;
-            }
-        }
-        return true;
-    };
+    private static final Predicate<ItemStack> noCurseOfBinding = stack -> !EnchantmentHelper.hasBindingCurse(stack);
+
     private static BeatMinecraftConfig config;
     private static GoToStrongholdPortalTask locateStrongholdTask;
     private static boolean openingEndPortal = false;
@@ -224,14 +217,7 @@ public class BeatMinecraftTask extends Task {
         gatherResources.add(new CraftItemPriorityTask(330, getRecipeTarget(Items.DIAMOND_SWORD), a -> mod.getItemStorage().getItemCount(Items.DIAMOND) >= 2 && StorageHelper.miningRequirementMet(mod, MiningRequirement.DIAMOND)));
         gatherResources.add(new CraftItemPriorityTask(400, getRecipeTarget(Items.GOLDEN_HELMET), a -> mod.getItemStorage().getItemCount(Items.GOLD_INGOT) >= 5));
 
-        gatherResources.add(new ActionPriorityTask(a -> new SleepThroughNightTask(),
-                () -> {
-                    Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
-                    if (pos.isPresent() && pos.get().isWithinDistance(mod.getPlayer().getPos(), 30)) return 1_000_000;
-
-                    return Double.NEGATIVE_INFINITY;
-                }, a -> WorldHelper.canSleep()
-        ));
+        addSleepTask(mod);
 
         gatherResources.add(new ActionPriorityTask(a -> {
             Pair<Task, Double> pair = new Pair<>(TaskCatalogue.getItemTask(Items.WATER_BUCKET, 1), Double.NEGATIVE_INFINITY);
@@ -473,6 +459,31 @@ public class BeatMinecraftTask extends Task {
         throw new IllegalStateException("Invalid ore: " + item);
     }
 
+    private void addSleepTask(AltoClef mod) {
+        boolean[] skipNight = new boolean[]{false};
+
+        gatherResources.add(new ActionPriorityTask(a -> new PlaceBedAndSetSpawnTask(),
+                () -> {
+                    if (!WorldHelper.canSleep()) {
+                        skipNight[0] = false;
+                        return Double.NEGATIVE_INFINITY;
+                    }
+
+                    if (lastTask instanceof PlaceBedAndSetSpawnTask && lastTask.isFinished(mod)) {
+                        skipNight[0] = true;
+                        mod.log("Failed to sleep :(");
+                        mod.log("Skipping night");
+                    }
+                    if (skipNight[0]) return Double.NEGATIVE_INFINITY;
+
+                    Optional<BlockPos> pos = mod.getBlockScanner().getNearestBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
+                    if (pos.isPresent() && pos.get().isWithinDistance(mod.getPlayer().getPos(), 30)) return 1_000_000;
+
+                    return Double.NEGATIVE_INFINITY;
+                }
+        ));
+    }
+
     // FIXME again, this is stupid.. but without a rewrite I cant use CraftingRecipeTracker due to the fact some recipes arent catalogued :')
     private RecipeTarget getRecipeTarget(Item item) {
         ResourceTask task = TaskCatalogue.getItemTask(item, 1);
@@ -637,7 +648,7 @@ public class BeatMinecraftTask extends Task {
             }
 
             return pair;
-        }, a->true, true, false, true));
+        }, a -> true, true, false, true));
 
     }
 
@@ -683,13 +694,13 @@ public class BeatMinecraftTask extends Task {
     }
 
     private void addOreMiningTasks() {
-        gatherResources.add(getOrePriorityTask(Items.COAL,MiningRequirement.STONE ,1050, 250, 5, 4, 7));
-        gatherResources.add(getOrePriorityTask(Items.RAW_IRON,MiningRequirement.STONE, 1050, 250, 5, 11, 11));
-        gatherResources.add(getOrePriorityTask(Items.RAW_GOLD,MiningRequirement.IRON, 1050, 250, 5, 5, 5));
-        gatherResources.add(getOrePriorityTask(Items.DIAMOND,MiningRequirement.IRON, 1050, 250, 5, 27, 30));
+        gatherResources.add(getOrePriorityTask(Items.COAL, MiningRequirement.STONE, 1050, 250, 5, 4, 7));
+        gatherResources.add(getOrePriorityTask(Items.RAW_IRON, MiningRequirement.STONE, 1050, 250, 5, 11, 11));
+        gatherResources.add(getOrePriorityTask(Items.RAW_GOLD, MiningRequirement.IRON, 1050, 250, 5, 5, 5));
+        gatherResources.add(getOrePriorityTask(Items.DIAMOND, MiningRequirement.IRON, 1050, 250, 5, 27, 30));
     }
 
-    private PriorityTask getOrePriorityTask(Item item,MiningRequirement requirement, int multiplier, int unneededMultiplier, int unneededThreshold, int minCount, int maxCount) {
+    private PriorityTask getOrePriorityTask(Item item, MiningRequirement requirement, int multiplier, int unneededMultiplier, int unneededThreshold, int minCount, int maxCount) {
         Block[] blocks = mapOreItemToBlocks(item);
 
         return new MineBlockPriorityTask(blocks, new Item[]{item}, requirement,
@@ -732,7 +743,6 @@ public class BeatMinecraftTask extends Task {
         gatherResources.add(new ResourcePriorityTask(StaticItemPriorityCalculator.of(400),
                 a -> !(mod.getItemStorage().hasItem(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)),
                 toItemTargets(Items.WOODEN_PICKAXE)));
-
 
         gatherResources.add(new RecraftableItemPriorityTask(410, 10_000, getRecipeTarget(Items.STONE_PICKAXE),
                 a -> {
@@ -1360,7 +1370,6 @@ public class BeatMinecraftTask extends Task {
                         Block block = mod.getWorld().getBlockState(p).getBlock();
 
                         if (ancientCityBlocks.contains(block)) {
-                            Debug.logMessage("Blacklisting ancient city wool " + pos);
                             mod.getBlockScanner().requestBlockUnreachable(pos, 0);
                             break searchLoop;
                         }
@@ -2330,8 +2339,8 @@ public class BeatMinecraftTask extends Task {
                             setDebugState("Getting close to fortress");
 
                             if ((cachedFortressTask != null && !fortressTimer.elapsed() &&
-                                mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
-                                ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                                    mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
+                            ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 if (cachedFortressTask != null) {
                                     mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
                                     return cachedFortressTask;

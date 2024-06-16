@@ -70,11 +70,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         int y = pos.getY();
         int z = pos.getZ();
 
-        // Log the values of x, y, and z for debugging
-        Debug.logInternal("x = " + x);
-        Debug.logInternal("y = " + y);
-        Debug.logInternal("z = " + z);
-
         return new BlockPos[]{
                 new BlockPos(x + 1, y, z),
                 new BlockPos(x - 1, y, z),
@@ -327,7 +322,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         if (mod.getModSettings().shouldLetBaritoneBreakBlocks()) {
             setDebugState("Letting baritone destroy a block.");
             if (!mod.getClientBaritone().getBuilderProcess().isActive() || !mod.getClientBaritone().getPathingBehavior().isPathing()) {
-                Debug.logInternal("Run Structure Destroy");
+                // Debug.logInternal("Run Structure Destroy");
                 ISchematic schematic = new DestroyStructureSchematic();
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, targetPosition);
             }

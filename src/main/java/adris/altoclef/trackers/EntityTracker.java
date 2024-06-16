@@ -14,6 +14,7 @@ import adris.altoclef.util.helpers.WorldHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ItemEntity;
+import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.mob.MobEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.projectile.FishingBobberEntity;
@@ -37,7 +38,7 @@ public class EntityTracker extends Tracker {
     private final HashMap<Class, List<Entity>> entityMap = new HashMap<>();
 
     private final List<Entity> closeEntities = new ArrayList<>();
-    private final List<Entity> hostiles = new ArrayList<>();
+    private final List<LivingEntity> hostiles = new ArrayList<>();
 
     private final List<CachedProjectile> projectiles = new ArrayList<>();
 
@@ -254,7 +255,7 @@ public class EntityTracker extends Tracker {
         }
     }
 
-    public List<Entity> getHostiles() {
+    public List<LivingEntity> getHostiles() {
         ensureUpdated();
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
             return hostiles;
@@ -373,7 +374,7 @@ public class EntityTracker extends Tracker {
 
                         //Debug.logInternal("TARGET: " + hostile.is);
                         if (closeEnough) {
-                            hostiles.add(entity);
+                            hostiles.add((LivingEntity) entity);
                         }
                     }
                 } else if (entity instanceof ProjectileEntity projEntity) {

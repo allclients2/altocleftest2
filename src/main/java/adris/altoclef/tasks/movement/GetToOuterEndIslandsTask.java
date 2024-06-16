@@ -4,7 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.resources.GetBuildingMaterialsTask;
-import adris.altoclef.tasks.speedrun.BeatMinecraft2Task;
+import adris.altoclef.tasks.speedrun.maintasks.BeatMinecraft2Task;
 import adris.altoclef.tasks.squashed.CataloguedResourceTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;

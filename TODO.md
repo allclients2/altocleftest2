@@ -1,28 +1,14 @@
 # TODO
 
 ### Misc
-- Stabilize commit e67aa6cf9....
 - Implement configs.
 - Allow any bed color when crafting beds from wool.
 - Add cherry blossom wood as a valid wood type or something? It doesn't seem to work properly atm.
 - Maybe add some sort of system that finds and uses seed of the current world?
-- Implement build command (finish branch)
-- Fix eating priority (it will eat while its fighting and die)
-- Implement a proper resource builder task, like it will mine diamonds like #mine diamond_ore even if you did @get diamond, its only targeting a specific diamond ore, not all of them like baritone does, it needs multiple goals, and for that a custom provided resource task that can be given via a generic type to the destoryblocktask (i think)  
+
 
 ### Common death causes
 - Improve escaping from lava.
 - Do not hit pigmen in the nether (or implement a special behaviour when do).
 - Prevent from looking endermen in the eyes.
 - Maybe avoid bastions somehow?
-
-
-### Getting stuck
-- If you are in a 1x1 hole that's more than a block deep, with an entity inside with bot it can fail to place a block to escape hole.
-
-### Chores
-- Remove Log Spam from miran
-
-
-## Images:
-![img.png](.github/MDFiles/img.png)

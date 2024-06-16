@@ -1,6 +1,7 @@
 package adris.altoclef.control;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StlHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -202,7 +203,7 @@ public class KillAura {
         mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
-            if (handItem.isFood()) {
+            if (ItemVer.isFood(handItem)) {
                 List<ItemStack> spaceSlots = mod.getItemStorage().getItemStacksPlayerInventory(false);
                 if (!spaceSlots.isEmpty()) {
                     for (ItemStack spaceSlot : spaceSlots) {
@@ -223,7 +224,7 @@ public class KillAura {
     public void stopShielding(AltoClef mod) {
         if (shielding) {
             ItemStack cursor = StorageHelper.getItemStackInCursorSlot();
-            if (cursor.isFood()) {
+            if (ItemVer.isFood(cursor)) {
                 Optional<Slot> toMoveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursor, false).or(() -> StorageHelper.getGarbageSlot(mod));
                 if (toMoveTo.isPresent()) {
                     Slot garbageSlot = toMoveTo.get();

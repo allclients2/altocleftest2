@@ -2,6 +2,7 @@ package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.multiversion.ToolMaterialVer;
 import adris.altoclef.tasks.block.AbstractDoToClosestObjectTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
@@ -132,13 +133,13 @@ public class MineAndCollectTask extends ResourceTask {
             if (cursorStack != null && !cursorStack.isEmpty()) {
                 // We have something in our cursor stack
                 Item item = cursorStack.getItem();
-                if (item.isSuitableFor(mod.getWorld().getBlockState(subtask.miningPos()))) {
+                if (item.getDefaultStack().isSuitableFor(mod.getWorld().getBlockState(subtask.miningPos()))) {
                     // Our cursor stack would help us mine our current block
                     Item currentlyEquipped = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot()).getItem();
                     if (item instanceof MiningToolItem) {
                         if (currentlyEquipped instanceof MiningToolItem currentPick) {
                             MiningToolItem swapPick = (MiningToolItem) item;
-                            if (swapPick.getMaterial().getMiningLevel() > currentPick.getMaterial().getMiningLevel()) {
+                            if (ToolMaterialVer.getMiningLevel(swapPick) > ToolMaterialVer.getMiningLevel(currentPick)) {
                                 // We can equip a better pickaxe.
                                 mod.getSlotHandler().forceEquipSlot(CursorSlot.SLOT);
                             }
