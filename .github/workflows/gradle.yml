@@ -39,9 +39,3 @@ jobs:
           done
         shell: bash
         working-directory: ./build/libs
-
-      - name: Upload Hashes
-        uses: actions/upload-artifact@v2
-        with:
-          name: Hashes
-          path: ./build/libs/hashes.sha256
