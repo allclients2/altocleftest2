@@ -1,5 +1,6 @@
 package adris.altoclef.util;
 
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
@@ -14,6 +15,16 @@ import java.util.Set;
  * Multiple Minecraft Items can meet the criteria of an "item" (ex. "wooden planks" can be satisfied by oak, acacia, spruce, jungle, etc.)
  */
 public class ItemTarget {
+
+    /**
+     * Converts an array of `Item` objects into an array of `ItemTarget` objects.
+     *
+     * @param items the array of `Item` objects to convert
+     * @return the array of `ItemTarget` objects
+     */
+    public static ItemTarget[] of(Item... items) {
+        return Arrays.stream(items).map(ItemTarget::new).toArray(ItemTarget[]::new);
+    }
 
     private static final int BASICALLY_INFINITY = 99999999;
 

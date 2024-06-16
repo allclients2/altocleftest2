@@ -22,14 +22,13 @@ public class GotoCommand extends Command {
         // (dimension)
         // (x z dimension)
         super("goto", "Tell bot to travel to a set of coordinates",
-                new Arg(GotoTarget.class, "[x y z dimension]/[x z dimension]/[y dimension]/[dimension]/[x y z]/[x z]/[y]")
+                new Arg<>(GotoTarget.class, "[x y z dimension]/[x z dimension]/[y dimension]/[dimension]/[x y z]/[x z]/[y]")
         );
     }
 
     public static Task getMovementTaskFor(GotoTarget target) {
         return switch (target.getType()) {
-            case XYZ ->
-                    new GetToBlockTask(new BlockPos(target.getX(), target.getY(), target.getZ()), target.getDimension());
+            case XYZ -> new GetToBlockTask(new BlockPos(target.getX(), target.getY(), target.getZ()), target.getDimension());
             case XZ -> new GetToXZTask(target.getX(), target.getZ(), target.getDimension());
             case Y -> new GetToYTask(target.getY(), target.getDimension());
             case NONE -> new DefaultGoToDimensionTask(target.getDimension());
