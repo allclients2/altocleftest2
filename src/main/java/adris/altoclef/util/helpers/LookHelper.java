@@ -532,11 +532,11 @@ public interface LookHelper {
         if (withBaritone) {
             // Update the target rotation in the LookBehavior
             mod.getClientBaritone().getLookBehavior().updateTarget(rotation, true);
+        } else {
+            // Set the player's yaw and pitch manually
+            mod.getPlayer().setYaw(rotation.getYaw());
+            mod.getPlayer().setPitch(rotation.getPitch());
         }
-
-        // Set the player's yaw and pitch
-        mod.getPlayer().setYaw(rotation.getYaw());
-        mod.getPlayer().setPitch(rotation.getPitch());
     }
 
     /**

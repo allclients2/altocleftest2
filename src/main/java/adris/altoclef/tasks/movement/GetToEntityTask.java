@@ -19,22 +19,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
     private final Entity _entity;
     private final double _closeEnoughDistance;
-    Block[] annoyingBlocks = new Block[]{
-            Blocks.VINE,
-            Blocks.NETHER_SPROUTS,
-            Blocks.CAVE_VINES,
-            Blocks.CAVE_VINES_PLANT,
-            Blocks.TWISTING_VINES,
-            Blocks.TWISTING_VINES_PLANT,
-            Blocks.WEEPING_VINES_PLANT,
-            Blocks.LADDER,
-            Blocks.BIG_DRIPLEAF,
-            Blocks.BIG_DRIPLEAF_STEM,
-            Blocks.SMALL_DRIPLEAF,
-            Blocks.TALL_GRASS,
-            Blocks.SHORT_GRASS,
-            Blocks.SWEET_BERRY_BUSH
-    };
+    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
     private Task _unstuckTask = null;
 
     public GetToEntityTask(Entity entity, double closeEnoughDistance) {

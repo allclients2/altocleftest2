@@ -36,22 +36,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
     private final BlockPos targetPosition;
-    Block[] annoyingBlocks = new Block[]{
-            Blocks.VINE,
-            Blocks.NETHER_SPROUTS,
-            Blocks.CAVE_VINES,
-            Blocks.CAVE_VINES_PLANT,
-            Blocks.TWISTING_VINES,
-            Blocks.TWISTING_VINES_PLANT,
-            Blocks.WEEPING_VINES_PLANT,
-            Blocks.LADDER,
-            Blocks.BIG_DRIPLEAF,
-            Blocks.BIG_DRIPLEAF_STEM,
-            Blocks.SMALL_DRIPLEAF,
-            Blocks.TALL_GRASS,
-            Blocks.SHORT_GRASS,
-            Blocks.SWEET_BERRY_BUSH
-    };
+    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
     private Task _unstuckTask = null;
     private boolean isMining;
 
@@ -97,11 +82,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                     || mod.getWorld().getBlockState(pos).getBlock() instanceof FenceGateBlock
                     || mod.getWorld().getBlockState(pos).getBlock() instanceof FlowerBlock;
             if (isAnnoying) {
-                Debug.logInternal("Block at position " + pos + " is annoying.");
                 return true;
             }
         }
-        Debug.logInternal("Block at position " + pos + " is not annoying.");
         return false;
     }
 

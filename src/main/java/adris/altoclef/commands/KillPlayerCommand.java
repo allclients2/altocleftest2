@@ -7,9 +7,9 @@ import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.tasks.entity.KillPlayerTask;
 
-public class PunkCommand extends Command {
-    public PunkCommand() throws CommandException {
-        super("punk", "Punk 'em", new Arg(String.class, "playerName"));
+public class KillPlayerCommand extends Command {
+    public KillPlayerCommand() throws CommandException {
+        super("killplr", "Kill named player.", new Arg(String.class, "playerName"));
     }
 
     @Override

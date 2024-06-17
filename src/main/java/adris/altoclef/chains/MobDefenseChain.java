@@ -6,8 +6,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import adris.altoclef.control.LookAtPos;
 import adris.altoclef.multiversion.ItemVer;
-import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import net.minecraft.item.*;
 import org.jetbrains.annotations.NotNull;
@@ -400,53 +400,56 @@ public class MobDefenseChain extends SingleTaskChain {
                 });
 
                 // Calculating canDealWith
-                int canDealWith; {
-                boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
-                double shield = 0;
-                if (hasShield) {
-                    // We will need a shield more with skeletons with bows
-                    if (RangedPresent.get()) {
-                        shield = 3.25;
-                    } else {
-                        shield = 2.05;
+                int canDealWith;
+                {
+                    boolean hasShield = mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD);
+                    double shield = 0;
+                    if (hasShield) {
+                        // We will need a shield more with skeletons with bows
+                        if (RangedPresent.get()) {
+                            shield = 3.25;
+                        } else {
+                            shield = 2.05;
+                        }
+                    }
+
+                    float damage = Player.getMaxHealth() - Player.getHealth();
+                    int armor = Player.getArmor();
+                    float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
+                    canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
+                    canDealWith -= (int) Math.floor(damage * 0.125);
+                    if (mod.getPlayer().isSubmergedInWater()) {
+                        canDealWith -= 1;
                     }
                 }
 
-                float damage = Player.getMaxHealth() - Player.getHealth();
-                int armor = Player.getArmor();
-                float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
-                canDealWith -= (int) Math.floor(damage * 0.125);
-                if (mod.getPlayer().isSubmergedInWater()) {
-                    canDealWith -= 1;
-                }
-            }
+                // Debug
+                // System.out.println("candealwith: " + canDealWith);
+                // System.out.println("entityscore: " + entityscore);
 
-                //System.out.println("candealwith: " + canDealWith);
-                //System.out.println("entityscore: " + entityscore);
+                // Distance we fight or we run from
+                final double distanceDefense = dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.15);
 
-                // Decide if we can fight with them or just run.
-                if (
-                        (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
-                                (!evadingHostilesLastTick) &&
-                                (!closestOpponent.isSubmergedInWater()) // Because bartione can't pathfind to enemy.
-                ) {
-                    // This is self-defense, so only fight if in range.
-                    if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), dangerKeepDistanceAdjusted)) {
+                // This is self-defense, so only defend if in range.
+                if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), distanceDefense)) {
+                    // Determine if we can fight them or we have to run away.
+                    if (
+                         (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
+                         (!evadingHostilesLastTick) &&
+                         (!closestOpponent.isSubmergedInWater()) // Because baritone can't path-find to enemy.
+                    ) {
                         // We can deal with it; Fight.
                         runAwayTask = null;
                         setTask(new KillEntitiesTask(closestOpponent.getClass()));
                         return 65;
                     } else {
-                        return 0;
+                        // We can't deal with it; Flight.
+                        evadingHostilesLastTick = true;
+                        doForceField(mod); // To protect ourselves as we escape.
+                        runAwayTask = new RunAwayFromHostilesTask(distanceDefense, true);
+                        setTask(runAwayTask);
+                        return 75;
                     }
-                } else {
-                    // We can't deal with it; Flight.
-                    evadingHostilesLastTick = true;
-                    doForceField(mod); // To protect ourselves as we escape.
-                    runAwayTask = new RunAwayFromHostilesTask(dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.15), true);
-                    setTask(runAwayTask);
-                    return 75;
                 }
             } else {
                 if (shielding) {
@@ -529,7 +532,8 @@ public class MobDefenseChain extends SingleTaskChain {
                 if (mod.getBehaviour().shouldExcludeFromForcefield(entity)) continue;
                 if (entity instanceof MobEntity) {
                     if (EntityHelper.isProbablyHostileToPlayer(mod, entity) || EntityHelper.isAngryAtPlayer(mod, entity)) {
-                        if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {shouldForce = true;
+                        if (LookHelper.seesPlayer(entity, mod.getPlayer(), 10)) {
+                            shouldForce = true;
                         }
                     }
                 } else if (entity instanceof FireballEntity) {
@@ -648,8 +652,8 @@ public class MobDefenseChain extends SingleTaskChain {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
 
-        Class<?>[] dangerousMobs = new Class[]{WardenEntity.class,WitherEntity.class,WitherSkeletonEntity.class,
-                HoglinEntity.class,ZoglinEntity.class,PiglinBruteEntity.class,VindicatorEntity.class};
+        Class<?>[] dangerousMobs = new Class[]{WardenEntity.class, WitherEntity.class, WitherSkeletonEntity.class,
+                HoglinEntity.class, ZoglinEntity.class, PiglinBruteEntity.class, VindicatorEntity.class};
 
         double range = SAFE_KEEP_DISTANCE - 2;
 
@@ -693,7 +697,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     }
                 }
             } catch (Exception e) {
-                Debug.logWarning("Weird multithread exception. Will fix later. "+e.getMessage());
+                Debug.logWarning("Weird multithreading exception. Will fix later. " + e.getMessage());
             }
         }
         return false;

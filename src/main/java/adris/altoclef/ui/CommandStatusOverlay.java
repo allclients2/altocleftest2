@@ -44,7 +44,7 @@ public class CommandStatusOverlay {
     private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType, int maxLines, List<Task> tasks, AltoClef mod) {
         int whiteColor = 0xFFFFFFFF;
 
-        matrix.scale(1F, 1F, 1F);
+        matrix.scale(0.86F, 0.86F, 0.86F);
 
         float fontHeight = renderer.fontHeight;
         float addX = 4;
