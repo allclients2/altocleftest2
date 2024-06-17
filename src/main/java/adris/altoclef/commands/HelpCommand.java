@@ -43,22 +43,28 @@ public class HelpCommand extends Command {
             }
 
             //Ripped from baritone because noob ;(
+
             line.append(command.getDescription());
             String names = String.join("/", command.getName());
             String name = command.getName();
+
             MutableText shortDescText = Text.literal(" - " + truncate(command.getDescription(), 45 - name.length()));
-            shortDescText.setStyle(shortDescText.getStyle().withColor(Formatting.DARK_GRAY));
+            shortDescText.setStyle(shortDescText.getStyle().withColor(Formatting.GRAY));
+
             MutableText namesText = Text.literal(names);
             namesText.setStyle(namesText.getStyle().withColor(Formatting.WHITE));
+
             MutableText hoverText = Text.literal("");
             hoverText.setStyle(hoverText.getStyle().withColor(Formatting.GRAY));
             hoverText.append(namesText);
             hoverText.append("\n" + command.getDescription());
-            hoverText.append("\nUsage: " + command.getHelpRepresentation());
+            hoverText.append("\nUsage: " + mod.getModSettings().getCommandPrefix() + command.getHelpRepresentation());
+
             String clickCommand = mod.getModSettings().getCommandPrefix() + command.getName();
+
             MutableText Message = Text.literal(""); //indentation
             Message.append(name);
-            Message.setStyle(Message.getStyle().withColor(Formatting.GRAY));
+            Message.setStyle(Message.getStyle().withColor(Formatting.WHITE));
             Message.append(" ");
             Message.append(shortDescText);
             Message.setStyle(Message.getStyle()

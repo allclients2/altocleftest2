@@ -34,26 +34,12 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     private final ItemTarget[] _itemTargets;
 
     // This happens all the time in mineshafts and swamps/jungles
+    private AltoClef mod = AltoClef.INSTANCE;
     private final Set<ItemEntity> _blacklist = new HashSet<>();
     private final boolean _freeInventoryIfFull;
-    Block[] annoyingBlocks = new Block[]{
-            Blocks.VINE,
-            Blocks.NETHER_SPROUTS,
-            Blocks.CAVE_VINES,
-            Blocks.CAVE_VINES_PLANT,
-            Blocks.TWISTING_VINES,
-            Blocks.TWISTING_VINES_PLANT,
-            Blocks.WEEPING_VINES_PLANT,
-            Blocks.LADDER,
-            Blocks.BIG_DRIPLEAF,
-            Blocks.BIG_DRIPLEAF_STEM,
-            Blocks.SMALL_DRIPLEAF,
-            Blocks.TALL_GRASS,
-            Blocks.SHORT_GRASS
-    };
+    Block[] annoyingBlocks = mod.getModSettings().annoyingBlocks;
     private Task _unstuckTask = null;
     // Am starting to regret not making this a singleton
-    private AltoClef _mod;
     private boolean _collectingPickaxeForThisResource = false;
     private ItemEntity _currentDrop = null;
 
@@ -168,7 +154,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             }
             stuckCheck.reset();
         }
-        _mod = mod;
+        this.mod = mod;
 
         // If we're getting a pickaxe for THIS resource...
         if (isIsGettingPickaxeFirst(mod) && _collectingPickaxeForThisResource && !StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.STONE)) {
@@ -265,10 +251,10 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
             }
         }
         // Ensure our inventory is free if we're close
-        boolean touching = _mod.getEntityTracker().isCollidingWithPlayer(itemEntity);
+        boolean touching = mod.getEntityTracker().isCollidingWithPlayer(itemEntity);
         if (touching) {
             if (_freeInventoryIfFull) {
-                if (_mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(itemEntity.getStack(), false).isEmpty()) {
+                if (mod.getItemStorage().getSlotsThatCanFitInPlayerInventory(itemEntity.getStack(), false).isEmpty()) {
                     return new EnsureFreeInventorySlotTask();
                 }
             }

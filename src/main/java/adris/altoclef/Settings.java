@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.Streams;
+import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
@@ -366,6 +368,22 @@ public class Settings implements IFailableConfigFile {
             Items.WHEAT_SEEDS,
             Items.COPPER_ORE
     );
+
+    public final Block[] annoyingBlocks = new Block[]{
+            Blocks.VINE,
+            Blocks.NETHER_SPROUTS,
+            Blocks.CAVE_VINES,
+            Blocks.CAVE_VINES_PLANT,
+            Blocks.TWISTING_VINES,
+            Blocks.TWISTING_VINES_PLANT,
+            Blocks.WEEPING_VINES_PLANT,
+            Blocks.LADDER,
+            Blocks.BIG_DRIPLEAF,
+            Blocks.BIG_DRIPLEAF_STEM,
+            Blocks.SMALL_DRIPLEAF,
+            Blocks.TALL_GRASS,
+            Blocks.SWEET_BERRY_BUSH
+    };
 
     /**
      * How many throwaway blocks to keep as building blocks.

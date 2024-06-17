@@ -16,7 +16,7 @@ import net.minecraft.util.math.Vec3d;
 public abstract class LookAtPos {
     private static Vec3d lookPos;
     private static final TimerGame lookTimeOut = new TimerGame(1);
-    private static final TimerGame updateDelay = new TimerGame(0.2);
+    private static final TimerGame updateDelay = new TimerGame(0.05);
 
     public static void lookAtPos(AltoClef mod, Vec3d newLookPos) {
         lookPos = newLookPos;
@@ -60,7 +60,7 @@ public abstract class LookAtPos {
         }
 
         if (lookPos != null && !isLookingAtPosition(mod, lookPos) && updateDelay.elapsed()) {
-            LookHelper.lookAt(mod, lookPos);
+            LookHelper.lookAt(mod, lookPos, true);
             updateDelay.reset();
             return true;
         }

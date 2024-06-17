@@ -21,7 +21,7 @@ import net.minecraft.util.math.Vec3d;
 import java.util.Optional;
 
 /**
- * Call this when the place you're currently at is bad for some reason and you just wanna get away.
+ * Call this when the place you're currently at is bad for some reason, and you just want to get away.
  */
 public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
@@ -29,22 +29,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final boolean _increaseRange;
     private final TimerGame _timer = new TimerGame(60);
-    Block[] annoyingBlocks = new Block[]{
-            Blocks.VINE,
-            Blocks.NETHER_SPROUTS,
-            Blocks.CAVE_VINES,
-            Blocks.CAVE_VINES_PLANT,
-            Blocks.TWISTING_VINES,
-            Blocks.TWISTING_VINES_PLANT,
-            Blocks.WEEPING_VINES_PLANT,
-            Blocks.LADDER,
-            Blocks.BIG_DRIPLEAF,
-            Blocks.BIG_DRIPLEAF_STEM,
-            Blocks.SMALL_DRIPLEAF,
-            Blocks.TALL_GRASS,
-            Blocks.SHORT_GRASS,
-            Blocks.SWEET_BERRY_BUSH
-    };
+    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
     private Vec3d _origin;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
     private boolean _forceExplore;
@@ -99,7 +84,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         _wanderDistanceExtension = 0;
     }
 
-    // This happens all the time in mineshafts and swamps/jungles
+    // This happens all the time in mineshaft and swamps/jungles
     private BlockPos stuckInBlock(AltoClef mod) {
         BlockPos p = mod.getPlayer().getBlockPos();
         if (isAnnoying(mod, p)) return p;
@@ -200,8 +185,8 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
                 }
             }
             case OVERWORLD, NETHER -> {
-                if (_timer.getDuration() >= 30) {
-                }
+                // Commented out only because empty if statement
+                // if (_timer.getDuration() >= 30) {}
                 if (_timer.elapsed()) {
                     _timer.reset();
                 }
@@ -217,7 +202,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
                 Debug.logMessage("Failed exploring.");
             }
         }
-        // We are getting a little worried. Lets try more options...
+        // We are getting a little worried. Let us try more options...
         if (_failCounter > 5 && _failCounter < 10 || _forceExplore) {
             setDebugState("Exploring; worried.");
             mod.getBehaviour().setBlockBreakAdditionalPenalty(0.2);

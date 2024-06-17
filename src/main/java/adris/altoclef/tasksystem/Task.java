@@ -107,6 +107,7 @@ public abstract class Task {
     }
 
     protected void setDebugState(String state) {
+        AltoClef.INSTANCE.log("STATE: " + state);
         if (state == null) {
             state = "";
         }

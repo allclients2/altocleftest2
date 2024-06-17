@@ -30,7 +30,7 @@ public class AltoClefCommands {
                 new ReloadSettingsCommand(),
                 new GamerCommand(),
                 new MarvionCommand(),
-                new PunkCommand(),
+                new KillPlayerCommand(),
                 new HeroCommand(),
                 new CoverWithBlocksCommand(),
                 new ScanCommand(),
