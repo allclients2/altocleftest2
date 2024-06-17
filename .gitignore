@@ -2,6 +2,7 @@
 .idea/
 .vs/
 run12004/
+versions/
 
 *.iml
 *.ipr
