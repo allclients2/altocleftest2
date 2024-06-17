@@ -30,12 +30,3 @@ jobs:
         with:
           name: Artifacts
           path: ./versions
-
-      - name: Hash Artifacts
-        run: |
-          for u in $(ls) 
-          do
-          echo "$(sha256sum $u)" >> hashes.sha256
-          done
-        shell: bash
-        working-directory: ./build/libs
