@@ -176,7 +176,6 @@ public class PlaceObsidianBucketTask extends Task {
             // Would lead to an embarrassing death.
             BlockPos targetPos = _pos.add(-1, 1, 0);
             if (!mod.getPlayer().getBlockPos().equals(targetPos) && mod.getItemStorage().hasItem(Items.LAVA_BUCKET)) {
-                Debug.logInternal("Positioning player before placing lava...");
                 return new GetToBlockTask(targetPos, false);
             }
             if (WorldHelper.isSolidBlock(mod, _pos)) {
@@ -284,12 +283,10 @@ public class PlaceObsidianBucketTask extends Task {
             // Check if the positions are equal
             boolean isEqual = task.getPos().equals(getPos());
             // Log the result of the comparison
-            Debug.logInternal("isEqual: " + isEqual);
             // Return the result
             return isEqual;
         }
         // Log that the tasks are not equal
-        Debug.logInternal("isEqual: false");
         // Return false
         return false;
     }
@@ -305,8 +302,6 @@ public class PlaceObsidianBucketTask extends Task {
      * @return The position of the object.
      */
     public BlockPos getPos() {
-        // Added logging statement for debugging
-        Debug.logInternal("Entering getPos()");
 
         return _pos;
     }

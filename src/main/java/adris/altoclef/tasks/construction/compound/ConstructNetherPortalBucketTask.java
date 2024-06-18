@@ -152,6 +152,7 @@ public class ConstructNetherPortalBucketTask extends Task {
                 return wanderTask;
             }
         }
+
         if (refreshTimer.elapsed()) {
             Debug.logMessage("Duct tape: Refreshing inventory again just in case");
             refreshTimer.reset();
