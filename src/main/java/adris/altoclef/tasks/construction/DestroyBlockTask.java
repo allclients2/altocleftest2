@@ -304,8 +304,8 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
 
         if (mod.getModSettings().shouldLetBaritoneBreakBlocks()) {
             setDebugState("Letting baritone destroy a block.");
-            if (!mod.getClientBaritone().getBuilderProcess().isActive() || !mod.getClientBaritone().getPathingBehavior().isPathing()) {
-                // Debug.logInternal("Run Structure Destroy");
+            if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
+                Debug.logInternal("Run Structure Destroy");
                 ISchematic schematic = new DestroyStructureSchematic();
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, targetPosition);
             }
@@ -378,17 +378,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
         mod.getInputControls().release(Input.SNEAK);
         mod.getInputControls().release(Input.MOVE_BACK);
         mod.getInputControls().release(Input.MOVE_FORWARD);
-
-        // Logging statements for debugging
-        Debug.logInternal("onStop method called");
-        Debug.logInternal("Baritone pathing cancelled");
-        if (!AltoClef.inGame()) {
-            Debug.logInternal("Not in game");
-        }
-        Debug.logInternal("Left click input force state set to false");
-        Debug.logInternal("Released sneak input control");
-        Debug.logInternal("Released move back input control");
-        Debug.logInternal("Released move forward input control");
     }
 
     private static class DestroyStructureSchematic extends AbstractSchematic {
