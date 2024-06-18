@@ -1,6 +1,7 @@
 package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
@@ -153,7 +154,7 @@ public class UnstuckChain extends SingleTaskChain {
         }
 
         if (eatingTicks > 7*20) {
-            mod.log("the bot is probably stuck trying to eat... resetting action");
+            Debug.logInternal("the bot is probably stuck trying to eat... resetting action");
             mod.getFoodChain().shouldStop(true);
 
             eatingTicks = 0;

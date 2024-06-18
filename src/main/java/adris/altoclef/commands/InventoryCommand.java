@@ -1,6 +1,7 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
@@ -34,24 +35,24 @@ public class InventoryCommand extends Command {
                 }
             }
             // Print
-            mod.log("INVENTORY: ", MessagePriority.OPTIONAL);
+            Debug.logInternal("INVENTORY: ", MessagePriority.OPTIONAL);
             for (String name : counts.keySet()) {
-                mod.log(name + " : " + counts.get(name), MessagePriority.OPTIONAL);
+                Debug.logInternal(name + " : " + counts.get(name), MessagePriority.OPTIONAL);
             }
-            mod.log("(inventory list sent) ", MessagePriority.OPTIONAL);
+            Debug.logInternal("(inventory list sent) ", MessagePriority.OPTIONAL);
         } else {
             // Print item quantity
             Item[] matches = TaskCatalogue.getItemMatches(item);
             if (matches == null || matches.length == 0) {
-                mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
+                Debug.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
                 finish();
                 return;
             }
             int count = mod.getItemStorage().getItemCount(matches);
             if (count == 0) {
-                mod.log(item + " COUNT: (none)");
+                Debug.logInternal(item + " COUNT: (none)");
             } else {
-                mod.log(item + " COUNT: " + count);
+                Debug.logInternal(item + " COUNT: " + count);
             }
         }
         finish();

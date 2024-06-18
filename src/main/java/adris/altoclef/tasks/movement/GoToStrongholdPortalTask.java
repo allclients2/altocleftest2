@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -51,8 +52,8 @@ public class GoToStrongholdPortalTask extends Task {
         }
 
         if (mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(_strongholdCoordinates)) < 10 && !mod.getBlockScanner().anyFound(Blocks.END_PORTAL_FRAME)) {
-            mod.log("Something went wrong whilst triangulating the stronghold... either the action got disrupted or the second eye went to a different stronghold");
-            mod.log("We will try to triangulate again now...");
+            Debug.logInternal("Something went wrong whilst triangulating the stronghold... either the action got disrupted or the second eye went to a different stronghold");
+            Debug.logInternal("We will try to triangulate again now...");
             _strongholdCoordinates = null;
             _locateCoordsTask = new LocateStrongholdCoordinatesTask(_targetEyes);
             return null;

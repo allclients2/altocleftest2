@@ -1,6 +1,7 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.*;
 import adris.altoclef.tasksystem.Task;
@@ -15,14 +16,14 @@ public class GetCommand extends Command {
     }
 
     private static void OnResourceDoesNotExist(AltoClef mod, String resource) {
-        mod.log("\"" + resource + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);
-        mod.log("Use @list to get a list of available resources.", MessagePriority.OPTIONAL);
+        Debug.logInternal("\"" + resource + "\" is not a catalogued resource. Can't get it yet, sorry! If it's a generic block try using baritone.", MessagePriority.OPTIONAL);
+        Debug.logInternal("Use @list to get a list of available resources.", MessagePriority.OPTIONAL);
     }
 
     private void GetItems(AltoClef mod, ItemTarget... items) {
         Task targetTask;
         if (items == null || items.length == 0) {
-            mod.log("You must specify at least one item!");
+            Debug.logInternal("You must specify at least one item!");
             finish();
             return;
         }

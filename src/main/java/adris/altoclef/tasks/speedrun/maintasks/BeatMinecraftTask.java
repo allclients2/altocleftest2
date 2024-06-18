@@ -166,11 +166,11 @@ public class BeatMinecraftTask extends Task {
 
 
         if (mod.getWorld().getDifficulty() != Difficulty.EASY) {
-            mod.logWarning("Detected that the difficulty is other than easy!");
+            Debug.logWarning("Detected that the difficulty is other than easy!");
             if (mod.getWorld().getDifficulty() == Difficulty.PEACEFUL) {
-                mod.logWarning("No mobs spawn on peaceful difficulty, so the bot will not be able to beat the game. Please change it!");
+                Debug.logWarning("No mobs spawn on peaceful difficulty, so the bot will not be able to beat the game. Please change it!");
             } else {
-                mod.logWarning("This could cause the bot to die sooner, please consider changing it...");
+                Debug.logWarning("This could cause the bot to die sooner, please consider changing it...");
             }
         }
 
@@ -471,8 +471,8 @@ public class BeatMinecraftTask extends Task {
 
                     if (lastTask instanceof PlaceBedAndSetSpawnTask && lastTask.isFinished(mod)) {
                         skipNight[0] = true;
-                        mod.log("Failed to sleep :(");
-                        mod.log("Skipping night");
+                        Debug.logInternal("Failed to sleep :(");
+                        Debug.logInternal("Skipping night");
                     }
                     if (skipNight[0]) return Double.NEGATIVE_INFINITY;
 
@@ -2019,7 +2019,7 @@ public class BeatMinecraftTask extends Task {
             Vec3d average = frames.stream().reduce(Vec3d.ZERO, (accum, bpos) -> accum.add((int) Math.round(bpos.getX() + 0.5), (int) Math.round(bpos.getY() + 0.5), (int) Math.round(bpos.getZ() + 0.5)), Vec3d::add).multiply(1d / frames.size());
 
             // Log the average position.
-            mod.log("Average Position: " + average);
+            Debug.logInternal("Average Position: " + average);
 
             return new BlockPos(new Vec3i((int) average.x, (int) average.y, (int) average.z));
         }
@@ -2159,7 +2159,7 @@ public class BeatMinecraftTask extends Task {
 
                     setDebugState("Priority: " + String.format(Locale.US, "%.2f", maxPriority) + ", " + toGather);
                     if (!sameTask && prevLastGather == toGather && lastTask != null && lastGather.calculatePriority(mod) > 0 && isTaskRunning(mod, lastTask)) {
-                        mod.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
+                        Debug.logWarning("might be stuck or switching too much, forcing current resource for a bit more");
                         changedTaskTimer.reset();
                         prevLastGather = null; //do not force infinitely, 3 sec should be enough I hope
                         setDebugState("Priority: FORCED, " + lastGather);
@@ -2181,7 +2181,7 @@ public class BeatMinecraftTask extends Task {
 
                         if (t1.original == t2.interrupt && t1.pos.isWithinDistance(t3.pos, 5) && t3.original == t1.interrupt) {
                             forcedTaskTimer.reset();
-                            mod.logWarning("Probably stuck! Forcing timer...");
+                            Debug.logWarning("Probably stuck! Forcing timer...");
                             taskChanges.clear();
                             return lastTask;
                         }
@@ -2342,7 +2342,7 @@ public class BeatMinecraftTask extends Task {
                                     mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) - 1 > prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2d
                             ) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                                 if (cachedFortressTask != null) {
-                                    mod.log(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
+                                    Debug.logInternal(mod.getPlayer().getPos().distanceTo(WorldHelper.toVec3d(cachedFortressTask.blockPos)) + " : " + prevPos.getManhattanDistance(cachedFortressTask.blockPos) / 2);
                                     return cachedFortressTask;
                                 }
                             }
@@ -2355,7 +2355,7 @@ public class BeatMinecraftTask extends Task {
                             resetFortressTask = true;
 
                             fortressTimer.reset();
-                            mod.log("new");
+                            Debug.logInternal("new");
 
                             prevPos = mod.getPlayer().getBlockPos();
 

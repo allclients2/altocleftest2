@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
@@ -46,11 +47,11 @@ public class BranchMineCommand extends Command {
 	}
 	
 	private static void OnResourceDoesNotExist(AltoClef mod, String resource) {
-        mod.log("\"" + resource + "\" is not a catalogued ores. Can't get it yet, sorry!", MessagePriority.OPTIONAL);
-        mod.log("List of available items: ", MessagePriority.OPTIONAL);
+        Debug.logInternal("\"" + resource + "\" is not a catalogued ores. Can't get it yet, sorry!", MessagePriority.OPTIONAL);
+        Debug.logInternal("List of available items: ", MessagePriority.OPTIONAL);
         for (String key : _dropToOre.keySet()) {
 
-            mod.log("	\"" + key + "\"", MessagePriority.OPTIONAL);
+            Debug.logInternal("	\"" + key + "\"", MessagePriority.OPTIONAL);
         }
     }
 
@@ -58,7 +59,7 @@ public class BranchMineCommand extends Command {
     	BranchMiningTask targetTask;
     	List<Block> blocksToMine = new ArrayList<>();
         if (items == null || items.length == 0) {
-            mod.log("You must specify at least one item!");
+            Debug.logInternal("You must specify at least one item!");
             finish();
             return;
         }
@@ -66,7 +67,7 @@ public class BranchMineCommand extends Command {
 		{
 			if(!_dropToOre.containsKey(itemTarget.getCatalogueName()))
 			{
-				mod.log("Unexpected value: " + itemTarget.getCatalogueName() + ", expacted any of: " + _dropToOre.keySet(), MessagePriority.OPTIONAL);
+				Debug.logInternal("Unexpected value: " + itemTarget.getCatalogueName() + ", expacted any of: " + _dropToOre.keySet(), MessagePriority.OPTIONAL);
 		        finish();
 		        return;
 			}

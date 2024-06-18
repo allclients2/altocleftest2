@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.speedrun;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.ItemHelper;
@@ -37,7 +38,7 @@ public class OneCycleTask extends Task {
 
         List<EnderDragonEntity> dragons = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class);
         if (dragons.size() != 1) {
-              mod.log("No dragon? :(");
+              Debug.logInternal("No dragon? :(");
         }
 
         for (EnderDragonEntity dragon : dragons) {
@@ -55,7 +56,7 @@ public class OneCycleTask extends Task {
             }
 
             if (dir == null) {
-                mod.log("no obisidan? :(");
+                Debug.logInternal("no obisidan? :(");
                 return null;
             }
 
@@ -64,7 +65,7 @@ public class OneCycleTask extends Task {
 
             double d = distanceIgnoreY(WorldHelper.toVec3d(targetBlock), mod.getPlayer().getPos());
             if (d > 0.7) {
-                mod.log(d + "");
+                Debug.logInternal(d + "");
                 return new GetToBlockTask(targetBlock);
             }
             LookHelper.lookAt(mod,obsidian,dir);
@@ -109,7 +110,7 @@ public class OneCycleTask extends Task {
             boolean tooClose = destroyDistance < 1.1;
             boolean skip = destroyDistance > 3 && dist > 4.5 && distXZ > 2.5;
 
-            mod.log(destroyDistance + " : " + dist + " : " + distXZ);
+            Debug.logInternal(destroyDistance + " : " + dist + " : " + distXZ);
             //   double dist = distanceIgnoreY(dragonHeadPos,WorldHelper.toVec3d(bedHead));
 
             if ((dist < 1.5 || (prevDist < distXZ && destroyDistance < 4 && prevDist < 2.9)) || (destroyDistance < 2 && dist < 4)

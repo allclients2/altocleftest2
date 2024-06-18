@@ -2,6 +2,7 @@ package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 
+import adris.altoclef.Debug;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
@@ -38,12 +39,12 @@ public class ScanCommand extends Command {
         }
 
         if (block == null) {
-            mod.logWarning("Block named: " + blockStr + " not found :((");
+            Debug.logWarning("Block named: " + blockStr + " not found :((");
             return;
         }
 
         BlockScanner blockScanner = mod.getBlockScanner();
-        mod.log(blockScanner.getNearestBlock(block,mod.getPlayer().getPos()) + "");
+        Debug.logInternal(blockScanner.getNearestBlock(block,mod.getPlayer().getPos()) + "");
     }
 
 }

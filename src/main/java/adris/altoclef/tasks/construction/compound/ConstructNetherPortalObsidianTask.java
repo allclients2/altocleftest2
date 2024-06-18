@@ -184,7 +184,7 @@ public class ConstructNetherPortalObsidianTask extends Task {
                     }
                 }
 
-                mod.logWarning("Did not find any block to place obsidian on");
+                Debug.logWarning("Did not find any block to place obsidian on");
             }
 
             if (!world.getBlockState(placeTarget).isAir() && !world.getBlockState(placeTarget).getBlock().equals(Blocks.OBSIDIAN)) {

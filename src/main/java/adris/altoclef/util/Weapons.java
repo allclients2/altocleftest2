@@ -60,7 +60,7 @@ public abstract class Weapons {
         } else if (BestWeapon.TypeId == 2) {
             return ((AxeItem) BestWeapon.WeaponItem).getMaterial().getAttackDamage();
         } else {
-            //mod.log("Invalid Weapon Type");
+            //Debug.logInternal("Invalid Weapon Type");
             return 0;
         }
     }

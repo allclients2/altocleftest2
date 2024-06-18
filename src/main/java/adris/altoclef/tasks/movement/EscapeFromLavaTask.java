@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.multiversion.FoodComponentWrapper;
 import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasksystem.Task;
@@ -68,7 +69,7 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
         if (food.isPresent() && mod.getPlayer().getHungerManager().getFoodLevel() < 20) {
             // can be interrupted by block placing, but we should try to eat whenever we can
             if (mod.getPlayer().isBlocking()) {
-                mod.log("want to eat, trying to stop shielding...");
+                Debug.logInternal("want to eat, trying to stop shielding...");
                 mod.getInputControls().release(Input.CLICK_RIGHT);
             } else {
                 mod.getSlotHandler().forceEquipItem(new Item[]{food.get()}, true);
@@ -96,7 +97,7 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
             }
 
             if (mod.getPlayer().isBlocking()) {
-                mod.log("want to place block, trying to stop shielding...");
+                Debug.logInternal("want to place block, trying to stop shielding...");
                 mod.getInputControls().release(Input.CLICK_RIGHT);
             }
 
@@ -119,8 +120,8 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
                         } else {
                             mod.getSlotHandler().forceEquipItem(mod.getClientBaritoneSettings().acceptableThrowawayItems.value.toArray(new Item[0]));
                         }
-                        mod.log(pos+"");
-                        mod.log(facing+"");
+                        Debug.logInternal(pos+"");
+                        Debug.logInternal(facing+"");
 
 
                         mod.getInputControls().tryPress(Input.CLICK_RIGHT);

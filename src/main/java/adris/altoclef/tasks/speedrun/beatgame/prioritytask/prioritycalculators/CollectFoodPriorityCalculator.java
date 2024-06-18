@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -208,7 +209,7 @@ public class CollectFoodPriorityCalculator extends ItemPriorityCalculator {
                             } else if (itemToGrab.equals(Items.WHEAT)) {
                                 hunger += ItemVer.getFoodComponent(Items.BREAD).getHunger() / 3d;
                             } else {
-                                mod.log("unknown food item: " + itemToGrab);
+                                Debug.logInternal("unknown food item: " + itemToGrab);
                             }
                             int groundCost = (int) (hunger * nearestDrop.get().getStack().getCount());
 
