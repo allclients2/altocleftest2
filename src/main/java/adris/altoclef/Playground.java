@@ -309,7 +309,7 @@ public class Playground {
                 mod.runUserTask(new ShootArrowSimpleProjectileTask(ghast));
                 break;
             default:
-                mod.logWarning("Test not found: \"" + arg + "\".");
+                Debug.logWarning("Test not found: \"" + arg + "\".");
                 break;
         }
     }

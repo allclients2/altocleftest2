@@ -173,7 +173,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         }
 
         if (dir == null) {
-            mod.log("no obisidan? :(");
+            Debug.logInternal("no obisidan? :(");
             return null;
         }
 
@@ -182,14 +182,14 @@ public class KillEnderDragonWithBedsTask extends Task {
 
         double d = distanceIgnoreY(WorldHelper.toVec3d(targetBlock), mod.getPlayer().getPos());
         if (d > 0.7 || mod.getPlayer().getBlockPos().down().getY() > endPortalTop.getY()-4) {
-            mod.log(d + "");
+            Debug.logInternal(d + "");
             return new GetToBlockTask(targetBlock);
         } else if (!waited) {
             waited = true;
             waitBeforePlaceTimer.reset();
         }
         if (!waitBeforePlaceTimer.elapsed()) {
-            mod.log(waitBeforePlaceTimer.getDuration() + " waiting...");
+            Debug.logInternal(waitBeforePlaceTimer.getDuration() + " waiting...");
             return null;
         }
 
@@ -223,7 +223,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         boolean tooClose = destroyDistance < 1.1;
         boolean skip = destroyDistance > 3 && dist > 4.5 && distXZ > 2.5;
 
-        mod.log(destroyDistance + " : " + dist + " : " + distXZ);
+        Debug.logInternal(destroyDistance + " : " + dist + " : " + distXZ);
 
         if ((dist < 1.5 || (prevDist < distXZ && destroyDistance < 4 && prevDist < 2.9)) || (destroyDistance < 2 && dist < 4)
                 || (destroyDistance < 1.7 && dist < 4.5) || tooClose || (destroyDistance < 2.4 && distXZ < 3.7) || (destroyDistance < 3.5 && distXZ < 2.4)) {

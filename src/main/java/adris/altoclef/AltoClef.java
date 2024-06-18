@@ -526,28 +526,6 @@ public class AltoClef implements ModInitializer {
         return mlgBucketChain;
     }
 
-    public void log(String message) {
-        log(message, MessagePriority.TIMELY);
-    }
-
-    /**
-     * Logs to the console and also messages any player using the bot as a butler.
-     */
-    public void log(String message, MessagePriority priority) {
-        Debug.logMessage(message);
-    }
-
-    public void logWarning(String message) {
-        logWarning(message, MessagePriority.TIMELY);
-    }
-
-    /**
-     * Logs a warning to the console and also alerts any player using the bot as a butler.
-     */
-    public void logWarning(String message, MessagePriority priority) {
-        Debug.logWarning(message);
-    }
-
     private void runEnqueuedPostInits() {
         synchronized (_postInitQueue) {
             while (!_postInitQueue.isEmpty()) {

@@ -1,6 +1,7 @@
 package adris.altoclef.trackers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.multiversion.recipemanager.RecipeManagerWrapper;
 import adris.altoclef.multiversion.recipemanager.WrappedRecipeEntry;
 import adris.altoclef.util.RecipeTarget;
@@ -33,7 +34,7 @@ public class CraftingRecipeTracker extends Tracker{
         ensureUpdated();
 
         if (!hasRecipeForItem(item)) {
-            mod.logWarning("trying to access recipe for unknown item: "+item);
+            Debug.logWarning("trying to access recipe for unknown item: "+item);
             return null;
         }
 
@@ -44,7 +45,7 @@ public class CraftingRecipeTracker extends Tracker{
         ensureUpdated();
 
         if (!hasRecipeForItem(item)) {
-            mod.logWarning("trying to access recipe for unknown item: "+item);
+            Debug.logWarning("trying to access recipe for unknown item: " + item);
             return null;
         }
 
@@ -77,7 +78,7 @@ public class CraftingRecipeTracker extends Tracker{
         ensureUpdated();
 
         if (!hasRecipe(recipe)) {
-            mod.logWarning("Trying to get result for unknown recipe: "+recipe);
+            Debug.logWarning("Trying to get result for unknown recipe: "+recipe);
             return null;
         }
         ItemStack result = recipeResultMap.get(recipe);

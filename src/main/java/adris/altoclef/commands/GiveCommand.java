@@ -24,7 +24,7 @@ public class GiveCommand extends Command {
             if (mod.getButler().hasCurrentUser()) {
                 username = mod.getButler().getCurrentUser();
             } else {
-                mod.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
+                Debug.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
                 finish();
                 return;
             }
@@ -52,7 +52,7 @@ public class GiveCommand extends Command {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
             mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
         } else {
-            mod.log("Item not found or task does not exist for item: " + item);
+            Debug.logInternal("Item not found or task does not exist for item: " + item);
             finish();
         }
     }

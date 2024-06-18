@@ -1,6 +1,7 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.util.helpers.ConfigHelper;
@@ -13,7 +14,7 @@ public class ReloadSettingsCommand extends Command {
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
         ConfigHelper.reloadAllConfigs();
-        mod.log("Reload successful!");
+        Debug.logInternal("Reload successful!");
         finish();
     }
 }

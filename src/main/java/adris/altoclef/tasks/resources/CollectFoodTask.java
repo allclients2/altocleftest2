@@ -405,7 +405,7 @@ public class CollectFoodTask extends Task {
                             } else if (itemToGrab.equals(Items.WHEAT)) {
                                 hunger += ItemVer.getFoodComponent(Items.BREAD).getHunger()/3d;
                             } else {
-                                mod.log("unknown food item: "+itemToGrab);
+                                Debug.logInternal("unknown food item: "+itemToGrab);
                             }
                             int groundCost = (int) (hunger * nearestDrop.get().getStack().getCount());
 

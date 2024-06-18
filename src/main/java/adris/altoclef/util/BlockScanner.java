@@ -257,7 +257,7 @@ public class BlockScanner {
 
         if (scanDimension != WorldHelper.getCurrentDimension() || mod.getWorld() != scanWorld) {
             if (LOG) {
-                mod.log("BlockScanner: new dimension or world detected, resetting data!");
+                Debug.logInternal("BlockScanner: new dimension or world detected, resetting data!");
             }
             reset();
             scanWorld = mod.getWorld();
@@ -270,7 +270,7 @@ public class BlockScanner {
         }
 
         if (LOG) {
-            mod.log("Updating BlockScanner.. size: " + cachedCloseBlocks.size() + " : " + cachedBlocks.size());
+            Debug.logInternal("Updating BlockScanner.. size: " + cachedCloseBlocks.size() + " : " + cachedBlocks.size());
         }
 
         scanning = true;
@@ -374,7 +374,7 @@ public class BlockScanner {
         }
 
         if (LOG) {
-            mod.log("Rescanned in: " + (System.currentTimeMillis() - ms) + " ms; visited: " + visited.size() + " chunks");
+            Debug.logInternal("Rescanned in: " + (System.currentTimeMillis() - ms) + " ms; visited: " + visited.size() + " chunks");
         }
         rescanTimer.reset();
         scanning = false;

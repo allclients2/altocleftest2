@@ -1,6 +1,7 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
@@ -19,7 +20,7 @@ public class FollowCommand extends Command {
             if (mod.getButler().hasCurrentUser()) {
                 username = mod.getButler().getCurrentUser();
             } else {
-                mod.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
+                Debug.logWarning("No butler user currently present. Running this command with no user argument can ONLY be done via butler.");
                 finish();
                 return;
             }

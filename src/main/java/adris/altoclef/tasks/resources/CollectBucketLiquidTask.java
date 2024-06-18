@@ -173,7 +173,7 @@ public class CollectBucketLiquidTask extends ResourceTask {
                     if (timeoutTimer.elapsed()) {
                         tries = 0;
                     }
-                    mod.log("trying to wander "+timeoutTimer.getDuration());
+                    Debug.logInternal("trying to wander "+timeoutTimer.getDuration());
                     return new TimeoutWanderTask();
                 }
                 timeoutTimer.reset();

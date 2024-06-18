@@ -300,11 +300,11 @@ public class InteractWithBlockTask extends Task {
                 waitingForClickTicks++;
                 if (waitingForClickTicks % 25 == 0 && shiftClick) {
                     mod.getInputControls().hold(Input.SNEAK);
-                    mod.log("trying to press shift");
+                    Debug.logInternal("trying to press shift");
                 }
 
                 if (waitingForClickTicks > 10*20) {
-                    mod.log("trying to wander");
+                    Debug.logInternal("trying to wander");
                     waitingForClickTicks = 0;
                     return wanderTask;
                 }

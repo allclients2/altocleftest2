@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.misc;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
@@ -85,14 +86,14 @@ public class ElytraToXZTask extends Task {
                     return _test_task_;
                 }
             }
-            mod.log("Alto clef Failed to detect Elytra.");
+            Debug.logInternal("Alto clef Failed to detect Elytra.");
             FailToStart = true;
             return _test_task_;
         }
 
         // Always equip Elytra
         if (CurrentElytra.getDamage() > Items.ELYTRA.getDefaultStack().getMaxDamage() * 0.95) {
-            mod.log("Low Elytra health warning, equip new elytra..");
+            Debug.logInternal("Low Elytra health warning, equip new elytra..");
             FailToStart = true;
             return _test_task_;
         }
@@ -109,9 +110,9 @@ public class ElytraToXZTask extends Task {
                 double AngleMultiplier = (Math.max(0, 0.5 - Velocity.y) + 0.5); //Range 0.5 to 1 multiplier
                 LookHelper.lookAt(mod, new Vec3d(GoalPosition.x, Position.y + Position.distanceTo(GoalPosition) * AngleMultiplier, GoalPosition.z));
             } else if (TakeOffPosition.isEmpty()) {
-                mod.log("Getting firework rockets..");
+                Debug.logInternal("Getting firework rockets..");
                 TakeOffPosition = Optional.of(mod.getPlayer().getBlockPos());
-                mod.log(mod.getPlayer().getEquippedStack(EquipmentSlot.MAINHAND).getCount() + " Firework count");
+                Debug.logInternal(mod.getPlayer().getEquippedStack(EquipmentSlot.MAINHAND).getCount() + " Firework count");
                 _test_task_ = TaskCatalogue.getItemTask(Items.FIREWORK_ROCKET, RocketsGetCount);
             }
             return _test_task_;
@@ -130,17 +131,17 @@ public class ElytraToXZTask extends Task {
 
             // Take off
             if (!IsFlying) {
-                mod.log("Try flying...");
+                Debug.logInternal("Try flying...");
 
                 LookHelper.lookAt(mod, Position.add(0, 2, 0));
 
                 if (mod.getPlayer().isFallFlying()) {
-                    mod.log("Flying!");
+                    Debug.logInternal("Flying!");
 
                     SendInput(mod, Input.CLICK_RIGHT); // Fly away!
                     IsFlying = true;
                 } else if (YVelocity < -0.05) {
-                    mod.log("Falling!");
+                    Debug.logInternal("Falling!");
 
                     SendInput(mod, Input.JUMP); //Enable elytra
                 } else if (mod.getPlayer().groundCollision) {
@@ -150,7 +151,7 @@ public class ElytraToXZTask extends Task {
                 if (isRangeFromGoal(RangeDescend)) { // Descending, at `RangeClose` blocks range.
                     if (!Descending) {
                         Descending = true;
-                        mod.log("Descending now.");
+                        Debug.logInternal("Descending now.");
                     }
                     FlyAltitude = FlightAltitudeDescend;
                     //Took this path as we don't want rocket boosting while landing.
