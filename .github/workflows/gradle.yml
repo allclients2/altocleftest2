@@ -25,8 +25,25 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew build
 
+      - name: Create artifact directory structure
+        run: |
+          mkdir -p artifacts
+          for version in 1.20.1 1.20.2 1.20.4 1.20.6; do
+            mkdir -p artifacts/$version/devlibs
+            mkdir -p artifacts/$version/libs
+            cp ./versions/$version/build/devlibs/*.jar artifacts/$version/devlibs/
+            cp ./versions/$version/build/libs/*.jar artifacts/$version/libs/
+          done
+
+      - name: Compute hashes
+        run: |
+          touch artifacts/hashes.txt
+          for jar in $(find artifacts -name '*.jar'); do
+            sha256sum $jar >> artifacts/hashes.txt
+          done
+
       - name: Archive Artifacts
         uses: actions/upload-artifact@v2
         with:
           name: Artifacts
-          path: ./versions
+          path: artifacts
