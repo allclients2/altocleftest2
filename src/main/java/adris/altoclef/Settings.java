@@ -46,6 +46,11 @@ public class Settings implements IFailableConfigFile {
     //////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * If true, shows a debug bar displaying how much milliseconds is spend on altoclefs tick function
+     */
+    private boolean showDebugTickMs = false;
+
+    /**
      * If true, text will appear on the top left showing the current
      * task chain.
      */
@@ -435,6 +440,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldShowTaskChain() {
         return showTaskChains;
+    }
+
+    public boolean shouldShowDebugTickMs() {
+        return showDebugTickMs;
     }
 
     public boolean shouldHideAllWarningLogs() {

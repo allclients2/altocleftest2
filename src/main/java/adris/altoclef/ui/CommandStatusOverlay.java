@@ -18,27 +18,25 @@ import java.util.List;
 
 public class CommandStatusOverlay {
 
+    private final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.from(ZoneOffset.of("+00:00"))); // The date formatter
     //For the ingame timer
     private long timeRunning;
     private long lastTime = 0;
-    private final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.from(ZoneOffset.of("+00:00"))); // The date formatter
 
     public void render(AltoClef mod, MatrixStack matrixstack) {
-        if (mod.getModSettings().shouldShowTaskChain()) {
-            List<Task> tasks = Collections.emptyList();
-            if (mod.getTaskRunner().getCurrentTaskChain() != null) {
-                tasks = mod.getTaskRunner().getCurrentTaskChain().getTasks();
-            }
-
-            matrixstack.push();
-
-            drawTaskChain(MinecraftClient.getInstance().textRenderer, 10, 10,
-                    matrixstack.peek().getPositionMatrix(),
-                    MinecraftClient.getInstance().getBufferBuilders().getOutlineVertexConsumers(),
-                    TextRenderer.TextLayerType.SEE_THROUGH, 10, tasks, mod);
-
-            matrixstack.pop();
+        List<Task> tasks = Collections.emptyList();
+        if (mod.getTaskRunner().getCurrentTaskChain() != null) {
+            tasks = mod.getTaskRunner().getCurrentTaskChain().getTasks();
         }
+
+        matrixstack.push();
+
+        drawTaskChain(MinecraftClient.getInstance().textRenderer, 10, 10,
+                matrixstack.peek().getPositionMatrix(),
+                MinecraftClient.getInstance().getBufferBuilders().getOutlineVertexConsumers(),
+                TextRenderer.TextLayerType.SEE_THROUGH, 10, tasks, mod);
+
+        matrixstack.pop();
     }
 
     private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType, int maxLines, List<Task> tasks, AltoClef mod) {
@@ -48,7 +46,7 @@ public class CommandStatusOverlay {
 
         float fontHeight = renderer.fontHeight;
         float addX = 4;
-        float addY = fontHeight+2;
+        float addY = fontHeight + 2;
 
         renderer.draw(mod.getTaskRunner().statusReport, x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
         y += addY;
@@ -74,7 +72,7 @@ public class CommandStatusOverlay {
 
         if (tasks.size() <= maxLines) {
             for (Task task : tasks) {
-                renderTask(task, renderer,x,y,matrix,vertexConsumers,layerType);
+                renderTask(task, renderer, x, y, matrix, vertexConsumers, layerType);
 
                 x += addX;
                 y += addY;
@@ -84,11 +82,11 @@ public class CommandStatusOverlay {
 
         for (int i = 0; i < tasks.size(); ++i) {
             if (i == 1) {
-                x += addX*2;
+                x += addX * 2;
                 renderer.draw("...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
 
             } else if (i == 0 || i > tasks.size() - maxLines) {
-                renderTask(tasks.get(i), renderer,x,y,matrix,vertexConsumers,layerType);
+                renderTask(tasks.get(i), renderer, x, y, matrix, vertexConsumers, layerType);
             } else {
                 continue;
             }
@@ -101,11 +99,11 @@ public class CommandStatusOverlay {
     }
 
 
-    private void renderTask(Task task, TextRenderer renderer, float x, float y, Matrix4f matrix,VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType ) {
-        String taskName = task.getClass().getSimpleName() +" ";
-        renderer.draw(taskName, x, y, new Color(128,128,128).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+    private void renderTask(Task task, TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType) {
+        String taskName = task.getClass().getSimpleName() + " ";
+        renderer.draw(taskName, x, y, new Color(128, 128, 128).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
 
-        renderer.draw(task.toString(), x+renderer.getWidth(taskName), y, new Color(255,255,255).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        renderer.draw(task.toString(), x + renderer.getWidth(taskName), y, new Color(255, 255, 255).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
 
     }
 
