@@ -3,6 +3,7 @@ package adris.altoclef.control;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.util.ItemTarget;
+import adris.altoclef.util.helpers.InputHelper;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.CursorSlot;
@@ -234,6 +235,10 @@ public class SlotHandler {
     }
 
     public void refreshInventory() {
+        if (mod.getController().isBreakingBlock()) {
+            return; // Don't refresh whilst breaking a block.
+        }
+
         if (MinecraftClient.getInstance().player == null)
             return;
         for (int i = 0; i < MinecraftClient.getInstance().player.getInventory().main.size(); ++i) {
