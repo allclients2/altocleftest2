@@ -20,7 +20,7 @@ public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequir
     private final boolean _wander;
     protected MovementProgressChecker _checker = new MovementProgressChecker();
     protected Goal _cachedGoal = null;
-    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Task _unstuckTask = null;
 
     // This happens all the time in mineshafts and swamps/jungles

@@ -37,7 +37,7 @@ public class PickupDroppedItemTask extends AbstractDoToClosestObjectTask<ItemEnt
     private AltoClef mod = AltoClef.INSTANCE;
     private final Set<ItemEntity> _blacklist = new HashSet<>();
     private final boolean _freeInventoryIfFull;
-    Block[] annoyingBlocks = mod.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = mod.getModSettings().getAnnoyingBlocks();
     private Task _unstuckTask = null;
     // Am starting to regret not making this a singleton
     private boolean _collectingPickaxeForThisResource = false;

@@ -31,7 +31,7 @@ public class HelpCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
-        Debug.logInternal("--- COMMANDS ---", MessagePriority.OPTIONAL);
+        Debug.logMessage("--- COMMANDS ---", MessagePriority.OPTIONAL);
         int padSize = 10;
         for (Command command : AltoClef.getCommandExecutor().allCommands()) {
             StringBuilder line = new StringBuilder();
@@ -72,7 +72,7 @@ public class HelpCommand extends Command {
                     .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, clickCommand)));
             Debug.logMessage(Message, true);
         }
-        Debug.logInternal("---------------", MessagePriority.OPTIONAL);
+        Debug.logMessage("---------------", MessagePriority.OPTIONAL);
         finish();
     }
 }

@@ -205,6 +205,10 @@ public class MobDefenseChain extends SingleTaskChain {
         ClientPlayerEntity Player = mod.getPlayer();
         dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE + (1 - (Player.getHealth() / Player.getMaxHealth())) * 10;
 
+        if (Player.isTouchingWater()) {
+            dangerKeepDistanceAdjusted *= 0.5;
+        }
+
         int avoidanceRadius = (int) (dangerKeepDistanceAdjusted + 1);
         mod.HostileAvoidanceRadius = avoidanceRadius;
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = avoidanceRadius;

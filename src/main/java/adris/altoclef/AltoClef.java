@@ -29,6 +29,7 @@ import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
 import baritone.api.Settings;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -245,7 +246,6 @@ public class AltoClef implements ModInitializer {
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
     public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
     public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
-
 
     public int HostileAvoidanceRadius = 10; //avoid mobs, this will be adjusted by the mob defense chain.
 
