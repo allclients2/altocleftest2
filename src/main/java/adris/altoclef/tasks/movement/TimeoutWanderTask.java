@@ -29,7 +29,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker _progressChecker = new MovementProgressChecker();
     private final boolean _increaseRange;
     private final TimerGame _timer = new TimerGame(60);
-    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Vec3d _origin;
     //private DistanceProgressChecker _distanceProgressChecker = new DistanceProgressChecker(10, 0.1f);
     private boolean _forceExplore;

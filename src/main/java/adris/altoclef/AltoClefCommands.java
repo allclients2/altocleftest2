@@ -20,7 +20,6 @@ public class AltoClefCommands {
                 new StashCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
-                new MiranCommand(),
                 new InventoryCommand(),
                 new LocateStructureCommand(),
                 new StopCommand(),
@@ -28,18 +27,16 @@ public class AltoClefCommands {
                 new TestCommand(),
                 new FoodCommand(),
                 new ReloadSettingsCommand(),
-                new GamerCommand(),
-                new MarvionCommand(),
                 new KillPlayerCommand(),
                 new HeroCommand(),
                 new CoverWithBlocksCommand(),
                 new ScanCommand(),
-               // new BuildCommand(),
+                new ListCommand(),
                 new FlytoCommand(),
                 new BranchMineCommand(),
-                new SelfCareCommand()
-                //new TestMoveInventoryCommand(),
-                //    new TestSwapInventoryCommand()
+                new MiranCommand(),
+                new GamerCommand(),
+                new MarvionCommand()
         );
     }
 }

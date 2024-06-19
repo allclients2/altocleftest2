@@ -1,6 +1,8 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
+import net.minecraft.component.DataComponentType;
+import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
@@ -35,22 +37,29 @@ public abstract class Weapons {
 
     public static Weapon getBestWeapon(AltoClef mod) {
         int WeaponId = 0;
+
         Item bestWeapon = null;
+        float bestDamage = 0.0f;
+
         for (Item item : SWORDS) {
-            if (mod.getItemStorage().hasItem(item)) {
+            final float damage = ((SwordItem) item).getMaterial().getAttackDamage();
+            if (mod.getItemStorage().hasItem(item) && damage > bestDamage) {
                 bestWeapon = item;
+                bestDamage = damage;
                 WeaponId = 1;
             }
         }
-        if (bestWeapon == null) {
-            for (Item item : AXES) //Axes less in priority they go second if a sword is not found.
-            {
-                if (mod.getItemStorage().hasItem(item)) {
-                    bestWeapon = item;
-                    WeaponId = 2;
-                }
+
+        for (Item item : AXES)
+        {
+            final float damage = ((AxeItem) item).getMaterial().getAttackDamage();
+            if (mod.getItemStorage().hasItem(item) && (damage * 0.6) > bestDamage) {
+                bestWeapon = item;
+                bestDamage = damage;
+                WeaponId = 2;
             }
         }
+
         return new Weapon(bestWeapon, WeaponId);
     }
 

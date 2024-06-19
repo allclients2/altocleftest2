@@ -920,7 +920,6 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (log.getY() < 62) {
                     if (!mod.getBlockTracker().unreachable(log)) {
                         if (!ironGearSatisfied && !eyeGearSatisfied) {
-                            Debug.logMessage("Blacklisting dangerous log.");
                             mod.getBlockTracker().requestBlockUnreachable(log, 0);
                         }
                     }
@@ -937,7 +936,6 @@ public class MarvionBeatMinecraftTask extends Task {
                             if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
                                     deepslateCoalOre.get().isWithinDistance(entity.getPos(), 30)) {
                                 if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    Debug.logMessage("Blacklisting dangerous coal ore.");
                                     mod.getBlockTracker().requestBlockUnreachable(deepslateCoalOre.get(), 0);
                                 }
                             }
@@ -956,7 +954,6 @@ public class MarvionBeatMinecraftTask extends Task {
                             if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
                                     coalOrePos.get().isWithinDistance(entity.getPos(), 30)) {
                                 if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    Debug.logMessage("Blacklisting dangerous coal ore.");
                                     mod.getBlockTracker().requestBlockUnreachable(coalOrePos.get(), 0);
                                 }
                             }

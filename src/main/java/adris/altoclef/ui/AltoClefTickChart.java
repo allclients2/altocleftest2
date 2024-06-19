@@ -30,17 +30,33 @@ public class AltoClefTickChart {
         list.add(nanoTime);
     }
 
+
+    //  Minecraft Colors used here are in a 8-digit hexadecimal format of ARGB (Alpha, Red, Green, Blue)
+
+    // Example with 0xFFDDDDDD
+    // Can be Separated to 5 sections: 0x FF DD DD DD
+
+    //    0x: Indicates this is a hexadecimal
+    //    FF: is the Alpha channel (opacity)
+    //    DD: is the Red channel
+    //    DD: is the Green channel
+    //    DD: is the Blue channel
+
+    // FF is 255 of the max 255 for 2 hexadecimal digits, this is used in the Alpha channel.
+    // DD is 0xDD which is 211, out of the max 255 (0xFF), for all channels. 211 / 255 = 0.827 * 100 = 82.7%
+    // This means 0xFFDDDDDD color is fully opaque, and about 82.7% in all channels, making it bright white.
+
     public void render(AltoClef mod,DrawContext context, int x, int width) {
         if (MinecraftClient.getInstance().inGameHud.getDebugHud().shouldShowDebugHud() || !mod.getTaskRunner().isActive()) return;
 
         int height = context.getScaledWindowHeight();
         context.fill(RenderLayer.getGuiOverlay(), x, height - 37, x + width, height, 0x90505050);
 
-        long m = Integer.MAX_VALUE;
-        long n = Integer.MIN_VALUE;
+        long max = Integer.MAX_VALUE;
+        long min = Integer.MIN_VALUE;
 
 
-        while (list.size() >= width-1) {
+        while (list.size() >= width - 1) {
             list.removeFirst();
         }
 
@@ -48,13 +64,15 @@ public class AltoClefTickChart {
             int p = x + i + 1;
 
             long r = this.get(i);
-            m = Math.min(m, r);
-            n = Math.max(n, r);
+            max = Math.min(max, r);
+            min = Math.max(min, r);
 
             this.drawTotalBar(context, p, height, i);
         }
+
         context.drawHorizontalLine(RenderLayer.getGuiOverlay(), x, x + width - 1, height - 37, 0xFFDDDDDD);
         context.drawHorizontalLine(RenderLayer.getGuiOverlay(), x, x + width - 1, height - 1, 0xFFDDDDDD);
+
         context.drawVerticalLine(RenderLayer.getGuiOverlay(), x, height - 37, height, 0xFFDDDDDD);
         context.drawVerticalLine(RenderLayer.getGuiOverlay(), x + width - 1, height - 37, height, 0xFFDDDDDD);
 
@@ -100,6 +118,10 @@ public class AltoClefTickChart {
         if (ms > maxMs) {
             return 0xFFFFFFFF;
         }
+
+        // minColor is Green
+        // medianColor is Orange
+        // maxColor is Red
 
         return getColor(ms/maxMs, 0xFF00FF00, 0xFFFFC800, 0xFFFF0000);
     }

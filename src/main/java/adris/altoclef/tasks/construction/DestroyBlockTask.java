@@ -36,7 +36,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
     private final MovementProgressChecker _moveChecker = new MovementProgressChecker();
     private final BlockPos targetPosition;
-    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Task _unstuckTask = null;
     private boolean isMining;
     private final ISchematic schematic = new DestroyStructureSchematic();
@@ -229,42 +229,9 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
      */
     @Override
     protected Task onTick(AltoClef mod) {
-        // Check if there is white wool at the specified position
-        if (mod.getWorld().getBlockState(targetPosition).getBlock() == Blocks.WHITE_WOOL) {
-            // Iterate over all entities in the world
-            Iterable<Entity> entities = mod.getWorld().getEntities();
-            for (Entity entity : entities) {
-                // Check if the entity is a PillagerEntity and is within a distance of 144 blocks from the position
-                if (entity instanceof PillagerEntity && targetPosition.isWithinDistance(entity.getPos(), 144)) {
-                    Debug.logMessage("Blacklisting pillager wool.");
-                    // Request the block at the position to be marked as unreachable
-                    mod.getBlockScanner().requestBlockUnreachable(targetPosition, 0);
-                }
-            }
-        }
-
         // Reset the move checker if Baritone is currently pathing
         if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
             _moveChecker.reset();
-        }
-
-        // Check if the player is in a Nether portal
-        if (WorldHelper.isInNetherPortal(mod)) {
-            if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
-                setDebugState("Getting out from nether portal");
-                // Hold the sneak and move forward inputs to exit the Nether portal
-                mod.getInputControls().hold(Input.SNEAK);
-                mod.getInputControls().hold(Input.MOVE_FORWARD);
-                return null;
-            } else {
-                mod.getInputControls().release(Input.SNEAK);
-                mod.getInputControls().release(Input.MOVE_BACK);
-                mod.getInputControls().release(Input.MOVE_FORWARD);
-            }
-        } else if (mod.getClientBaritone().getPathingBehavior().isPathing()) {
-            mod.getInputControls().release(Input.SNEAK);
-            mod.getInputControls().release(Input.MOVE_BACK);
-            mod.getInputControls().release(Input.MOVE_FORWARD);
         }
 
         // Check if there is an active unstuck task and the player is stuck in a block
@@ -315,14 +282,17 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
                 setDebugState("Block in range, mining...");
                 stuckCheck.reset();
                 isMining = true;
+
                 mod.getInputControls().release(Input.SNEAK);
                 mod.getInputControls().release(Input.MOVE_BACK);
                 mod.getInputControls().release(Input.MOVE_FORWARD);
                 mod.getClientBaritone().getCustomGoalProcess().onLostControl();
                 mod.getClientBaritone().getBuilderProcess().onLostControl();
+
                 if (!LookHelper.isLookingAt(mod, reach.get())) {
                     LookHelper.lookAt(mod, reach.get());
                 }
+
                 // Tool equip is handled in `PlayerInteractionFixChain`. Oof.
                 mod.getClientBaritone().getInputOverrideHandler().setInputForceState(Input.CLICK_LEFT, true);
             } else {

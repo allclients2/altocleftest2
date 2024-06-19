@@ -48,7 +48,7 @@ public class InteractWithBlockTask extends Task {
     private final boolean shiftClick;
     private final TimerGame clickTimer = new TimerGame(5);
     private final TimeoutWanderTask wanderTask = new TimeoutWanderTask(5, true);
-    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Task unstuckTask = null;
     private ClickResponse cachedClickStatus = ClickResponse.CANT_REACH;
     private int waitingForClickTicks = 0;

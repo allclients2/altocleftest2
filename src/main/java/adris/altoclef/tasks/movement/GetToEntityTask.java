@@ -19,7 +19,7 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
     private final TimeoutWanderTask _wanderTask = new TimeoutWanderTask(10);
     private final Entity _entity;
     private final double _closeEnoughDistance;
-    Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().annoyingBlocks;
+    private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Task _unstuckTask = null;
 
     public GetToEntityTask(Entity entity, double closeEnoughDistance) {

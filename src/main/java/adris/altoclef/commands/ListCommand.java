@@ -1,6 +1,7 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
@@ -16,8 +17,8 @@ public class ListCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
-        mod.log("#### LIST OF ALL OBTAINABLE ITEMS ####", MessagePriority.OPTIONAL);
-        mod.log(Arrays.toString(TaskCatalogue.resourceNames().toArray()), MessagePriority.OPTIONAL);
-        mod.log("############# END LIST ###############", MessagePriority.OPTIONAL);
+        Debug.logMessage("#### LIST OF ALL OBTAINABLE ITEMS ####", MessagePriority.OPTIONAL);
+        Debug.logMessage(Arrays.toString(TaskCatalogue.resourceNames().toArray()), MessagePriority.OPTIONAL);
+        Debug.logMessage("############# END LIST ###############", MessagePriority.OPTIONAL);
     }
 }

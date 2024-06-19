@@ -14,7 +14,7 @@ public class ReloadSettingsCommand extends Command {
     @Override
     protected void call(AltoClef mod, ArgParser parser) {
         ConfigHelper.reloadAllConfigs();
-        Debug.logInternal("Reload successful!");
+        Debug.logMessage("Reload successful!");
         finish();
     }
 }

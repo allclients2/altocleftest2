@@ -5,9 +5,7 @@ import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.util.BlockRange;
 import adris.altoclef.util.helpers.ConfigHelper;
 import adris.altoclef.util.helpers.ItemHelper;
-import adris.altoclef.util.serialization.IFailableConfigFile;
-import adris.altoclef.util.serialization.ItemDeserializer;
-import adris.altoclef.util.serialization.ItemSerializer;
+import adris.altoclef.util.serialization.*;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -20,6 +18,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import net.minecraft.util.math.BlockPos;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -374,21 +373,26 @@ public class Settings implements IFailableConfigFile {
             Items.COPPER_ORE
     );
 
-    public final Block[] annoyingBlocks = new Block[]{
-            Blocks.VINE,
-            Blocks.NETHER_SPROUTS,
-            Blocks.CAVE_VINES,
-            Blocks.CAVE_VINES_PLANT,
-            Blocks.TWISTING_VINES,
-            Blocks.TWISTING_VINES_PLANT,
-            Blocks.WEEPING_VINES_PLANT,
-            Blocks.LADDER,
-            Blocks.BIG_DRIPLEAF,
-            Blocks.BIG_DRIPLEAF_STEM,
-            Blocks.SMALL_DRIPLEAF,
-            Blocks.TALL_GRASS,
-            Blocks.SWEET_BERRY_BUSH
-    };
+    /**
+     * Blocks that baritone may get stuck on while pathfinding.
+     */
+    @JsonSerialize(using = BlockSerializer.class)
+    @JsonDeserialize(using = BlockDeserializer.class)
+    private List<Block> annoyingBlocks = Arrays.asList(
+        Blocks.VINE,
+        Blocks.NETHER_SPROUTS,
+        Blocks.CAVE_VINES,
+        Blocks.CAVE_VINES_PLANT,
+        Blocks.TWISTING_VINES,
+        Blocks.TWISTING_VINES_PLANT,
+        Blocks.WEEPING_VINES_PLANT,
+        Blocks.LADDER,
+        Blocks.BIG_DRIPLEAF,
+        Blocks.BIG_DRIPLEAF_STEM,
+        Blocks.SMALL_DRIPLEAF,
+        Blocks.TALL_GRASS,
+        Blocks.SWEET_BERRY_BUSH
+    );
 
     /**
      * How many throwaway blocks to keep as building blocks.
@@ -555,6 +559,12 @@ public class Settings implements IFailableConfigFile {
 
     public int getMinimumFoodAllowed() {
         return minimumFoodAllowed;
+    }
+
+    @JsonIgnore
+    final Block[] blockArray =  annoyingBlocks.toArray(new Block[annoyingBlocks.size()]);
+    public Block[] getAnnoyingBlocks() {
+        return blockArray;
     }
 
     public boolean isMobDefense() {

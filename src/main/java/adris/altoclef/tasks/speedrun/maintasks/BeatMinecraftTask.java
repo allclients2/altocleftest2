@@ -1222,8 +1222,6 @@ public class BeatMinecraftTask extends Task {
                     continue;
 
                 if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 && nearestTracking.get().isWithinDistance(entity.getPos(), 30)) {
-
-                    Debug.logMessage("Blacklisting dangerous " + block.toString());
                     mod.getBlockScanner().requestBlockUnreachable(nearestTracking.get(), 0);
                 }
             }
@@ -1281,31 +1279,25 @@ public class BeatMinecraftTask extends Task {
         List<BlockPos> craftingTables = mod.getBlockScanner().getKnownLocations(Blocks.CRAFTING_TABLE);
         for (BlockPos craftingTable : craftingTables) {
             if (mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask) && (!mod.getBlockScanner().isUnreachable(craftingTable))) {
-                Debug.logMessage("Blacklisting extra crafting table.");
                 mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
-
             }
             if (!mod.getBlockScanner().isUnreachable(craftingTable)) {
                 BlockState craftingTablePosUp = mod.getWorld().getBlockState(craftingTable.up(2));
                 if (mod.getEntityTracker().entityFound(WitchEntity.class)) {
                     Optional<Entity> witch = mod.getEntityTracker().getClosestEntity(WitchEntity.class);
                     if (witch.isPresent() && (craftingTable.isWithinDistance(witch.get().getPos(), 15))) {
-                        Debug.logMessage("Blacklisting witch crafting table.");
                         mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
-
                     }
                 }
                 if (craftingTablePosUp.getBlock() == Blocks.WHITE_WOOL) {
-                    Debug.logMessage("Blacklisting pillage crafting table.");
                     mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
                 }
             }
         }
-        List<BlockPos> smokers = mod.getBlockScanner().getKnownLocations(Blocks.SMOKER);
 
+        List<BlockPos> smokers = mod.getBlockScanner().getKnownLocations(Blocks.SMOKER);
         for (BlockPos smoker : smokers) {
             if (mod.getItemStorage().hasItem(Items.SMOKER) && !mod.getBlockScanner().isUnreachable(smoker)) {
-                Debug.logMessage("Blacklisting extra smoker.");
                 mod.getBlockScanner().requestBlockUnreachable(smoker, 0);
             }
         }
@@ -1314,7 +1306,6 @@ public class BeatMinecraftTask extends Task {
 
         for (BlockPos furnace : furnaces) {
             if (mod.getItemStorage().hasItem(Items.FURNACE) && !goToNetherTask.isActive() && !ranStrongholdLocator && !mod.getBlockScanner().isUnreachable(furnace)) {
-                Debug.logMessage("Blacklisting extra furnace.");
                 mod.getBlockScanner().requestBlockUnreachable(furnace, 0);
             }
         }
@@ -1325,12 +1316,10 @@ public class BeatMinecraftTask extends Task {
             Iterable<Entity> entities = mod.getWorld().getEntities();
             for (Entity entity : entities) {
                 if (entity instanceof PillagerEntity && !mod.getBlockScanner().isUnreachable(log) && log.isWithinDistance(entity.getPos(), 40)) {
-                    Debug.logMessage("Blacklisting pillage log.");
                     mod.getBlockScanner().requestBlockUnreachable(log, 0);
                 }
             }
             if (log.getY() < 62 && !mod.getBlockScanner().isUnreachable(log) && !ironGearSatisfied && !eyeGearSatisfied) {
-                Debug.logMessage("Blacklisting dangerous log.");
                 mod.getBlockScanner().requestBlockUnreachable(log, 0);
             }
         }

@@ -86,7 +86,7 @@ public class ElytraToXZTask extends Task {
                     return _test_task_;
                 }
             }
-            Debug.logInternal("Alto clef Failed to detect Elytra.");
+            Debug.logMessage("Alto clef Failed to detect Elytra.");
             FailToStart = true;
             return _test_task_;
         }
