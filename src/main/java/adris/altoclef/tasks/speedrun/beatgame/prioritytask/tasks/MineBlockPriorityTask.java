@@ -46,7 +46,7 @@ public class MineBlockPriorityTask extends PriorityTask{
         super(canCall, shouldForce, canCache, bypassForceCooldown);
         this.toMine = toMine;
         this.droppedItem = droppedItem;
-        this.droppedItemTargets = BeatMinecraftTask.toItemTargets(droppedItem);
+        this.droppedItemTargets = ItemTarget.of(droppedItem);
         this.miningRequirement = miningRequirement;
         this.prioritySupplier = prioritySupplier;
     }

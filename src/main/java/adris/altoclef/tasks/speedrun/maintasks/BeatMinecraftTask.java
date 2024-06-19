@@ -83,8 +83,8 @@ public class BeatMinecraftTask extends Task {
 
 
     private static final ItemTarget[] COLLECT_EYE_GEAR_MIN = combine(
-            toItemTargets(Items.DIAMOND_SWORD),
-            toItemTargets(Items.DIAMOND_PICKAXE)
+            ItemTarget.of(Items.DIAMOND_SWORD),
+            ItemTarget.of(Items.DIAMOND_PICKAXE)
     );
 
     private static final int END_PORTAL_FRAME_COUNT = 12;
@@ -289,21 +289,6 @@ public class BeatMinecraftTask extends Task {
         return frameBlocks;
     }
 
-    /**
-     * Converts an array of `Item` objects into an array of `ItemTarget` objects.
-     *
-     * @param items the array of `Item` objects to convert
-     * @return the array of `ItemTarget` objects
-     */
-    public static ItemTarget[] toItemTargets(Item... items) {
-        // Use the `Arrays.stream()` method to create a stream of `Item` objects
-        // Add logging statement to print the item being converted
-        return Arrays.stream(items)
-                // Use the `map()` method to convert each `Item` object into an `ItemTarget` object
-                .map(ItemTarget::new)
-                // Use the `toArray()` method to convert the stream of `ItemTarget` objects into an array
-                .toArray(ItemTarget[]::new);
-    }
 
     /**
      * Combines multiple arrays of ItemTarget objects into a single array.
@@ -663,7 +648,7 @@ public class BeatMinecraftTask extends Task {
                         && mod.getItemStorage().hasItem(Items.STONE_SWORD, Items.IRON_SWORD, Items.DIAMOND_SWORD)
                         && CollectFoodTask.calculateFoodPotential(mod) < config.foodUnits,
 
-                new CollectFoodTask(config.foodUnits), toItemTargets(food.toArray(new Item[]{}))
+                new CollectFoodTask(config.foodUnits), ItemTarget.of(food.toArray(new Item[]{}))
         ));
 
         gatherResources.add(new ActionPriorityTask(mod12 -> {
@@ -714,7 +699,7 @@ public class BeatMinecraftTask extends Task {
         gatherResources.add(new ResourcePriorityTask(StaticItemPriorityCalculator.of(520),
                 altoClef -> StorageHelper.miningRequirementMet(mod, MiningRequirement.STONE),
                 true, true, false,
-                toItemTargets(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)
+                ItemTarget.of(Items.STONE_AXE, Items.STONE_SWORD, Items.STONE_SHOVEL, Items.STONE_HOE)
         ));
 
         gatherResources.add(new CraftItemPriorityTask(300, getRecipeTarget(Items.STONE_SWORD),
@@ -742,7 +727,7 @@ public class BeatMinecraftTask extends Task {
     private void addPickaxeTasks(AltoClef mod) {
         gatherResources.add(new ResourcePriorityTask(StaticItemPriorityCalculator.of(400),
                 a -> !(mod.getItemStorage().hasItem(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)),
-                toItemTargets(Items.WOODEN_PICKAXE)));
+                ItemTarget.of(Items.WOODEN_PICKAXE)));
 
         gatherResources.add(new RecraftableItemPriorityTask(410, 10_000, getRecipeTarget(Items.STONE_PICKAXE),
                 a -> {
