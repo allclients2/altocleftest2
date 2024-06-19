@@ -7,7 +7,7 @@ import adris.altoclef.tasks.movement.IdleTask;
 
 public class IdleCommand extends Command {
     public IdleCommand() {
-        super("idle", "Stand still, while Alto clef protect/cares for self.");
+        super("idle", "Stand still");
     }
 
     @Override

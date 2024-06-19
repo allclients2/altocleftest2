@@ -1,7 +1,6 @@
 package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
@@ -16,7 +15,7 @@ import java.util.HashMap;
 
 public class InventoryCommand extends Command {
     public InventoryCommand() throws CommandException {
-        super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg(String.class, "item", null, 1));
+        super("inventory", "Prints the bot's inventory OR returns how many of an item the bot has", new Arg<>(String.class, "item", null, 1));
     }
 
     @Override
@@ -35,24 +34,24 @@ public class InventoryCommand extends Command {
                 }
             }
             // Print
-            Debug.logInternal("INVENTORY: ", MessagePriority.OPTIONAL);
+            mod.log("INVENTORY: ", MessagePriority.OPTIONAL);
             for (String name : counts.keySet()) {
-                Debug.logInternal(name + " : " + counts.get(name), MessagePriority.OPTIONAL);
+                mod.log(name + " : " + counts.get(name), MessagePriority.OPTIONAL);
             }
-            Debug.logInternal("(inventory list sent) ", MessagePriority.OPTIONAL);
+            mod.log("(inventory list sent) ", MessagePriority.OPTIONAL);
         } else {
             // Print item quantity
             Item[] matches = TaskCatalogue.getItemMatches(item);
             if (matches == null || matches.length == 0) {
-                Debug.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
+                mod.logWarning("Item \"" + item + "\" is not catalogued/recognized.");
                 finish();
                 return;
             }
             int count = mod.getItemStorage().getItemCount(matches);
             if (count == 0) {
-                Debug.logInternal(item + " COUNT: (none)");
+                mod.log(item + " COUNT: (none)");
             } else {
-                Debug.logInternal(item + " COUNT: " + count);
+                mod.log(item + " COUNT: " + count);
             }
         }
         finish();
