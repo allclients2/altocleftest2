@@ -1,6 +1,7 @@
 package adris.altoclef;
 
 
+import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
 import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
@@ -76,6 +77,8 @@ public class AltoClef implements ModInitializer {
     private MessageSender messageSender;
     private InputControls inputControls;
     private SlotHandler slotHandler;
+    // Butler
+    private Butler butler;
 
     //TODO refactor this later
     public static AltoClef INSTANCE;
@@ -141,6 +144,8 @@ public class AltoClef implements ModInitializer {
         messageSender = new MessageSender();
         inputControls = new InputControls();
         slotHandler = new SlotHandler(this);
+
+        butler = new Butler(this);
 
         initializeCommands();
 
@@ -381,6 +386,12 @@ public class AltoClef implements ModInitializer {
         return settings;
     }
 
+    /**
+     * Butler controller. Keeps track of users and lets you receive user messages
+     */
+    public Butler getButler() {
+        return butler;
+    }
 
     /**
      * Sends chat messages (avoids auto-kicking)
