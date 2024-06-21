@@ -9,7 +9,9 @@ import java.util.Optional;
 import adris.altoclef.control.LookAtPos;
 import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
+import net.minecraft.util.Hand;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -389,17 +391,19 @@ public class MobDefenseChain extends SingleTaskChain {
 
                 AtomicBoolean RangedPresent = new AtomicBoolean(false);
                 toDealWith.forEach(entity -> {
-                    if (entity instanceof SkeletonEntity && ((SkeletonEntity) entity).getActiveItem() != null && mod.getPlayer().canSee(entity)) {
-                        if (entity.isSubmergedInWater()) {
-                            if (!mod.getPlayer().isSubmergedInWater()) {
+                    if (entity instanceof SkeletonEntity && mod.getPlayer().canSee(entity)) {
+                        if (((MobEntity) entity).getEquippedStack(EquipmentSlot.MAINHAND).getItem() == Items.BOW) {
+                            if (entity.isSubmergedInWater() && !mod.getPlayer().isSubmergedInWater()) {
                                 return;
                             }
+                            RangedPresent.set(true);
                         }
+                    } else if (entity instanceof WitchEntity) { // Take no chances
                         RangedPresent.set(true);
-                    } else if (entity instanceof WitchEntity) { //Take no chances
-                        RangedPresent.set(true);
-                    } else if (entity instanceof DrownedEntity && ((DrownedEntity) entity).getHandItems() == Items.TRIDENT) { // Can easily kill us
-                        RangedPresent.set(true);
+                    } else if (entity instanceof DrownedEntity) {
+                        if (((MobEntity) entity).getEquippedStack(EquipmentSlot.MAINHAND).getItem() == Items.TRIDENT) { // Can easily kill us
+                            RangedPresent.set(true);
+                        }
                     }
                 });
 
@@ -472,6 +476,8 @@ public class MobDefenseChain extends SingleTaskChain {
         } else {
             runAwayTask = null;
         }
+
+        doForceField(mod); // Last protection measure (this seems important though)
 
         return 0;
     }
@@ -552,6 +558,7 @@ public class MobDefenseChain extends SingleTaskChain {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
         killAura.tickEnd(mod);
     }
 

@@ -946,7 +946,6 @@ public class MarvionBeatMinecraftTask extends Task {
                         if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
                                 deepslateIronOrePos.get().isWithinDistance(entity.getPos(), 30)) {
                             if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                Debug.logMessage("Blacklisting dangerous iron ore.");
                                 mod.getBlockScanner().requestBlockUnreachable(deepslateIronOrePos.get(), 0);
                             }
                         }
@@ -963,7 +962,6 @@ public class MarvionBeatMinecraftTask extends Task {
                         if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
                                 ironOrePos.get().isWithinDistance(entity.getPos(), 30)) {
                             if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                Debug.logMessage("Blacklisting dangerous iron ore.");
                                 mod.getBlockScanner().requestBlockUnreachable(ironOrePos.get(), 0);
                             }
                         }

@@ -60,7 +60,7 @@ public abstract class LookAtPos {
         }
 
         if (lookPos != null && !isLookingAtPosition(mod, lookPos) && updateDelay.elapsed()) {
-            LookHelper.lookAt(mod, lookPos, true);
+            LookHelper.lookAt(mod, lookPos, false);
             updateDelay.reset();
             return true;
         }

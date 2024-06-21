@@ -13,6 +13,7 @@ import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.registry.Registries;
+import net.minecraft.registry.RegistryKey;
 import net.minecraft.registry.tag.BlockTags;
 import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
@@ -460,7 +461,7 @@ public class ItemHelper {
     }
 
     public static boolean isFuel(Item item) {
-        return getFuelTimeMap().containsKey(item);
+        return getFuelTimeMap().containsKey(item) || Arrays.stream(PLANKS).toList().contains(item) || Arrays.stream(LOG).toList().contains(item);
     }
 
     public boolean isRawFood(Item item) {
