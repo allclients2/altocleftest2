@@ -6,6 +6,7 @@ import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.message.MessageType;
 
 import java.util.Objects;
@@ -22,26 +23,26 @@ public class Butler {
 
     private static final String BUTLER_MESSAGE_START = "` ";
 
-    private final AltoClef _mod;
+    private final AltoClef mod;
 
-    private final WhisperChecker _whisperChecker = new WhisperChecker();
+    private final WhisperChecker whisperChecker = new WhisperChecker();
 
-    private final UserAuth _userAuth;
+    private final UserAuth userAuth;
 
-    private String _currentUser = null;
+    private String currentUser = null;
 
     // Utility variables for command logic
-    private boolean _commandInstantRan = false;
-    private boolean _commandFinished = false;
+    private boolean commandInstantRan = false;
+    private boolean commandFinished = false;
 
     public Butler(AltoClef mod) {
-        _mod = mod;
-        _userAuth = new UserAuth(mod);
+        this.mod = mod;
+        userAuth = new UserAuth(mod);
 
         // Revoke our current user whenever a task finishes.
         EventBus.subscribe(TaskFinishedEvent.class, evt -> {
-            if (_currentUser != null) {
-                _currentUser = null;
+            if (currentUser != null) {
+                currentUser = null;
             }
         });
 
@@ -59,7 +60,7 @@ public class Butler {
                 if (debug) {
                     Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");
                 }
-                _mod.getButler().receiveMessage(wholeMessage, receiver);
+                this.mod.getButler().receiveMessage(wholeMessage, receiver);
             }
         });
     }
@@ -67,7 +68,7 @@ public class Butler {
     private void receiveMessage(String msg, String receiver) {
         // Format: <USER> whispers to you: <MESSAGE>
         // Format: <USER> whispers: <MESSAGE>
-        WhisperChecker.MessageResult result = this._whisperChecker.receiveMessage(_mod, receiver, msg);
+        WhisperChecker.MessageResult result = this.whisperChecker.receiveMessage(mod, receiver, msg);
         if (result != null) {
             this.receiveWhisper(result.from, result.message);
         } else if (ButlerConfig.getInstance().whisperFormatDebug) {
@@ -86,7 +87,7 @@ public class Butler {
             return;
         }
 
-        if (_userAuth.isUserAuthorized(username)) {
+        if (userAuth.isUserAuthorized(username)) {
             executeWhisper(username, message);
         } else {
             if (debug) {
@@ -100,17 +101,17 @@ public class Butler {
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean isUserAuthorized(String username) {
-        return _userAuth.isUserAuthorized(username);
+        return userAuth.isUserAuthorized(username);
     }
 
     public void onLog(String message, MessagePriority priority) {
-        if (_currentUser != null) {
+        if (currentUser != null) {
             sendWhisper(message, priority);
         }
     }
 
     public void onLogWarning(String message, MessagePriority priority) {
-        if (_currentUser != null) {
+        if (currentUser != null) {
             sendWhisper("[WARNING:] " + message, priority);
         }
     }
@@ -120,49 +121,52 @@ public class Butler {
     }
 
     public String getCurrentUser() {
-        return _currentUser;
+        return currentUser;
     }
 
     public boolean hasCurrentUser() {
-        return _currentUser != null;
+        return currentUser != null;
     }
 
     private void executeWhisper(String username, String message) {
-        String prevUser = _currentUser;
-        _commandInstantRan = true;
-        _commandFinished = false;
-        _currentUser = username;
+        String prevUser = currentUser;
+        commandInstantRan = true;
+        commandFinished = false;
+        currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
-        String prefix = ButlerConfig.getInstance().requirePrefixMsg ? _mod.getModSettings().getCommandPrefix() : "";
+
+        String prefix = mod.getModSettings().getCommandPrefix();
         AltoClef.getCommandExecutor().execute(prefix + message, () -> {
             // On finish
             sendWhisper("Command Finished: " + message, MessagePriority.TIMELY);
-            if (!_commandInstantRan) {
-                _currentUser = null;
+            if (!commandInstantRan) {
+                currentUser = null;
             }
-            _commandFinished = true;
+            commandFinished = true;
         }, e -> {
-            sendWhisper("TASK FAILED: " + e.getMessage(), MessagePriority.ASAP);
+            for (String msg : e.getMessage().split("\n")) {
+                sendWhisper("TASK FAILED: " + msg, MessagePriority.ASAP);
+            }
             e.printStackTrace();
-            _currentUser = null;
-            _commandInstantRan = false;
+            currentUser = null;
+            commandInstantRan = false;
         });
-        _commandInstantRan = false;
+        commandInstantRan = false;
         // Only set the current user if we're still running.
-        if (_commandFinished) {
-            _currentUser = prevUser;
+        if (commandFinished) {
+            currentUser = prevUser;
         }
     }
 
     private void sendWhisper(String message, MessagePriority priority) {
-        if (_currentUser != null) {
-            sendWhisper(_currentUser, message, priority);
+        if (currentUser != null) {
+            sendWhisper(currentUser, message, priority);
         } else {
             Debug.logWarning("Failed to send butler message as there are no users present: " + message);
         }
     }
 
     private void sendWhisper(String username, String message, MessagePriority priority) {
-        _mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
+      mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
     }
 }
