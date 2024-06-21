@@ -71,7 +71,6 @@ public class AltoClef implements ModInitializer {
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
     private CraftingRecipeTracker craftingRecipeTracker;
-    private BlockTracker blockTracker;
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     private AltoClefTickChart altoClefTickChart;
@@ -139,7 +138,6 @@ public class AltoClef implements ModInitializer {
         chunkTracker = new SimpleChunkTracker(this);
         miscBlockTracker = new MiscBlockTracker(this);
         craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
-        blockTracker = new BlockTracker(this, trackerManager);
 
         // Renderers
         commandStatusOverlay = new CommandStatusOverlay();
@@ -274,10 +272,6 @@ public class AltoClef implements ModInitializer {
                 Blocks.ROSE_BUSH, Blocks.PEONY
         ));
 
-        // dont try to break nether portal block
-        getClientBaritoneSettings().blocksToAvoidBreaking.value.add(Blocks.NETHER_PORTAL);
-        getClientBaritoneSettings().blocksToDisallowBreaking.value.add(Blocks.NETHER_PORTAL);
-
         // Let baritone move items to hotbar to use them
 
         // Don't let baritone scan dropped items, we handle that ourselves.
@@ -400,14 +394,6 @@ public class AltoClef implements ModInitializer {
     public MiscBlockTracker getMiscBlockTracker() {
         return miscBlockTracker;
     }
-
-    /**
-     * Block tracker, tracks blocks on if we can reach them or not.
-     */
-    public BlockTracker getBlockTracker() {
-        return blockTracker;
-    }
-
 
     /**
      * Baritone access (could just be static honestly)

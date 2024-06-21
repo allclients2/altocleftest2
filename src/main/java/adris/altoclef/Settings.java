@@ -379,19 +379,19 @@ public class Settings implements IFailableConfigFile {
     @JsonSerialize(using = BlockSerializer.class)
     @JsonDeserialize(using = BlockDeserializer.class)
     private List<Block> annoyingBlocks = Arrays.asList(
-        Blocks.VINE,
-        Blocks.NETHER_SPROUTS,
-        Blocks.CAVE_VINES,
-        Blocks.CAVE_VINES_PLANT,
-        Blocks.TWISTING_VINES,
-        Blocks.TWISTING_VINES_PLANT,
-        Blocks.WEEPING_VINES_PLANT,
-        Blocks.LADDER,
-        Blocks.BIG_DRIPLEAF,
-        Blocks.BIG_DRIPLEAF_STEM,
-        Blocks.SMALL_DRIPLEAF,
-        Blocks.TALL_GRASS,
-        Blocks.SWEET_BERRY_BUSH
+            Blocks.VINE,
+            Blocks.NETHER_SPROUTS,
+            Blocks.CAVE_VINES,
+            Blocks.CAVE_VINES_PLANT,
+            Blocks.TWISTING_VINES,
+            Blocks.TWISTING_VINES_PLANT,
+            Blocks.WEEPING_VINES_PLANT,
+            Blocks.LADDER,
+            Blocks.BIG_DRIPLEAF,
+            Blocks.BIG_DRIPLEAF_STEM,
+            Blocks.SMALL_DRIPLEAF,
+            Blocks.TALL_GRASS,
+            Blocks.SWEET_BERRY_BUSH
     );
 
     /**
@@ -458,11 +458,13 @@ public class Settings implements IFailableConfigFile {
      */
     @JsonSerialize(using = ItemSerializer.class)
     @JsonDeserialize(using = ItemDeserializer.class)
-    private List<Item> supportedFuels = Streams.concat(
-            Stream.of(
-                    Items.COAL,
-                    Items.CHARCOAL
-            )
+    private List<Item> supportedFuels = Stream.concat(Stream.concat(
+                    Arrays.asList(
+                            Items.COAL,
+                            Items.CHARCOAL
+                    ).stream(),
+                    Arrays.stream(ItemHelper.LOG)
+            ), Arrays.stream(ItemHelper.PLANKS)
     ).toList();
 
     /**
@@ -525,7 +527,7 @@ public class Settings implements IFailableConfigFile {
         return showTimer;
     }
 
-    public boolean shouldSpreadItemsToCraft( ) {
+    public boolean shouldSpreadItemsToCraft() {
         return spreadItemsToCraft;
     }
 
@@ -562,7 +564,8 @@ public class Settings implements IFailableConfigFile {
     }
 
     @JsonIgnore
-    final Block[] blockArray =  annoyingBlocks.toArray(new Block[annoyingBlocks.size()]);
+    final Block[] blockArray = annoyingBlocks.toArray(new Block[annoyingBlocks.size()]);
+
     public Block[] getAnnoyingBlocks() {
         return blockArray;
     }

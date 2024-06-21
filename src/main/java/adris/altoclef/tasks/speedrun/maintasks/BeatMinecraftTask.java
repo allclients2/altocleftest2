@@ -960,7 +960,7 @@ public class BeatMinecraftTask extends Task {
 
         for (BlockPos frame : frameBlocks) {
             // Check if the frame block is a valid end portal frame
-            if (mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME)) {
+            if (mod.getBlockScanner().blockIsValid(frame, Blocks.END_PORTAL_FRAME)) {
                 Debug.logInternal("Found valid end portal frame at " + frame.toString());
                 return true;
             }

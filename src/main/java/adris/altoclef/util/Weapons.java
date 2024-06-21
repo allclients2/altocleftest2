@@ -1,8 +1,6 @@
 package adris.altoclef.util;
 
 import adris.altoclef.AltoClef;
-import net.minecraft.component.DataComponentType;
-import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.AxeItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;

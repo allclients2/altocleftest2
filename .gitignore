@@ -3,6 +3,7 @@
 .vs/
 run12004/
 versions/
+crash-reports/
 
 *.iml
 *.ipr
