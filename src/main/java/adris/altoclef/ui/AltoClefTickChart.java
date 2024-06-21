@@ -1,6 +1,7 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.InGameHudVer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -31,7 +32,7 @@ public class AltoClefTickChart {
     }
 
     public void render(AltoClef mod,DrawContext context, int x, int width) {
-        if (MinecraftClient.getInstance().inGameHud.getDebugHud().shouldShowDebugHud() || !mod.getTaskRunner().isActive()) return;
+        if (InGameHudVer.shouldShowDebugHud() || !mod.getTaskRunner().isActive()) return;
 
         int height = context.getScaledWindowHeight();
         context.fill(RenderLayer.getGuiOverlay(), x, height - 37, x + width, height, 0x90505050);
@@ -41,7 +42,7 @@ public class AltoClefTickChart {
 
 
         while (list.size() >= width-1) {
-            list.removeFirst();
+            list.remove(0);
         }
 
         for (int i = 0; i < list.size(); ++i) {
