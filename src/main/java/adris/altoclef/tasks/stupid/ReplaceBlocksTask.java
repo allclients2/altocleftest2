@@ -55,8 +55,6 @@ public class ReplaceBlocksTask extends Task {
         // TODO: Bug: We may want to replace a block that's considered a CONSTRUCTION block.
         // If that's the case, we are in trouble.
 
-        mod.getBlockTracker().trackBlock(_toFind);
-
         //_forceReplace.clear();
         _blockBrokenSubscription = EventBus.subscribe(BlockBrokenEvent.class, evt -> {
             if (evt.player.equals(MinecraftClient.getInstance().player)) {
@@ -92,7 +90,7 @@ public class ReplaceBlocksTask extends Task {
 
         // Get to replace item
         if (!mod.getItemStorage().hasItem(_toReplace.getMatches())) {
-            List<BlockPos> locations = mod.getBlockTracker().getKnownLocations(_toFind);
+            List<BlockPos> locations = mod.getBlockScanner().getKnownLocations(_toFind);
             int need = 0;
             if (!locations.isEmpty()) {
                 for (BlockPos loc : locations) if (isWithinRange(loc) && need < MAX_MATERIALS_NEEDED_AT_A_TIME) need++;

@@ -17,7 +17,6 @@ import adris.altoclef.tasks.movement.*;
 import adris.altoclef.tasks.resources.*;
 import adris.altoclef.tasks.speedrun.*;
 import adris.altoclef.tasksystem.Task;
-import adris.altoclef.trackers.BlockTracker;
 import adris.altoclef.trackers.EntityTracker;
 import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
@@ -498,16 +497,6 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Pop the top behaviour from the stack
         mod.getBehaviour().pop();
-
-        // Stop tracking bed blocks
-        if (mod.getBlockTracker() != null) {
-            mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
-        }
-
-        // Stop tracking custom blocks
-        if (mod.getBlockTracker() != null) {
-            mod.getBlockTracker().stopTracking(TRACK_BLOCKS);
-        }
     }
 
     /**
@@ -552,7 +541,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Check if any of the frame blocks is a valid end portal frame block
         return frameBlocks.stream()
-                .anyMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
+                .anyMatch(frame -> mod.getBlockScanner().isBlockAtPosition(frame, Blocks.END_PORTAL_FRAME));
     }
 
     /**
@@ -566,9 +555,8 @@ public class MarvionBeatMinecraftTask extends Task {
         // Check if the end portal is already opened and the center position is provided
         if (_endPortalOpened && endPortalCenter != null) {
             // Get the block tracker from the mod instance
-            BlockTracker blockTracker = mod.getBlockTracker();
             // Check if the block tracker is available and the end portal block at the center position is valid
-            return blockTracker != null && blockTracker.blockIsValid(endPortalCenter, Blocks.END_PORTAL);
+            return mod.getBlockScanner() != null && mod.getBlockScanner().isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
         }
         return false;
     }
@@ -585,11 +573,10 @@ public class MarvionBeatMinecraftTask extends Task {
             return false;
         }
 
-        BlockTracker blockTracker = mod.getBlockTracker();
 
         try {
             // Check if the bed spawn location is a valid bed block
-            return blockTracker.blockIsValid(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
+            return mod.getBlockScanner().isBlockAtPosition(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
         } catch (Exception e) {
             // Handle the exception here, for example log it or return a default value
             return false;
@@ -611,7 +598,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Find the nearest tracking block position
         try {
-            return mod.getBlockTracker().getNearestTracking(blockPos -> {
+            return mod.getBlockScanner().getNearestBlock(blockPos -> {
                 boolean isNotRuinedPortalChest = !_notRuinedPortalChests.contains(blockPos);
                 boolean isUnopenedChest = WorldHelper.isUnopenedChest(mod, blockPos);
                 boolean isWithinDistance = mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150);
@@ -727,15 +714,7 @@ public class MarvionBeatMinecraftTask extends Task {
      */
     private void trackBlocks(AltoClef mod) {
         // Get the BlockTracker from the mod
-        BlockTracker blockTracker = mod.getBlockTracker();
 
-        // Track the BED block
-        if (blockTracker != null) {
-            blockTracker.trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
-            blockTracker.trackBlock(TRACK_BLOCKS);
-        } else {
-            // Handle the case when blockTracker is null
-        }
     }
 
     /**
@@ -840,160 +819,152 @@ public class MarvionBeatMinecraftTask extends Task {
             }
             return false;
         };
-        List<BlockPos> craftingTables = mod.getBlockTracker().getKnownLocations(Blocks.CRAFTING_TABLE);
+        List<BlockPos> craftingTables = mod.getBlockScanner().getKnownLocations(Blocks.CRAFTING_TABLE);
         if (!craftingTables.isEmpty()) {
             for (BlockPos craftingTable : craftingTables) {
                 if (mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)) {
-                    if (!mod.getBlockTracker().unreachable(craftingTable)) {
+                    if (!mod.getBlockScanner().isUnreachable(craftingTable)) {
                         Debug.logMessage("Blacklisting extra crafting table.");
-                        mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
+                        mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
                     }
                 }
-                if (!mod.getBlockTracker().unreachable(craftingTable)) {
+                if (!mod.getBlockScanner().isUnreachable(craftingTable)) {
                     BlockState craftingTablePosUp = mod.getWorld().getBlockState(craftingTable.up(2));
                     if (mod.getEntityTracker().entityFound(WitchEntity.class)) {
                         Optional<Entity> witch = mod.getEntityTracker().getClosestEntity(WitchEntity.class);
                         if (witch.isPresent()) {
                             if (craftingTable.isWithinDistance(witch.get().getPos(), 15)) {
                                 Debug.logMessage("Blacklisting witch crafting table.");
-                                mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
+                                mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
                             }
                         }
                     }
                     if (craftingTablePosUp.getBlock() == Blocks.WHITE_WOOL) {
                         Debug.logMessage("Blacklisting pillage crafting table.");
-                        mod.getBlockTracker().requestBlockUnreachable(craftingTable, 0);
+                        mod.getBlockScanner().requestBlockUnreachable(craftingTable, 0);
                     }
                 }
             }
         }
-        List<BlockPos> smokers = mod.getBlockTracker().getKnownLocations(Blocks.SMOKER);
+        List<BlockPos> smokers = mod.getBlockScanner().getKnownLocations(Blocks.SMOKER);
         if (!smokers.isEmpty()) {
             for (BlockPos smoker : smokers) {
                 if (mod.getItemStorage().hasItem(Items.SMOKER) && _smeltTask == null && foodTask == null) {
-                    if (!mod.getBlockTracker().unreachable(smoker)) {
+                    if (!mod.getBlockScanner().isUnreachable(smoker)) {
                         Debug.logMessage("Blacklisting extra smoker.");
-                        mod.getBlockTracker().requestBlockUnreachable(smoker, 0);
+                        mod.getBlockScanner().requestBlockUnreachable(smoker, 0);
                     }
                 }
             }
         }
-        List<BlockPos> furnaces = mod.getBlockTracker().getKnownLocations(Blocks.FURNACE);
+        List<BlockPos> furnaces = mod.getBlockScanner().getKnownLocations(Blocks.FURNACE);
         if (!furnaces.isEmpty()) {
             for (BlockPos furnace : furnaces) {
                 if ((mod.getItemStorage().hasItem(Items.FURNACE) || mod.getItemStorage().hasItem(Items.BLAST_FURNACE)) &&
                         starterGearTask == null && _shieldTask == null && ironGearTask == null && gearTask == null &&
                         !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
-                    if (!mod.getBlockTracker().unreachable(furnace)) {
+                    if (!mod.getBlockScanner().isUnreachable(furnace)) {
                         Debug.logMessage("Blacklisting extra furnace.");
-                        mod.getBlockTracker().requestBlockUnreachable(furnace, 0);
+                        mod.getBlockScanner().requestBlockUnreachable(furnace, 0);
                     }
                 }
             }
         }
-        List<BlockPos> blastFurnaces = mod.getBlockTracker().getKnownLocations(Blocks.BLAST_FURNACE);
+        List<BlockPos> blastFurnaces = mod.getBlockScanner().getKnownLocations(Blocks.BLAST_FURNACE);
         if (!blastFurnaces.isEmpty()) {
             for (BlockPos blastFurnace : blastFurnaces) {
                 if (mod.getItemStorage().hasItem(Items.BLAST_FURNACE) && starterGearTask == null && _shieldTask == null &&
                         ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() && !_ranStrongholdLocator) {
-                    if (!mod.getBlockTracker().unreachable(blastFurnace)) {
+                    if (!mod.getBlockScanner().isUnreachable(blastFurnace)) {
                         Debug.logMessage("Blacklisting extra blast furnace.");
-                        mod.getBlockTracker().requestBlockUnreachable(blastFurnace, 0);
+                        mod.getBlockScanner().requestBlockUnreachable(blastFurnace, 0);
                     }
                 }
             }
         }
-        List<BlockPos> logs = mod.getBlockTracker().getKnownLocations(ItemHelper.itemsToBlocks(ItemHelper.LOG));
+        List<BlockPos> logs = mod.getBlockScanner().getKnownLocations(ItemHelper.itemsToBlocks(ItemHelper.LOG));
         if (!logs.isEmpty()) {
             for (BlockPos log : logs) {
                 Iterable<Entity> entities = mod.getWorld().getEntities();
                 for (Entity entity : entities) {
                     if (entity instanceof PillagerEntity) {
-                        if (!mod.getBlockTracker().unreachable(log)) {
+                        if (!mod.getBlockScanner().isUnreachable(log)) {
                             if (log.isWithinDistance(entity.getPos(), 40)) {
                                 Debug.logMessage("Blacklisting pillage log.");
-                                mod.getBlockTracker().requestBlockUnreachable(log, 0);
+                                mod.getBlockScanner().requestBlockUnreachable(log, 0);
                             }
                         }
                     }
                 }
                 if (log.getY() < 62) {
-                    if (!mod.getBlockTracker().unreachable(log)) {
+                    if (!mod.getBlockScanner().isUnreachable(log)) {
                         if (!ironGearSatisfied && !eyeGearSatisfied) {
-                            mod.getBlockTracker().requestBlockUnreachable(log, 0);
+                            mod.getBlockScanner().requestBlockUnreachable(log, 0);
                         }
                     }
                 }
             }
         }
-        if (mod.getBlockTracker().isTracking(Blocks.DEEPSLATE_COAL_ORE)) {
-            Optional<BlockPos> deepslateCoalOre = mod.getBlockTracker().getNearestTracking(Blocks.DEEPSLATE_COAL_ORE);
-            if (deepslateCoalOre.isPresent()) {
-                Iterable<Entity> entities = mod.getWorld().getEntities();
-                for (Entity entity : entities) {
-                    if (entity instanceof HostileEntity) {
-                        if (!mod.getBlockTracker().unreachable(deepslateCoalOre.get())) {
-                            if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
-                                    deepslateCoalOre.get().isWithinDistance(entity.getPos(), 30)) {
-                                if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    mod.getBlockTracker().requestBlockUnreachable(deepslateCoalOre.get(), 0);
-                                }
+        Optional<BlockPos> deepslateCoalOre = mod.getBlockScanner().getNearestBlock(Blocks.DEEPSLATE_COAL_ORE);
+        if (deepslateCoalOre.isPresent()) {
+            Iterable<Entity> entities = mod.getWorld().getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof HostileEntity) {
+                    if (!mod.getBlockScanner().isUnreachable(deepslateCoalOre.get())) {
+                        if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
+                                deepslateCoalOre.get().isWithinDistance(entity.getPos(), 30)) {
+                            if (!ironGearSatisfied && !eyeGearSatisfied) {
+                                mod.getBlockScanner().requestBlockUnreachable(deepslateCoalOre.get(), 0);
                             }
                         }
                     }
                 }
             }
         }
-        if (mod.getBlockTracker().isTracking(Blocks.COAL_ORE)) {
-            Optional<BlockPos> coalOrePos = mod.getBlockTracker().getNearestTracking(Blocks.COAL_ORE);
-            if (coalOrePos.isPresent()) {
-                Iterable<Entity> entities = mod.getWorld().getEntities();
-                for (Entity entity : entities) {
-                    if (entity instanceof HostileEntity) {
-                        if (!mod.getBlockTracker().unreachable(coalOrePos.get())) {
-                            if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
-                                    coalOrePos.get().isWithinDistance(entity.getPos(), 30)) {
-                                if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    mod.getBlockTracker().requestBlockUnreachable(coalOrePos.get(), 0);
-                                }
+        Optional<BlockPos> coalOrePos = mod.getBlockScanner().getNearestBlock(Blocks.COAL_ORE);
+        if (coalOrePos.isPresent()) {
+            Iterable<Entity> entities = mod.getWorld().getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof HostileEntity) {
+                    if (!mod.getBlockScanner().isUnreachable(coalOrePos.get())) {
+                        if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
+                                coalOrePos.get().isWithinDistance(entity.getPos(), 30)) {
+                            if (!ironGearSatisfied && !eyeGearSatisfied) {
+                                mod.getBlockScanner().requestBlockUnreachable(coalOrePos.get(), 0);
                             }
                         }
                     }
                 }
             }
         }
-        if (mod.getBlockTracker().isTracking(Blocks.DEEPSLATE_IRON_ORE)) {
-            Optional<BlockPos> deepslateIronOrePos = mod.getBlockTracker().getNearestTracking(Blocks.DEEPSLATE_IRON_ORE);
-            if (deepslateIronOrePos.isPresent()) {
-                Iterable<Entity> entities = mod.getWorld().getEntities();
-                for (Entity entity : entities) {
-                    if (entity instanceof HostileEntity) {
-                        if (!mod.getBlockTracker().unreachable(deepslateIronOrePos.get())) {
-                            if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
-                                    deepslateIronOrePos.get().isWithinDistance(entity.getPos(), 30)) {
-                                if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    Debug.logMessage("Blacklisting dangerous iron ore.");
-                                    mod.getBlockTracker().requestBlockUnreachable(deepslateIronOrePos.get(), 0);
-                                }
+        Optional<BlockPos> deepslateIronOrePos = mod.getBlockScanner().getNearestBlock(Blocks.DEEPSLATE_IRON_ORE);
+        if (deepslateIronOrePos.isPresent()) {
+            Iterable<Entity> entities = mod.getWorld().getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof HostileEntity) {
+                    if (!mod.getBlockScanner().isUnreachable(deepslateIronOrePos.get())) {
+                        if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
+                                deepslateIronOrePos.get().isWithinDistance(entity.getPos(), 30)) {
+                            if (!ironGearSatisfied && !eyeGearSatisfied) {
+                                Debug.logMessage("Blacklisting dangerous iron ore.");
+                                mod.getBlockScanner().requestBlockUnreachable(deepslateIronOrePos.get(), 0);
                             }
                         }
                     }
                 }
             }
         }
-        if (mod.getBlockTracker().isTracking(Blocks.IRON_ORE)) {
-            Optional<BlockPos> ironOrePos = mod.getBlockTracker().getNearestTracking(Blocks.IRON_ORE);
-            if (ironOrePos.isPresent()) {
-                Iterable<Entity> entities = mod.getWorld().getEntities();
-                for (Entity entity : entities) {
-                    if (entity instanceof HostileEntity) {
-                        if (!mod.getBlockTracker().unreachable(ironOrePos.get())) {
-                            if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
-                                    ironOrePos.get().isWithinDistance(entity.getPos(), 30)) {
-                                if (!ironGearSatisfied && !eyeGearSatisfied) {
-                                    Debug.logMessage("Blacklisting dangerous iron ore.");
-                                    mod.getBlockTracker().requestBlockUnreachable(ironOrePos.get(), 0);
-                                }
+        Optional<BlockPos> ironOrePos = mod.getBlockScanner().getNearestBlock(Blocks.IRON_ORE);
+        if (ironOrePos.isPresent()) {
+            Iterable<Entity> entities = mod.getWorld().getEntities();
+            for (Entity entity : entities) {
+                if (entity instanceof HostileEntity) {
+                    if (!mod.getBlockScanner().isUnreachable(ironOrePos.get())) {
+                        if (mod.getPlayer().squaredDistanceTo(entity.getPos()) < 150 &&
+                                ironOrePos.get().isWithinDistance(entity.getPos(), 30)) {
+                            if (!ironGearSatisfied && !eyeGearSatisfied) {
+                                Debug.logMessage("Blacklisting dangerous iron ore.");
+                                mod.getBlockScanner().requestBlockUnreachable(ironOrePos.get(), 0);
                             }
                         }
                     }
@@ -1273,7 +1244,7 @@ public class MarvionBeatMinecraftTask extends Task {
             _escapingDragonsBreath = false;
 
             // If we find an ender portal, just GO to it!!!
-            if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
+            if (mod.getBlockScanner().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
                 dragonIsDead = true;
                 enteringEndPortal = true;
@@ -1286,7 +1257,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 );
             }
             if (mod.getItemStorage().hasItem(ItemHelper.BED) ||
-                    mod.getBlockTracker().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED))) {
+                    mod.getBlockScanner().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED))) {
                 setDebugState("Bed strats");
                 return _killDragonBedStratsTask;
             }
@@ -1299,7 +1270,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Check for end portals. Always.
         if (!endPortalOpened(mod, _endPortalCenterLocation) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
-            Optional<BlockPos> endPortal = mod.getBlockTracker().getNearestTracking(Blocks.END_PORTAL);
+            Optional<BlockPos> endPortal = mod.getBlockScanner().getNearestBlock(Blocks.END_PORTAL);
             if (endPortal.isPresent()) {
                 _endPortalCenterLocation = endPortal.get();
                 _endPortalOpened = true;
@@ -1322,7 +1293,7 @@ public class MarvionBeatMinecraftTask extends Task {
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
         if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && config.rePickupCraftingTable &&
                 !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
-                && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
+                && (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                 WorldHelper.canReach(mod, blockPos), Blocks.CRAFTING_TABLE) ||
                 mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE))) {
             setDebugState("Picking up the crafting table while we are at it.");
@@ -1330,7 +1301,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         if (config.rePickupSmoker && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.SMOKER) &&
-                (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
+                (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.SMOKER)
                         || mod.getEntityTracker().itemDropped(Items.SMOKER)) && _smeltTask == null &&
                 foodTask == null) {
@@ -1339,7 +1310,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         if (config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.FURNACE) &&
-                (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
+                (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.FURNACE) ||
                         mod.getEntityTracker().itemDropped(Items.FURNACE)) && starterGearTask == null &&
                 _shieldTask == null && ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() &&
@@ -1349,7 +1320,7 @@ public class MarvionBeatMinecraftTask extends Task {
         }
         if (config.rePickupFurnace && !_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END &&
                 !mod.getItemStorage().hasItem(Items.BLAST_FURNACE) &&
-                (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
+                (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos) &&
                         WorldHelper.canReach(mod, blockPos), Blocks.BLAST_FURNACE) ||
                         mod.getEntityTracker().itemDropped(Items.BLAST_FURNACE)) && starterGearTask == null &&
                 _shieldTask == null && ironGearTask == null && gearTask == null && !_goToNetherTask.isActive() &&
@@ -1396,7 +1367,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 return _sleepThroughNightTask;
             }
             if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
-                if (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
+                if (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
                         || shouldForce(mod, _getOneBedTask)) {
                     setDebugState("Getting one bed to sleep in at night.");
                     return _getOneBedTask;
@@ -1480,7 +1451,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (endPortalFound(mod, _endPortalCenterLocation)) {
                     // Destroy silverfish spawner
                     if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
-                        Optional<BlockPos> silverfish = mod.getBlockTracker().getNearestTracking(blockPos -> {
+                        Optional<BlockPos> silverfish = mod.getBlockScanner().getNearestBlock(blockPos -> {
                             return WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity;
                         }, Blocks.SPAWNER);
                         if (silverfish.isPresent()) {
@@ -1695,12 +1666,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
         // Check if we need to obtain more Twisting Vines.
         if (!hasEnoughTwistingVines) {
-            BlockTracker blockTracker = mod.getBlockTracker();
-            if (!blockTracker.isTracking(Blocks.TWISTING_VINES) || !blockTracker.isTracking(Blocks.TWISTING_VINES_PLANT)) {
-                blockTracker.trackBlock(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT);
-            }
-
-            boolean vinesFound = blockTracker.anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT);
+            boolean vinesFound = mod.getBlockScanner().anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT);
             if (vinesFound) {
                 getTwistingVines = TaskCatalogue.getItemTask(Items.TWISTING_VINES, TWISTING_VINES_COUNT);
                 return getTwistingVines;
@@ -1787,11 +1753,10 @@ public class MarvionBeatMinecraftTask extends Task {
      */
     private boolean anyBedsFound(AltoClef mod) {
         // Get the block and entity trackers from the mod instance.
-        BlockTracker blockTracker = mod.getBlockTracker();
         EntityTracker entityTracker = mod.getEntityTracker();
 
         // Check if any beds are found in blocks.
-        boolean bedsFoundInBlocks = blockTracker.anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        boolean bedsFoundInBlocks = mod.getBlockScanner().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED));
 
         // Check if any beds are dropped by entities.
         boolean bedsFoundInEntities = entityTracker.itemDropped(ItemHelper.BED);
@@ -1807,7 +1772,7 @@ public class MarvionBeatMinecraftTask extends Task {
      */
     private BlockPos doSimpleSearchForEndPortal(AltoClef mod) {
         // Get the locations of the end portal frames
-        List<BlockPos> frames = mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME);
+        List<BlockPos> frames = mod.getBlockScanner().getKnownLocations(Blocks.END_PORTAL_FRAME);
 
         // Check if enough frames are found
         if (frames.size() >= END_PORTAL_FRAME_COUNT) {

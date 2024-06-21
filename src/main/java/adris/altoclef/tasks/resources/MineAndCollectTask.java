@@ -74,7 +74,7 @@ public class MineAndCollectTask extends ResourceTask {
     @Override
     protected void onResourceStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(blocksToMine);
+        
 
         // We're mining, so don't throw away pickaxes.
         mod.getBehaviour().addProtectedItems(Items.WOODEN_PICKAXE, Items.STONE_PICKAXE, Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE, Items.NETHERITE_PICKAXE);
@@ -109,7 +109,7 @@ public class MineAndCollectTask extends ResourceTask {
 
     @Override
     protected void onResourceStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(blocksToMine);
+        
         mod.getBehaviour().pop();
     }
 
@@ -237,7 +237,7 @@ public class MineAndCollectTask extends ResourceTask {
             currentMod = mod;
             if (miningPos != null && !_progressChecker.check(mod)) {
                 Debug.logMessage("Failed to mine block. Suggesting it may be unreachable.");
-                mod.getBlockTracker().requestBlockUnreachable(miningPos, 2);
+                mod.getBlockScanner().requestBlockUnreachable(miningPos, 2);
                 blacklist.add(miningPos);
                 miningPos = null;
                 _progressChecker.reset();
@@ -269,7 +269,7 @@ public class MineAndCollectTask extends ResourceTask {
         @Override
         protected boolean isValid(AltoClef mod, Object obj) {
             if (obj instanceof BlockPos b) {
-                return mod.getBlockTracker().blockIsValid(b, blocks) && WorldHelper.canBreak(mod, b);
+                return mod.getBlockScanner().isBlockAtPosition(b, blocks) && WorldHelper.canBreak(mod, b);
             }
             if (obj instanceof ItemEntity drop) {
                 Item item = drop.getStack().getItem();

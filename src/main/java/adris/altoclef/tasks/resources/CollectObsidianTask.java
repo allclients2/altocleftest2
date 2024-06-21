@@ -114,7 +114,7 @@ public class CollectObsidianTask extends ResourceTask {
         BlockPos start = mod.getPlayer().getBlockPos().add(-3, -3, -3);
         BlockPos end = mod.getPlayer().getBlockPos().add(3, 3, 3);
         for (BlockPos pos : WorldUtil.scanRegion(mod, start, end)) {
-            if (mod.getBlockTracker().blockIsValid(pos, Blocks.OBSIDIAN) && !badObsidian.test(pos)) {
+            if (mod.getBlockScanner().blockIsValid(pos, Blocks.OBSIDIAN) && !badObsidian.test(pos)) {
                 obsidianNearby = true;
                 break;
             }
@@ -123,9 +123,9 @@ public class CollectObsidianTask extends ResourceTask {
         if (/*obsidianNearby || */mod.getBlockScanner().anyFound(goodObsidian, Blocks.OBSIDIAN) || mod.getEntityTracker().itemDropped(Items.OBSIDIAN)) {
             /*
             // Clear nearby water
-            BlockPos nearestObby = mod.getBlockTracker().getNearestTracking(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
+            BlockPos nearestObby = mod.getBlockScanner().getNearestBlock(mod.getPlayer().getPos(), Blocks.OBSIDIAN);
             if (nearestObby != null) {
-                BlockPos nearestWater = mod.getBlockTracker().getNearestTracking(WorldWorldHelper.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
+                BlockPos nearestWater = mod.getBlockScanner().getNearestBlock(WorldWorldHelper.toVec3d(nearestObby), blockPos -> !WorldUtil.isSourceBlock(mod, blockPos, true), Blocks.WATER);
 
                 if (nearestWater != null && nearestWater.getSquaredDistance(nearestObby) < 5 * 5) {
                     _forceCompleteTask = new ClearLiquidTask(nearestWater);

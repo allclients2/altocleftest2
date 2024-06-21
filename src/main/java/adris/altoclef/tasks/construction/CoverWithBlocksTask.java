@@ -36,7 +36,6 @@ public class CoverWithBlocksTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         timer.reset();
-        mod.getBlockTracker().trackBlock(Blocks.LAVA);
     }
 
     @Override
@@ -53,13 +52,13 @@ public class CoverWithBlocksTask extends Task {
             getBlocks = null;
         }
         Block[] blocks = ItemHelper.itemsToBlocks(throwAwaysToUse);
-        if (!mod.getItemStorage().hasItem(throwAwaysToUse) && mod.getBlockTracker().anyFound(blocks)) {
+        if (!mod.getItemStorage().hasItem(throwAwaysToUse) && mod.getBlockScanner().anyFound(blocks)) {
             timer.reset();
             ItemTarget throwAwaysTarget = new ItemTarget(throwAwaysToUse);
             getBlocks = new MineAndCollectTask(throwAwaysTarget, blocks, MiningRequirement.STONE);
             return getBlocks;
         }
-        if (!mod.getItemStorage().hasItem(throwAwaysToUse) && !mod.getBlockTracker().anyFound(blocks)) {
+        if (!mod.getItemStorage().hasItem(throwAwaysToUse) && !mod.getBlockScanner().anyFound(blocks)) {
             timer.reset();
             if (WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
                 setDebugState("Trying nether to search for blocks.");
@@ -96,7 +95,7 @@ public class CoverWithBlocksTask extends Task {
                                 !WorldHelper.isBlock(mod, blockPos.south().up(), Blocks.LAVA) ||
                                 !WorldHelper.isBlock(mod, blockPos.east().up(), Blocks.LAVA) ||
                                 !WorldHelper.isBlock(mod, blockPos.west().up(), Blocks.LAVA));
-        Optional<BlockPos> lava = mod.getBlockTracker().getNearestTracking(validLava, Blocks.LAVA);
+        Optional<BlockPos> lava = mod.getBlockScanner().getNearestBlock(validLava, Blocks.LAVA);
         if (lava.isPresent()) {
             if (lavaPos == null) {
                 lavaPos = lava.get();
@@ -128,7 +127,6 @@ public class CoverWithBlocksTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.LAVA);
     }
 
     @Override

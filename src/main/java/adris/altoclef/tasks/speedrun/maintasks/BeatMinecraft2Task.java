@@ -188,8 +188,8 @@ public class BeatMinecraft2Task extends Task {
             Debug.logWarning("\"throwawayUnusedItems\" is not set to true " + settingsWarningTail);
         }
 
-        mod.getBlockTracker().trackBlock(TRACK_BLOCKS);
-        mod.getBlockTracker().trackBlock(ItemHelper.itemsToBlocks(ItemHelper.BED));
+
+        
         mod.getBehaviour().push();
         mod.getBehaviour().addProtectedItems(Items.ENDER_EYE, Items.BLAZE_ROD, Items.ENDER_PEARL, Items.CRAFTING_TABLE);
         mod.getBehaviour().addProtectedItems(ItemHelper.BED);
@@ -255,7 +255,7 @@ public class BeatMinecraft2Task extends Task {
         // Portable crafting table.
         // If we're NOT using our crafting table right now and there's one nearby, grab it.
         if (!_endPortalOpened && WorldHelper.getCurrentDimension() != Dimension.END && config.rePickupCraftingTable && !mod.getItemStorage().hasItem(Items.CRAFTING_TABLE) && !thisOrChildSatisfies(isCraftingTableTask)
-                && (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
+                && (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), Blocks.CRAFTING_TABLE)
                 || mod.getEntityTracker().itemDropped(Items.CRAFTING_TABLE))) {
             setDebugState("Pick up crafting table while we're at it");
             return new MineAndCollectTask(Items.CRAFTING_TABLE, 1, new Block[]{Blocks.CRAFTING_TABLE}, MiningRequirement.HAND);
@@ -276,7 +276,7 @@ public class BeatMinecraft2Task extends Task {
             _escapingDragonsBreath = false;
 
             // If we find an ender portal, just GO to it!!!
-            if (mod.getBlockTracker().anyFound(Blocks.END_PORTAL)) {
+            if (mod.getBlockScanner().anyFound(Blocks.END_PORTAL)) {
                 setDebugState("WOOHOO");
                 _enterindEndPortal = true;
                 return new DoToClosestBlockTask(
@@ -323,7 +323,7 @@ public class BeatMinecraft2Task extends Task {
 
         // Check for end portals. Always.
         if (!endPortalOpened(mod, _endPortalCenterLocation) && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD) {
-            Optional<BlockPos> endPortal = mod.getBlockTracker().getNearestTracking(Blocks.END_PORTAL);
+            Optional<BlockPos> endPortal = mod.getBlockScanner().getNearestBlock(Blocks.END_PORTAL);
             if (endPortal.isPresent()) {
                 _endPortalCenterLocation = endPortal.get();
                 _endPortalOpened = true;
@@ -340,7 +340,7 @@ public class BeatMinecraft2Task extends Task {
                 return _sleepThroughNightTask;
             }
             if (!mod.getItemStorage().hasItem(ItemHelper.BED)) {
-                if (mod.getBlockTracker().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
+                if (mod.getBlockScanner().anyFound(blockPos -> WorldHelper.canBreak(mod, blockPos), ItemHelper.itemsToBlocks(ItemHelper.BED))
                         || shouldForce(mod, _getOneBedTask)) {
                     setDebugState("Grabbing a bed we found to sleep through the night.");
                     return _getOneBedTask;
@@ -369,7 +369,7 @@ public class BeatMinecraft2Task extends Task {
 
                     // Destroy silverfish spawner
                     if (StorageHelper.miningRequirementMetInventory(mod, MiningRequirement.WOOD)) {
-                        Optional<BlockPos> silverfish = mod.getBlockTracker().getNearestTracking(blockPos -> {
+                        Optional<BlockPos> silverfish = mod.getBlockScanner().getNearestBlock(blockPos -> {
                             return WorldHelper.getSpawnerEntity(mod, blockPos) instanceof SilverfishEntity;
                         }, Blocks.SPAWNER);
                         if (silverfish.isPresent()) {
@@ -514,8 +514,8 @@ public class BeatMinecraft2Task extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(TRACK_BLOCKS);
-        mod.getBlockTracker().stopTracking(ItemHelper.itemsToBlocks(ItemHelper.BED));
+
+        
         mod.getBehaviour().pop();
     }
 
@@ -536,15 +536,15 @@ public class BeatMinecraft2Task extends Task {
         if (endPortalOpened(mod, endPortalCenter)) {
             return true;
         }
-        return getFrameBlocks(endPortalCenter).stream().allMatch(frame -> mod.getBlockTracker().blockIsValid(frame, Blocks.END_PORTAL_FRAME));
+        return getFrameBlocks(endPortalCenter).stream().allMatch(frame -> mod.getBlockScanner().isBlockAtPosition(frame, Blocks.END_PORTAL_FRAME));
     }
 
     private boolean endPortalOpened(AltoClef mod, BlockPos endPortalCenter) {
-        return _endPortalOpened && endPortalCenter != null && mod.getBlockTracker().blockIsValid(endPortalCenter, Blocks.END_PORTAL);
+        return _endPortalOpened && endPortalCenter != null && mod.getBlockScanner().isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
     }
 
     private boolean spawnSetNearPortal(AltoClef mod, BlockPos endPortalCenter) {
-        return _bedSpawnLocation != null && mod.getBlockTracker().blockIsValid(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
+        return _bedSpawnLocation != null && mod.getBlockScanner().isBlockAtPosition(_bedSpawnLocation, ItemHelper.itemsToBlocks(ItemHelper.BED));
     }
 
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
@@ -582,7 +582,7 @@ public class BeatMinecraft2Task extends Task {
         if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
             return Optional.empty();
         }
-        return mod.getBlockTracker().getNearestTracking(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
+        return mod.getBlockScanner().getNearestBlock(blockPos -> !_notRuinedPortalChests.contains(blockPos) && WorldHelper.isUnopenedChest(mod, blockPos) && mod.getPlayer().getBlockPos().isWithinDistance(blockPos, 150) && canBeLootablePortalChest(mod, blockPos), Blocks.CHEST);
     }
 
     private Task getEyesOfEnderTask(AltoClef mod, int targetEyes) {
@@ -783,11 +783,11 @@ public class BeatMinecraft2Task extends Task {
     }
 
     private boolean anyBedsFound(AltoClef mod) {
-        return mod.getBlockTracker().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED));
+        return mod.getBlockScanner().anyFound(ItemHelper.itemsToBlocks(ItemHelper.BED));
     }
 
     private BlockPos doSimpleSearchForEndPortal(AltoClef mod) {
-        List<BlockPos> frames = mod.getBlockTracker().getKnownLocations(Blocks.END_PORTAL_FRAME);
+        List<BlockPos> frames = mod.getBlockScanner().getKnownLocations(Blocks.END_PORTAL_FRAME);
         if (frames.size() >= END_PORTAL_FRAME_COUNT) {
             // Get the center of the frames.
             Vec3d average = frames.stream()

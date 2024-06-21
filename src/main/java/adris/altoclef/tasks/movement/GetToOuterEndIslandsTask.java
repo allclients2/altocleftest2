@@ -21,6 +21,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Vec3i;
 
+import java.util.Optional;
+
 public class GetToOuterEndIslandsTask extends Task {
     public final int END_ISLAND_START_RADIUS = 800;
     public final Vec3i[] OFFSETS = {
@@ -42,37 +44,39 @@ public class GetToOuterEndIslandsTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         mod.getBehaviour().push();
-        mod.getBlockTracker().trackBlock(Blocks.END_GATEWAY);
         _beatTheGame = new BeatMinecraft2Task();
     }
 
     @Override
     protected Task onTick(AltoClef mod) {
-        if (mod.getBlockTracker().anyFound(Blocks.END_GATEWAY)) {
+        if (mod.getBlockScanner().anyFound(Blocks.END_GATEWAY)) {
             if (!mod.getItemStorage().hasItemInventoryOnly(Items.ENDER_PEARL)) {
                 setDebugState("Getting an ender pearl");
                 return new CataloguedResourceTask(new ItemTarget(Items.ENDER_PEARL, 1));
             }
-            BlockPos gateway = mod.getBlockTracker().getNearestTracking(Blocks.END_GATEWAY).get();
-            int blocksNeeded = Math.abs(mod.getPlayer().getBlockY() - gateway.getY()) +
-                    Math.abs(mod.getPlayer().getBlockX() - gateway.getX()) +
-                    Math.abs(mod.getPlayer().getBlockZ() - gateway.getZ()) - 3;
-            if (StorageHelper.getBuildingMaterialCount(mod) < blocksNeeded) {
-                setDebugState("Getting building materials");
-                return new GetBuildingMaterialsTask(blocksNeeded);
-            }
-            GoalAnd goal = makeGoal(gateway);
-            Debug.logMessage(mod.getPlayer().getBlockPos().toString());
-            if (!goal.isInGoal(mod.getPlayer().getBlockPos()) || !mod.getPlayer().isOnGround()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoal(goal);
-                if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
-                    mod.getClientBaritone().getCustomGoalProcess().path();
+            Optional<BlockPos> gatewayFound = mod.getBlockScanner().getNearestBlock(Blocks.END_GATEWAY);
+            if (gatewayFound.isPresent()) {
+                final BlockPos gateway = gatewayFound.get();
+                int blocksNeeded = Math.abs(mod.getPlayer().getBlockY() - gateway.getY()) +
+                        Math.abs(mod.getPlayer().getBlockX() - gateway.getX()) +
+                        Math.abs(mod.getPlayer().getBlockZ() - gateway.getZ()) - 3;
+                if (StorageHelper.getBuildingMaterialCount(mod) < blocksNeeded) {
+                    setDebugState("Getting building materials");
+                    return new GetBuildingMaterialsTask(blocksNeeded);
                 }
-                setDebugState("Getting close to gateway...");
-                return null;
+                GoalAnd goal = makeGoal(gateway);
+                Debug.logMessage(mod.getPlayer().getBlockPos().toString());
+                if (!goal.isInGoal(mod.getPlayer().getBlockPos()) || !mod.getPlayer().isOnGround()) {
+                    mod.getClientBaritone().getCustomGoalProcess().setGoal(goal);
+                    if (!mod.getClientBaritone().getPathingBehavior().isPathing()) {
+                        mod.getClientBaritone().getCustomGoalProcess().path();
+                    }
+                    setDebugState("Getting close to gateway...");
+                    return null;
+                }
+                setDebugState("Throwing the pearl inside");
+                return new InteractWithBlockTask(Items.ENDER_PEARL, gateway);
             }
-            setDebugState("Throwing the pearl inside");
-            return new InteractWithBlockTask(Items.ENDER_PEARL, gateway);
         }
         setDebugState("Beating the Game to get to an end gateway");
         return _beatTheGame;
@@ -80,7 +84,7 @@ public class GetToOuterEndIslandsTask extends Task {
 
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getBlockTracker().stopTracking(Blocks.END_GATEWAY);
+        mod.getBlockScanner().anyFound(Blocks.END_GATEWAY);
         mod.getBehaviour().pop();
     }
 

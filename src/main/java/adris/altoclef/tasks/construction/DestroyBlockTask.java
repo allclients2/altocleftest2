@@ -39,7 +39,6 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
     private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();
     private Task _unstuckTask = null;
     private boolean isMining;
-    private final ISchematic schematic = new DestroyStructureSchematic();
 
     public DestroyBlockTask(BlockPos pos) {
         targetPosition = pos;
@@ -274,6 +273,7 @@ public class DestroyBlockTask extends Task implements ITaskRequiresGrounded {
             setDebugState("Letting baritone destroy a block.");
             if (!mod.getClientBaritone().getBuilderProcess().isActive()) {
                 Debug.logInternal("Run Structure Destroy");
+                final ISchematic schematic = new DestroyStructureSchematic();
                 mod.getClientBaritone().getBuilderProcess().build("structure", schematic, targetPosition);
             }
         } else {
