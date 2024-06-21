@@ -368,9 +368,10 @@ public class Settings implements IFailableConfigFile {
             Items.END_STONE,
             Items.SANDSTONE,
             Items.STONE_BRICKS,
+
             //Non-block
             Items.WHEAT_SEEDS,
-            Items.COPPER_ORE
+            Items.RAW_COPPER
     );
 
     /**
