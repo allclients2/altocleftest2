@@ -1,6 +1,6 @@
 package adris.altoclef.multiversion;
 
-//#if MC >= 12006
+//#if MC >= 12005
 import net.minecraft.component.type.FoodComponent;
 //#else
 //$$ import net.minecraft.item.FoodComponent;
@@ -23,7 +23,7 @@ public class FoodComponentWrapper {
     }
 
     public int getHunger() {
-        //#if MC >= 12006
+        //#if MC >= 12005
         return component.nutrition();
         //#else
         //$$ return component.getHunger();
@@ -31,7 +31,7 @@ public class FoodComponentWrapper {
     }
 
     public float getSaturationModifier() {
-        //#if MC >= 12006
+        //#if MC >= 12005
         return component.saturation();
         //#else
         //$$ return component.getSaturationModifier();

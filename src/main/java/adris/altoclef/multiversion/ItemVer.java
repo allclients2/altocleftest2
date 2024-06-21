@@ -6,7 +6,7 @@ import net.minecraft.item.ItemStack;
 public class ItemVer {
 
     public static FoodComponentWrapper getFoodComponent(Item item) {
-        //#if MC >=12006
+        //#if MC >=12005
         return FoodComponentWrapper.of(item.getComponents().get(net.minecraft.component.DataComponentTypes.FOOD));
         //#else
         //$$ return FoodComponentWrapper.of(item.getFoodComponent());
@@ -18,7 +18,7 @@ public class ItemVer {
     }
 
     public static boolean hasCustomName(ItemStack stack) {
-        //#if MC >= 12006
+        //#if MC >= 12005
         return stack.contains(net.minecraft.component.DataComponentTypes.CUSTOM_NAME);
         //#else
         //$$ return stack.hasCustomName();
@@ -26,7 +26,7 @@ public class ItemVer {
     }
 
     public static boolean isFood(Item item) {
-        //#if MC >=12006
+        //#if MC >=12005
         return item.getComponents().contains(net.minecraft.component.DataComponentTypes.FOOD);
         //#else
         //$$ return item.isFood();
