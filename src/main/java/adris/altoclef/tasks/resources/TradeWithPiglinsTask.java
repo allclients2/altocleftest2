@@ -8,6 +8,7 @@ import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.EntityHelper;
+import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.time.TimerGame;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
@@ -99,10 +100,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
     static class PerformTradeWithPiglin extends AbstractDoToEntityTask {
 
         private static final double PIGLIN_NEARBY_RADIUS = 10;
-        private final TimerGame _barterTimeout = new TimerGame(2);
-        private final TimerGame _intervalTimeout = new TimerGame(10);
-        private final HashSet<Entity> _blacklisted = new HashSet<>();
-        private Entity _currentlyBartering = null;
+        private final TimerGame barterTimeout = new TimerGame(2);
+        private final TimerGame intervalTimeout = new TimerGame(10);
+        private final HashSet<Entity> blacklisted = new HashSet<>();
+        private Entity currentlyBartering = null;
 
         public PerformTradeWithPiglin() {
             super(3);
@@ -120,7 +121,7 @@ public class TradeWithPiglinsTask extends ResourceTask {
             // Don't attack piglins unless we've blacklisted them.
             mod.getBehaviour().addForceFieldExclusion(entity -> {
                 if (entity instanceof PiglinEntity) {
-                    return !_blacklisted.contains(entity);
+                    return !blacklisted.contains(entity);
                 }
                 return false;
             });
@@ -142,39 +143,39 @@ public class TradeWithPiglinsTask extends ResourceTask {
         protected Task onEntityInteract(AltoClef mod, Entity entity) {
 
             // If we didn't run this in a while, we can retry bartering.
-            if (_intervalTimeout.elapsed()) {
+            if (intervalTimeout.elapsed()) {
                 // We didn't interact for a while, continue bartering as usual.
-                _barterTimeout.reset();
-                _intervalTimeout.reset();
+                barterTimeout.reset();
+                intervalTimeout.reset();
             }
 
             // We're trading so reset the barter timeout
-            if (EntityHelper.isTradingPiglin(_currentlyBartering)) {
-                _barterTimeout.reset();
+            if (EntityHelper.isTradingPiglin(currentlyBartering)) {
+                barterTimeout.reset();
             }
 
             // We're bartering a new entity.
-            if (!entity.equals(_currentlyBartering)) {
-                _currentlyBartering = entity;
-                _barterTimeout.reset();
+            if (!entity.equals(currentlyBartering)) {
+                currentlyBartering = entity;
+                barterTimeout.reset();
             }
 
-            if (_barterTimeout.elapsed()) {
+            if (barterTimeout.elapsed()) {
                 // We failed bartering.
                 Debug.logMessage("Failed bartering with current piglin, blacklisting.");
-                _blacklisted.add(_currentlyBartering);
-                _barterTimeout.reset();
-                _currentlyBartering = null;
+                blacklisted.add(currentlyBartering);
+                barterTimeout.reset();
+                currentlyBartering = null;
                 return null;
             }
 
-            if (AVOID_HOGLINS && _currentlyBartering != null && !EntityHelper.isTradingPiglin(_currentlyBartering)) {
-                Optional<Entity> closestHoglin = mod.getEntityTracker().getClosestEntity(_currentlyBartering.getPos(), HoglinEntity.class);
+            if (AVOID_HOGLINS && currentlyBartering != null && !EntityHelper.isTradingPiglin(currentlyBartering)) {
+                Optional<Entity> closestHoglin = mod.getEntityTracker().getClosestEntity(currentlyBartering.getPos(), HoglinEntity.class);
                 if (closestHoglin.isPresent() && closestHoglin.get().isInRange(entity, HOGLIN_AVOID_TRADE_RADIUS)) {
                     Debug.logMessage("Aborting further trading because a hoglin showed up");
-                    _blacklisted.add(_currentlyBartering);
-                    _barterTimeout.reset();
-                    _currentlyBartering = null;
+                    blacklisted.add(currentlyBartering);
+                    barterTimeout.reset();
+                    currentlyBartering = null;
                 }
             }
 
@@ -182,7 +183,8 @@ public class TradeWithPiglinsTask extends ResourceTask {
 
             if (mod.getSlotHandler().forceEquipItem(Items.GOLD_INGOT)) {
                 mod.getController().interactEntity(mod.getPlayer(), entity, Hand.MAIN_HAND);
-                _intervalTimeout.reset();
+                LookHelper.lookAt(mod, entity.getEyePos());
+                intervalTimeout.reset();
             }
             return null;
         }
@@ -192,10 +194,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
             // Ignore trading piglins
             Optional<Entity> found = mod.getEntityTracker().getClosestEntity(mod.getPlayer().getPos(),
                     entity -> {
-                        if (_blacklisted.contains(entity)
+                        if (blacklisted.contains(entity)
                                 || EntityHelper.isTradingPiglin(entity)
                                 || (entity instanceof LivingEntity && ((LivingEntity) entity).isBaby())
-                                || (_currentlyBartering != null && !entity.isInRange(_currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
+                                || (currentlyBartering != null && !entity.isInRange(currentlyBartering, PIGLIN_NEARBY_RADIUS))) {
                             return false;
                         }
 
@@ -208,10 +210,10 @@ public class TradeWithPiglinsTask extends ResourceTask {
                     }, PiglinEntity.class
             );
             if (found.isEmpty()) {
-                if (_currentlyBartering != null && (_blacklisted.contains(_currentlyBartering) || !_currentlyBartering.isAlive())) {
-                    _currentlyBartering = null;
+                if (currentlyBartering != null && (blacklisted.contains(currentlyBartering) || !currentlyBartering.isAlive())) {
+                    currentlyBartering = null;
                 }
-                found = Optional.ofNullable(_currentlyBartering);
+                found = Optional.ofNullable(currentlyBartering);
             }
             return found;
         }
