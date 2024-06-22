@@ -122,7 +122,6 @@ public class BeatMinecraftTask extends Task {
     private final TimerGame changedTaskTimer = new TimerGame(3);
     private final TimerGame forcedTaskTimer = new TimerGame(10);
     private final List<BlockPos> blacklistedChests = new LinkedList<>();
-    private final TimerGame searchBiomeTask = new TimerGame(20);
     private final TimerGame waterPlacedTimer = new TimerGame(1.5);
     private final TimerGame fortressTimer = new TimerGame(20);
     private final AltoClef mod;
@@ -2405,22 +2404,24 @@ public class BeatMinecraftTask extends Task {
                 }
 
                 if (mod.getBlockScanner().anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM) || hasRods) {
-                    gettingPearls = true;
-                    setDebugState("Getting Ender Pearls");
-                    Optional<BlockPos> closestBlock = mod.getBlockScanner().getNearestBlock(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM);
-
-
-                    searchBiomeTask.reset();
-                    if (closestBlock.isPresent()) {
-                        if (!WorldHelper.inRangeXZ(mod.getPlayer(), closestBlock.get(), 30) && !gotToBiome) {
+                    if (biomePos != null) {
+                        if ((!WorldHelper.inRangeXZ(mod.getPlayer(), biomePos, 30) && !gotToBiome) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
                             setDebugState("Going to biome");
 
-                            return new GetToBlockTask(closestBlock.get());
+                            return new GetWithinRangeOfBlockTask(biomePos, 30);
                         } else {
                             gotToBiome = true;
                         }
                     } else {
-                        setDebugState("biome not found, wandering");
+                        gettingPearls = true;
+                        setDebugState("Getting Ender Pearls");
+                        Optional<BlockPos> closestBlock = mod.getBlockScanner().getNearestBlock(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM);
+
+                        if (closestBlock.isPresent()) {
+                            biomePos = closestBlock.get();
+                        } else {
+                            setDebugState("biome not found, wandering");
+                        }
                         return new TimeoutWanderTask();
                     }
 
@@ -2434,6 +2435,8 @@ public class BeatMinecraftTask extends Task {
         }
         return null;
     }
+
+    private BlockPos biomePos = null;
 
     private record TaskChange(PriorityTask original, PriorityTask interrupt, BlockPos pos) {
     }

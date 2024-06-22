@@ -93,11 +93,7 @@ public class UnstuckChain extends SingleTaskChain {
         } else {
             mod.getInputControls().tryPress(Input.MOVE_FORWARD);
             mod.getInputControls().tryPress(Input.CLICK_LEFT);
-            if (MinecraftClient.getInstance().crosshairTarget instanceof BlockHitResult blockHitResult) {
-                LookHelper.lookAt(mod,blockHitResult.getBlockPos());
-            } else {
-                LookHelper.lookAt(mod, new Rotation(0, 0));
-            }
+            LookHelper.lookAt(mod, new Rotation(0, 0));
         }
     }
 
