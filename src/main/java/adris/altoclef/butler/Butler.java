@@ -6,6 +6,7 @@ import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import adris.altoclef.eventbus.events.TaskFinishedEvent;
 import adris.altoclef.ui.MessagePriority;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.network.message.MessageType;
 
 import java.util.Objects;
@@ -133,6 +134,7 @@ public class Butler {
         commandFinished = false;
         currentUser = username;
         sendWhisper("Command Executing: " + message, MessagePriority.TIMELY);
+
         String prefix = ButlerConfig.getInstance().requirePrefixMsg ? mod.getModSettings().getCommandPrefix() : "";
         AltoClef.getCommandExecutor().execute(prefix + message, () -> {
             // On finish
@@ -142,7 +144,9 @@ public class Butler {
             }
             commandFinished = true;
         }, e -> {
-            sendWhisper("TASK FAILED: " + e.getMessage(), MessagePriority.ASAP);
+            for (String msg : e.getMessage().split("\n")) {
+                sendWhisper("TASK FAILED: " + msg, MessagePriority.ASAP);
+            }
             e.printStackTrace();
             currentUser = null;
             commandInstantRan = false;
@@ -163,6 +167,6 @@ public class Butler {
     }
 
     private void sendWhisper(String username, String message, MessagePriority priority) {
-        mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
+      mod.getMessageSender().enqueueWhisper(username, BUTLER_MESSAGE_START + message, priority);
     }
 }

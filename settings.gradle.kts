@@ -22,6 +22,7 @@ rootProject.buildFileName = "root.gradle.kts"
 
 listOf(
     "1.20.6",
+    "1.20.5",
     "1.20.4",
     "1.20.2",
     "1.20.1"

@@ -25,7 +25,7 @@ public class MethodWrapper {
     }
 
     public static float getDamageLeft(float damage, DamageSource source, float armor, float armorToughness) {
-        //#if MC>=12006
+        //#if MC>=12005
         return DamageUtil.getDamageLeft(damage, source, armor, armorToughness);
         //#else
         //$$ return DamageUtil.getDamageLeft(damage,armor,armorToughness);
