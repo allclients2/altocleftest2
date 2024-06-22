@@ -7,7 +7,7 @@ public class MessageTypeVer {
 
     @Pattern
     private static MessageType type(MessageType.Parameters params) {
-        //#if MC >= 12006
+        //#if MC >= 12005
         return params.type().value();
         //#else
         //$$ return params.type();

@@ -4,6 +4,7 @@ import adris.altoclef.Debug;
 import adris.altoclef.util.time.BaseTimer;
 import adris.altoclef.util.time.TimerReal;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.text.Text;
 
 import java.util.Comparator;
@@ -39,7 +40,7 @@ public class MessageSender {
             if (!whisperQueue.isEmpty()) {
                 BaseMessage msg = whisperQueue.poll();
                 assert msg != null;
-                sendChatUpdateTimers(msg.getChatInput());
+                sendChatUpdateTimers(msg);
             }
         }
     }
@@ -56,8 +57,8 @@ public class MessageSender {
         return bigBigSendTimer.elapsed() && bigSendTimer.elapsed() && fastSendTimer.elapsed();
     }
 
-    private void sendChatUpdateTimers(String message) {
-        sendChatInstant(message);
+    private void sendChatUpdateTimers(BaseMessage message) {
+        sendChatInstant(message.getChatInput(), message instanceof Whisper);
         fastSendTimer.reset();
         fastCount++;
         if (fastCount >= FAST_LIMIT) {
@@ -71,12 +72,20 @@ public class MessageSender {
         }
     }
 
-    private void sendChatInstant(String message) {
+    private void sendChatInstant(String message, boolean command) {
         if (MinecraftClient.getInstance().player == null) {
             Debug.logError("Failed to send chat message as no client loaded.");
             return;
         }
-        MinecraftClient.getInstance().player.sendMessage(Text.of(message));
+
+        ClientPlayNetworkHandler networkHandler =  MinecraftClient.getInstance().getNetworkHandler();
+        assert networkHandler != null;
+
+        if (command) {
+            networkHandler.sendChatCommand(message);
+        } else {
+            networkHandler.sendChatMessage(message);
+        }
     }
 
     private static abstract class BaseMessage {
@@ -103,7 +112,7 @@ public class MessageSender {
 
         @Override
         public String getChatInput() {
-            return "/msg " + username + " " + message;
+            return "msg " + username + " " + message;
         }
     }
 

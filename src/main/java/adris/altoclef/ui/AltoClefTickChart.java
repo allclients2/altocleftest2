@@ -1,6 +1,7 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.InGameHudVer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
@@ -47,7 +48,7 @@ public class AltoClefTickChart {
     // This means 0xFFDDDDDD color is fully opaque, and about 82.7% in all channels, making it bright white.
 
     public void render(AltoClef mod,DrawContext context, int x, int width) {
-        if (!mod.getTaskRunner().isActive()) return;
+        if (InGameHudVer.shouldShowDebugHud() || !mod.getTaskRunner().isActive()) return;
 
         int height = context.getScaledWindowHeight();
         context.fill(RenderLayer.getGuiOverlay(), x, height - 37, x + width, height, 0x90505050);

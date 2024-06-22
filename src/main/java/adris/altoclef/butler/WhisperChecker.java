@@ -14,50 +14,45 @@ public class WhisperChecker {
 
     private static String _lastMessage = null;
 
+    // this didn't work correctly, so I rewrote it without fancy regex stuff -miran
     public static MessageResult tryParse(String ourUsername, String whisperFormat, String message) {
-        List<String> parts = new ArrayList<>(Arrays.asList("{from}", "{to}", "{message}"));
+        List<String> parts = new ArrayList<>(List.of("{from}", "{to}", "{message}"));
 
         // Sort by the order of appearance in whisperFormat.
         parts.sort(Comparator.comparingInt(whisperFormat::indexOf));
         parts.removeIf(part -> !whisperFormat.contains(part));
 
-        String regexFormat = Pattern.quote(whisperFormat);
-        for (String part : parts) {
-            regexFormat = regexFormat.replace(part, "(.+)");
-        }
-        if (regexFormat.startsWith("\\Q")) regexFormat = regexFormat.substring("\\Q".length());
-        if (regexFormat.endsWith("\\E")) regexFormat = regexFormat.substring(0, regexFormat.length() - "\\E".length());
-        //Debug.logInternal("FORMAT: " + regexFormat + " tested on " + message);
-        Pattern p = Pattern.compile(regexFormat);
-        Matcher m = p.matcher(message);
-        Map<String, String> values = new HashMap<>();
-        if (m.matches()) {
-            for (int i = 0; i < m.groupCount(); ++i) {
-                // parts is sorted, so the order should lign up.
-                if (i >= parts.size()) {
-                    Debug.logError("Invalid whisper format parsing: " + whisperFormat + " for message: " + message);
-                    break;
+        ArrayList<String> messageParts = new ArrayList<>(Arrays.stream(message.split(" ")).toList());
+        MessageResult result = new MessageResult();
+        for (int i = 0; i < parts.size(); i++) {
+            String part = parts.get(i);
+            if (messageParts.isEmpty()) return null;
+
+            if (part.equals("{from}")) {
+                result.from = messageParts.remove(0);
+            } else if (part.equals("{to}")) {
+                String toUser = messageParts.remove(0);
+                if (!toUser.equals(ourUsername)) {
+                    Debug.logInternal("Rejected message since it is sent to " + toUser + " and not " + ourUsername);
+                    return null;
                 }
-                //Debug.logInternal("     GOT: " + parts.get(i) + " -> " + m.group(i + 1));
-                values.put(parts.get(i), m.group(i + 1));
+            } else if (part.equals("{message}")) {
+                List<String> messageList = messageParts.subList(0,messageParts.size()-(parts.size()-i-1));
+
+                StringBuilder msg = new StringBuilder(messageList.get(0));
+
+                for (int j = 1; j < messageList.size(); j++) {
+                    msg.append(" ").append(messageList.get(j));
+                }
+
+                result.message = msg.toString();
+            } else {
+                throw new IllegalArgumentException("Unknown part: "+part);
             }
+
         }
 
-        if (values.containsKey("{to}")) {
-            // Make sure the "to" target is us.
-            String toUser = values.get("{to}");
-            if (!toUser.equals(ourUsername)) {
-                Debug.logInternal("Rejected message since it is sent to " + toUser + " and not " + ourUsername);
-                return null;
-            }
-        }
-        if (values.containsKey("{from}") && values.containsKey("{message}")) {
-            MessageResult result = new MessageResult();
-            result.from = values.get("{from}");
-            result.message = values.get("{message}");
-            return result;
-        }
-        return null;
+        return result;
     }
 
     public MessageResult receiveMessage(AltoClef mod, String ourUsername, String msg) {
