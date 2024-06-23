@@ -7,6 +7,7 @@ import adris.altoclef.util.helpers.BaritoneHelper;
 import baritone.api.pathing.goals.Goal;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
+import net.minecraft.entity.mob.EndermanEntity;
 import net.minecraft.entity.mob.SkeletonEntity;
 
 import java.util.List;
@@ -17,6 +18,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
 
     private final double distanceToRun;
     private final boolean includeSkeletons;
+    private Stream<LivingEntity> runAwayStream;
 
     public RunAwayFromHostilesTask(double distance, boolean includeSkeletons) {
         distanceToRun = distance;
@@ -59,6 +61,15 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         return "NIGERUNDAYOO, SUMOOKEYY! distance: "+ String.format("%.2f", distanceToRun) +", skeletons: "+ includeSkeletons;
     }
 
+    public boolean isSafe() {
+        if (runAwayStream != null) {
+            return runAwayStream.findAny().isEmpty();
+        } else {
+            return false; // Assume we are not safe.
+        }
+    }
+
+
     private class GoalRunAwayFromHostiles extends GoalRunAwayFromEntities {
 
         public GoalRunAwayFromHostiles(AltoClef mod, double distance) {
@@ -72,6 +83,8 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
                 if (!includeSkeletons) {
                     stream = stream.filter(hostile -> !(hostile instanceof SkeletonEntity));
                 }
+                stream = stream.filter(hostile -> !mod.getPlayer().canSee(hostile)); // Only run away from mobs we can see..
+                runAwayStream = stream;
                 return stream.collect(Collectors.toList());
             }
         }
