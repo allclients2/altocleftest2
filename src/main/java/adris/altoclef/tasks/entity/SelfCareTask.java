@@ -115,6 +115,7 @@ public class SelfCareTask extends Task {
             setDebugState(debugStateName);
             return getFood;
         }
+
         if (!hasWoodToolSet) {
             debugStateName = "Getting wood tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(woodToolSet);
@@ -125,6 +126,7 @@ public class SelfCareTask extends Task {
             getToolSet = TaskCatalogue.getSquashedItemTask(stoneToolSet);
             return getToolSet;
         }
+
         if (!hasBed) {
             debugStateName = "Getting bed";
             return getBed;
@@ -133,40 +135,41 @@ public class SelfCareTask extends Task {
             debugStateName = "Getting food";
             return getFood;
         }
-        if (!hasIronToolSet) {
+
+        if (!hasIronToolSet && !hasDiamondToolSet && !hasNetheriteToolSet) {
             debugStateName = "Getting iron tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(ironToolSet);
             return getToolSet;
         }
+
         if (!hasShield) {
             debugStateName = "Getting shield";
             return equipShield;
         }
-        if (!hasIronArmorSet) {
+
+        if (!hasIronArmorSet && !hasDiamondArmorSet && !hasNetheriteArmorSet) {
             debugStateName = "Getting and equipping iron armor set";
             equipArmorSet = new EquipArmorTask(ironArmorSet);
             return equipArmorSet;
         }
-        if (!hasDiamondToolSet) {
+
+        if (!hasDiamondToolSet && !hasNetheriteToolSet) {
             debugStateName = "Getting diamond tool set";
             getToolSet = TaskCatalogue.getSquashedItemTask(diamondToolSet);
             return getToolSet;
         }
-        if (!hasDiamondArmorSet) {
+        if (!hasDiamondArmorSet && !hasNetheriteArmorSet) {
             debugStateName = "Getting and equipping diamond armor set";
             equipArmorSet = new EquipArmorTask(diamondArmorSet);
             return equipArmorSet;
         }
-        if (!hasNetheriteToolSet) {
-            debugStateName = "Getting netherite tool set";
-            getToolSet = TaskCatalogue.getSquashedItemTask(netheriteToolSet);
-            return getToolSet;
-        }
+
         if (!hasNetheriteArmorSet) {
             debugStateName = "Getting and equipping netherite armor set";
             equipArmorSet = new EquipArmorTask(netheriteArmorSet);
             return equipArmorSet;
         }
+
         if (player.isPresent()) {
             setDebugState("Following player");
             return new GetToEntityTask(player.get(), 2);

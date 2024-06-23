@@ -10,6 +10,8 @@ import adris.altoclef.control.LookAtPos;
 import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
+import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
+import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
 import net.minecraft.util.Hand;
@@ -282,6 +284,8 @@ public class MobDefenseChain extends SingleTaskChain {
             return Float.NEGATIVE_INFINITY;
         }
 
+        escapeDragonBreath(mod);
+
         // Dodge projectiles, if no shield. Or block.
         if (Player.getHealth() <= 10 && (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
             if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 2 && !mod.getFoodChain().needsToEat()) {
@@ -441,9 +445,9 @@ public class MobDefenseChain extends SingleTaskChain {
                 if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), distanceDefense)) {
                     // Determine if we can fight them or we have to run away.
                     if (
-                         (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
-                         (!evadingHostilesLastTick) &&
-                         (!closestOpponent.isSubmergedInWater()) // Because baritone can't path-find to enemy.
+                            (canDealWith > entityScore && entityScore < 12 && Player.getHealth() > 7) &&
+                                    (!evadingHostilesLastTick) &&
+                                    (!closestOpponent.isSubmergedInWater()) // Because baritone can't path-find to enemy.
                     ) {
                         // We can deal with it; Fight.
                         runAwayTask = null;
@@ -452,7 +456,17 @@ public class MobDefenseChain extends SingleTaskChain {
                     } else {
                         // We can't deal with it; Flight.
                         evadingHostilesLastTick = true;
-                        runAwayTask = new RunAwayFromHostilesTask(distanceDefense, true);
+                        if (!mod.getEntityTracker().getHostiles().isEmpty()) {
+                            runAwayTask = new RunAwayFromHostilesTask(distanceDefense, true);
+                        } else {
+                            BlockPos[] entityDistances = new BlockPos[toDealWith.size()];
+                            int index = 0;
+                            for (Entity entity : toDealWith) {
+                                BlockPos distance = entity.getBlockPos();
+                                entityDistances[index++] = distance;
+                            }
+                            runAwayTask = new RunAwayFromPositionTask(distanceDefense, entityDistances);
+                        }
                         setTask(runAwayTask);
                         doForceField(mod); // To protect ourselves as we escape.
                         return 75;

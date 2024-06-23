@@ -786,11 +786,8 @@ public class BeatMinecraftTask extends Task {
         // Check if the material count is below the minimum required count
         // or if the build materials task should be forced.
         if (materialCount < config.minBuildMaterialCount || shouldForce) {
-            Debug.logInternal("Building materials needed: " + materialCount);
-            Debug.logInternal("Force build materials: " + shouldForce);
             return true;
         } else {
-            Debug.logInternal("Building materials not needed");
             return false;
         }
     }
