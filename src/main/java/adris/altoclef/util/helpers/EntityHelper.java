@@ -51,6 +51,19 @@ public class EntityHelper {
             if (mob instanceof WitherSkeletonEntity witherSkeleton) {
                 return witherSkeleton.isAttacking();
             }
+            if (mob instanceof PillagerEntity pillager) {
+                return pillager.isAngryAt(mod.getPlayer());
+            }
+            if (mob instanceof HoglinEntity hoglin) {
+                return hoglin.isInAttackRange(mod.getPlayer()); // Assuming they always mad
+            }
+            if (mob instanceof RavagerEntity ravager) {
+                return ravager.isAngryAt(mod.getPlayer());
+            }
+
+            if (entity instanceof HostileEntity hostile && mob.canSee(mod.getPlayer())) {
+                return hostile.isAngryAt(mod.getPlayer()); // Assume they always attack
+            }
 
             return mob.isAttacking() || mob instanceof HostileEntity;
         }

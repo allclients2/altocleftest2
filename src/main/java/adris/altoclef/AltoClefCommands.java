@@ -18,6 +18,7 @@ public class AltoClefCommands {
                 new EquipCommand(),
                 new DepositCommand(),
                 new StashCommand(),
+                new SelfCareCommand(),
                 new GotoCommand(),
                 new IdleCommand(),
                 new InventoryCommand(),

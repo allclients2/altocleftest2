@@ -2,6 +2,8 @@ package adris.altoclef.util;
 
 import adris.altoclef.Debug;
 import net.minecraft.block.Block;
+import net.minecraft.block.Blocks;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
@@ -23,6 +25,9 @@ public enum MiningRequirement implements Comparable<MiningRequirement> {
                 if (pick.getDefaultStack().isSuitableFor(block.getDefaultState())) {
                     return req;
                 }
+            }
+            if (block == Blocks.COBWEB) {
+                return MiningRequirement.HAND;
             }
             Debug.logWarning("Failed to find ANY effective tool against: " + block + ". I assume netherite is not required anywhere, so something else probably went wrong.");
             return MiningRequirement.DIAMOND;

@@ -78,9 +78,6 @@ public class CommandStatusOverlay {
         for (int i = 0; i < tasks.size(); ++i) {
             if (i == 1) {
                 x += addX * 2;
-                renderer.draw("...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-
-                x += addX * 2;
                 renderer.draw("... " + (tasks.size() - maxLines) + " other task(s) ...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
             } else if (i == 0 || i > tasks.size() - maxLines) {
                 renderTask(tasks.get(i), renderer, x, y, matrix, vertexConsumers, layerType);
