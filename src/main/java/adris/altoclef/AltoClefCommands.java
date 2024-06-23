@@ -35,10 +35,6 @@ public class AltoClefCommands {
                 new GamerCommand(),
                 new MarvionCommand(),
                 new DummyTaskCommand(),
-                new ReloadSettingsCommand(),
-                new GetCommand(),
-                //new CycleTestCommand(),
-                new ReloadSettingsCommand(),
                 new ScanCommand()
         );
     }
