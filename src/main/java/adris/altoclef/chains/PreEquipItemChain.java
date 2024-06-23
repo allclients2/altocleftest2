@@ -61,7 +61,7 @@ public class PreEquipItemChain extends SingleTaskChain {
 
     @Override
     public String getName() {
-        return "pre-equip item chain";
+        return "Pre-equip item chain";
     }
 
     @Override

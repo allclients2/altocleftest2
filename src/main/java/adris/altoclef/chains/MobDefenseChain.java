@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import adris.altoclef.control.LookAtPos;
 import adris.altoclef.multiversion.ItemVer;
+import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
 import adris.altoclef.tasks.movement.DodgeProjectilesTask;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
@@ -282,14 +283,12 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         // Dodge projectiles, if no shield. Or block.
-        if (Player.getHealth() <= 15 && (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
-           /* //TODO: replace with something more reliable before uncommenting
-            if ((StorageHelper.getNumberOfThrowawayBlocks(mod) - 1) > 1 && StorageHelper.getNumberOfThrowawayBlocks(mod) > 1 && !mod.getFoodChain().needsToEat()) {
+        if (Player.getHealth() <= 10 && (!mod.getItemStorage().hasItem(Items.SHIELD) && !mod.getItemStorage().hasItemInOffhand(Items.SHIELD)) && mod.getModSettings().isDodgeProjectiles() && isProjectileClose(mod)) {
+            if (StorageHelper.getNumberOfThrowawayBlocks(mod) > 2 && !mod.getFoodChain().needsToEat()) {
                 doingFunkyStuff = true;
                 setTask(new ProjectileProtectionWallTask(mod));
                 return 70;
             }
-            */
 
             runAwayTask = new DodgeProjectilesTask(ARROW_KEEP_DISTANCE_HORIZONTAL, ARROW_KEEP_DISTANCE_VERTICAL);
             setTask(runAwayTask);
@@ -436,7 +435,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 // System.out.println("entityscore: " + entityscore);
 
                 // Distance we fight or we run from
-                final double distanceDefense = dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.05 : 1.15);
+                final double distanceDefense = dangerKeepDistanceAdjusted * (RangedPresent.get() ? 3.2 : 1.15);
 
                 // This is self-defense, so only defend if in range.
                 if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), distanceDefense)) {
@@ -453,9 +452,9 @@ public class MobDefenseChain extends SingleTaskChain {
                     } else {
                         // We can't deal with it; Flight.
                         evadingHostilesLastTick = true;
-                        doForceField(mod); // To protect ourselves as we escape.
                         runAwayTask = new RunAwayFromHostilesTask(distanceDefense, true);
                         setTask(runAwayTask);
+                        doForceField(mod); // To protect ourselves as we escape.
                         return 75;
                     }
                 }

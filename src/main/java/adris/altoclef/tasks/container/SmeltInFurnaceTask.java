@@ -300,7 +300,7 @@ public class SmeltInFurnaceTask extends ResourceTask {
                     - totalFuelInFurnace;
              */
             // Fill in fuel if needed
-            if (fuel.isEmpty() || ItemHelper.isFuel(fuel.getItem())) {
+            if (fuel.isEmpty() || !ItemHelper.isFuel(fuel.getItem())) {
                 double currentlyCached = StorageHelper.getFurnaceFuel() + StorageHelper.getFurnaceCookPercent();
                 double needs = material.getCount() - currentlyCached;
                 if (needs > 0) {
