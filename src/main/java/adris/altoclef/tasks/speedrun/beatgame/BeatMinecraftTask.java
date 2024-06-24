@@ -2100,29 +2100,30 @@ public class BeatMinecraftTask extends Task {
         // Get blaze rods + pearls...
         switch (WorldHelper.getCurrentDimension()) {
             case OVERWORLD -> {
-                if (!forcedTaskTimer.elapsed() && isTaskRunning(mod, lastTask) && lastGather.calculatePriority(mod) > 0) {
-                    return lastTask;
-                }
-
-                if (!changedTaskTimer.elapsed() && lastTask != null && !lastGather.bypassForceCooldown && isTaskRunning(mod, lastTask)) {
-                    return lastTask;
-                }
-                if (isTaskRunning(mod, lastTask) && lastGather != null && lastGather.shouldForce()) {
-                    return lastTask;
-                }
-
-                double maxPriority = 0;
                 PriorityTask toGather = null;
+                double maxPriority = 0;
 
-                for (PriorityTask gatherResource : gatherResources) {
-                    double priority = gatherResource.calculatePriority(mod);
+                if (!gatherResources.isEmpty()) {
+                    if (!forcedTaskTimer.elapsed() && isTaskRunning(mod, lastTask) && lastGather != null && lastGather.calculatePriority(mod) > 0) {
+                        return lastTask;
+                    }
 
-                    if (priority > maxPriority) {
-                        maxPriority = priority;
-                        toGather = gatherResource;
+                    if (!changedTaskTimer.elapsed() && lastTask != null && !lastGather.bypassForceCooldown && isTaskRunning(mod, lastTask)) {
+                        return lastTask;
+                    }
+                    if (isTaskRunning(mod, lastTask) && lastGather != null && lastGather.shouldForce()) {
+                        return lastTask;
+                    }
+
+                    for (PriorityTask gatherResource : gatherResources) {
+                        double priority = gatherResource.calculatePriority(mod);
+
+                        if (priority > maxPriority) {
+                            maxPriority = priority;
+                            toGather = gatherResource;
+                        }
                     }
                 }
-
                 if (toGather != null) {
                     boolean sameTask = lastGather == toGather;
 
