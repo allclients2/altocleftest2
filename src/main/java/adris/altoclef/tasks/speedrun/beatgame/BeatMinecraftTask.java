@@ -599,7 +599,7 @@ public class BeatMinecraftTask extends Task {
 
             double dst = Math.sqrt(chest.get().getSquaredDistance(mod.getPlayer().getPos()));
             pair.setRight(30d / dst * 175);
-            pair.setLeft(new GetToBlockTask(chest.get()));
+            pair.setLeft(new GetToBlockTask(chest.get().up()));
 
             return pair;
         }, a -> true, false, false, true));
