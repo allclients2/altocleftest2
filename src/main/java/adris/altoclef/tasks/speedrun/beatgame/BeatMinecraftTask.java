@@ -566,11 +566,11 @@ public class BeatMinecraftTask extends Task {
             int count = itemStorage.getItemCount(Items.RAW_IRON);
             int includedCount = count + itemStorage.getItemCount(Items.IRON_INGOT);
 
-            if (!hasSufficientPickaxe || !hasItem(mod, Items.SHIELD) || includedCount >= neededIron) {
-                int toSmelt = count - itemStorage.getItemCount(Items.IRON_INGOT);
+            if ((!hasSufficientPickaxe && includedCount >= 3) || (!hasItem(mod, Items.SHIELD) && includedCount >= 1) || includedCount >= neededIron) {
+                int toSmelt = Math.min(includedCount,neededIron);
                 if (toSmelt <= 0) return pair;
 
-                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, toSmelt), new ItemTarget(Items.RAW_IRON, includedCount))));
+                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, toSmelt))));
                 pair.setRight(350d);
                 return pair;
             }
