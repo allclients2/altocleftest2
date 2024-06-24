@@ -567,7 +567,7 @@ public class BeatMinecraftTask extends Task {
             int includedCount = count + itemStorage.getItemCount(Items.IRON_INGOT);
 
             if ((!hasSufficientPickaxe && includedCount >= 3) || (!hasItem(mod, Items.SHIELD) && includedCount >= 1) || includedCount >= neededIron) {
-                int toSmelt = Math.min(includedCount,neededIron);
+                int toSmelt = Math.min(includedCount, neededIron);
                 if (toSmelt <= 0) return pair;
 
                 pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, toSmelt))));
@@ -2347,15 +2347,16 @@ public class BeatMinecraftTask extends Task {
                     return getBlazeRodsTask(mod, blazeRodTarget);
                 }
 
-                if (mod.getBlockScanner().anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM) || hasRods) {
-                    if (biomePos != null) {
-                        if ((!WorldHelper.inRangeXZ(mod.getPlayer(), biomePos, 30) && !gotToBiome) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
-                            setDebugState("Going to biome");
 
-                            return new GetWithinRangeOfBlockTask(biomePos, 30);
-                        } else {
-                            gotToBiome = true;
-                        }
+                if (!mod.getBlockScanner().anyFound(Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.WARPED_HYPHAE, Blocks.WARPED_NYLIUM)) {
+                    return new TimeoutWanderTask();
+                }
+
+                if (!gotToBiome && (biomePos == null || !WorldHelper.inRangeXZ(mod.getPlayer(), biomePos, 30) || !mod.getClientBaritone().getPathingBehavior().isSafeToCancel())) {
+                    if (biomePos != null) {
+                        setDebugState("Going to biome");
+
+                        return new GetWithinRangeOfBlockTask(biomePos, 30);
                     } else {
                         gettingPearls = true;
                         setDebugState("Getting Ender Pearls");
@@ -2368,12 +2369,12 @@ public class BeatMinecraftTask extends Task {
                         }
                         return new TimeoutWanderTask();
                     }
-
-                    return getEnderPearlTask(mod, enderPearlTarget);
+                } else {
+                    gotToBiome = true;
                 }
-                setDebugState("TIMEOUT.. SHIT");
 
-                return new TimeoutWanderTask();
+                return getEnderPearlTask(mod, enderPearlTarget);
+
             }
             case END -> throw new UnsupportedOperationException("You're in the end. Don't collect eyes here.");
         }
