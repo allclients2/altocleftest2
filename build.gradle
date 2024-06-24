@@ -51,36 +51,13 @@ def fabricApiVersions = [
         12006: "0.100.0+1.20.6",
 ]
 
-def baritoneVersions = [
-        12001: "1.20.1-beta1",
-        12002: "1.20.2-beta1",
-        12004: "1.20.4-beta1",
-        12005: "1.20.5-beta1",
-        12006: "1.20.6-beta1",
-]
-
-def baritoneApiPaths = [
-        12001: "baritone-unoptimized",
-        12002: "baritone-unoptimized-fabric",
-        12004: "baritone-unoptimized-fabric",
-        12005: "baritone-unoptimized-fabric",
-        12006: "baritone-unoptimized-fabric",
-]
-
-def baritonePaths = [
-        12001: "baritone-unoptimized",
-        12002: "baritone-unoptimized",
-        12004: "baritone-unoptimized-fabric",
-        12005: "baritone-unoptimized-fabric",
-        12006: "baritone-unoptimized-fabric",
-]
 
 repositories {
     mavenCentral()
     maven {
         name = "MiranCZRepo"
         url = "https://mirancz.github.io/maven/"
-        artifactUrls("https://mirancz.github.io/maven/cabaletta/baritone-unoptimized/${baritoneVersions[mcVersion]}")
+        artifactUrls("https://mirancz.github.io/maven/cabaletta/baritone-unoptimized/${project.name}")
     }
     maven {
         name = 'babbaj-repo'
@@ -118,11 +95,11 @@ dependencies {
     // Thank you georgeagostino for fixing my garbage
     if (getProject().hasProperty("altoclef.development")) {
         // Must run build from baritone-plus once
-        modImplementation "baritone-api-fabric:${baritoneApiPaths[mcVersion]}-${baritoneVersions[mcVersion]}"
-        include "baritone-api-fabric:${baritoneApiPaths[mcVersion]}-${baritoneVersions[mcVersion]}"
+        modImplementation "baritone-api-fabric:baritone-unoptimized-fabric-${project.name}"
+        include "baritone-api-fabric:baritone-unoptimized-fabric-${project.name}"
     } else {
-        modImplementation "cabaletta:${baritonePaths[mcVersion]}:${baritoneVersions[mcVersion]}"
-        include "cabaletta:${baritonePaths[mcVersion]}:${baritoneVersions[mcVersion]}"
+        modImplementation "cabaletta:baritone-unoptimized-fabric:${project.name}"
+        include "cabaletta:baritone-unoptimized-fabric:${project.name}"
     }
     //modImplementation 'baritone-api-fabric:baritone-api-fabric:1.6.3'
     //implementation files('baritone-plus/build/libs/baritone-unoptimized-fabric-1.6.3.jar')
