@@ -4,72 +4,40 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.misc.SleepThroughNightTask;
-import adris.altoclef.tasks.movement.GetToEntityTask;
+import adris.altoclef.tasks.movement.DefaultGoToDimensionTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
 import adris.altoclef.tasks.resources.CollectFoodTask;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
-import java.util.Optional;
-
 public class SelfCareTask extends Task {
-    private static final ItemTarget[] woodToolSet = new ItemTarget[]{
-            new ItemTarget(Items.WOODEN_SWORD, 1),
-            new ItemTarget(Items.WOODEN_PICKAXE, 1),
-            new ItemTarget(Items.WOODEN_AXE, 1),
-            new ItemTarget(Items.WOODEN_SHOVEL, 1),
-    };
-    private static final ItemTarget[] stoneToolSet = new ItemTarget[]{
-            new ItemTarget(Items.STONE_SWORD, 1),
-            new ItemTarget(Items.STONE_PICKAXE, 1),
-            new ItemTarget(Items.STONE_AXE, 1),
-            new ItemTarget(Items.STONE_SHOVEL, 1),
-    };
-    private static final ItemTarget[] ironToolSet = new ItemTarget[]{
-            new ItemTarget(Items.IRON_SWORD, 1),
-            new ItemTarget(Items.IRON_PICKAXE, 1),
-            new ItemTarget(Items.IRON_AXE, 1),
-            new ItemTarget(Items.IRON_SHOVEL, 1),
-    };
-    private static final ItemTarget[] diamondToolSet = new ItemTarget[]{
-            new ItemTarget(Items.DIAMOND_SWORD, 1),
-            new ItemTarget(Items.DIAMOND_PICKAXE, 1),
-            new ItemTarget(Items.DIAMOND_AXE, 1),
-            new ItemTarget(Items.DIAMOND_SHOVEL, 1)
-    };
-    private static final ItemTarget[] netheriteToolSet = new ItemTarget[]{
-            new ItemTarget(Items.NETHERITE_SWORD, 1),
-            new ItemTarget(Items.NETHERITE_PICKAXE, 1),
-            new ItemTarget(Items.NETHERITE_AXE, 1),
-            new ItemTarget(Items.NETHERITE_SHOVEL, 1)
-    };
-    private static final Item[] ironArmorSet = new Item[]{
-            Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS
-    };
-    private static final Item[] diamondArmorSet = new Item[]{
-            Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS
-    };
-    private static final Item[] netheriteArmorSet = new Item[]{
-            Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS
-    };
-    private static final Item[] beds = ItemHelper.BED;
+    private static final ItemTarget[] woodToolTargets = ItemHelper.toItemTargets(ItemHelper.woodToolSet);
+    private static final ItemTarget[] stoneToolTargets = ItemHelper.toItemTargets(ItemHelper.stoneToolSet);
+    private static final ItemTarget[] ironToolTargets = ItemHelper.toItemTargets(ItemHelper.ironToolSet);
+    private static final ItemTarget[] diamondToolSet = ItemHelper.toItemTargets(ItemHelper.diamondToolSet);
+    private static final ItemTarget[] netheriteToolSet = ItemHelper.toItemTargets(ItemHelper.netheriteToolSet);
+    private static final Item[] ironArmorSet = ItemHelper.ironArmorSet;
+    private static final Item[] diamondArmorSet = ItemHelper.diamondArmorSet;
+    private static final Item[] netheriteArmorSet = ItemHelper.netheriteArmorSet;
+
     private static final Task getBed = TaskCatalogue.getItemTask("bed", 1);
-    private static final Task getFood = new CollectFoodTask(100);
+    private static final Task getFood = new CollectFoodTask(35);
     private static final Task sleepThroughNight = new SleepThroughNightTask();
     private static final Task equipShield = new EquipArmorTask(Items.SHIELD);
+    private static final Task getWaterBucket = new EquipArmorTask(Items.SHIELD);
+
     private static Task getToolSet;
     private static Task equipArmorSet;
-    private static String debugStateName;
 
-    private static boolean isTaskNotFinished(AltoClef mod, Task task) {
-        return task != null && task.isActive() && !task.isFinished(mod);
+    private static boolean taskUnfinished(AltoClef mod, Task task) {
+        //Debug.logMessage("Task is null:" + (task == null));
+        return !task.isFinished(mod);
     }
 
     @Override
@@ -79,102 +47,74 @@ public class SelfCareTask extends Task {
 
     @Override
     protected Task onTick(AltoClef mod) {
-        boolean hasWoodToolSet = mod.getItemStorage().hasItem(woodToolSet);
-        boolean hasStoneToolSet = mod.getItemStorage().hasItem(stoneToolSet);
-        boolean hasIronToolSet = mod.getItemStorage().hasItem(ironToolSet);
-        boolean hasBed = mod.getItemStorage().hasItem(beds);
-        boolean hasShield = StorageHelper.isArmorEquipped(mod, Items.SHIELD);
-        boolean hasIronArmorSet = StorageHelper.isArmorEquippedAll(mod, ironArmorSet);
-        boolean hasDiamondToolSet = mod.getItemStorage().hasItem(diamondToolSet);
-        boolean hasDiamondArmorSet = StorageHelper.isArmorEquippedAll(mod, diamondArmorSet);
-        boolean hasNetheriteToolSet = mod.getItemStorage().hasItem(netheriteToolSet);
-        boolean hasNetheriteArmorSet = StorageHelper.isArmorEquippedAll(mod, netheriteArmorSet);
-        Optional<Entity> player = mod.getEntityTracker().getClosestEntity(PlayerEntity.class);
+        final boolean hasWoodToolSet = mod.getItemStorage().hasItem(woodToolTargets);
+        final boolean hasStoneToolSet = mod.getItemStorage().hasItem(stoneToolTargets);
+        final boolean hasIronToolSet = mod.getItemStorage().hasItem(ironToolTargets);
+        final boolean hasBed = mod.getItemStorage().hasItem(ItemHelper.BED);
+        final boolean hasWaterBucket = mod.getItemStorage().hasItem(Items.WATER_BUCKET);
+        final boolean hasIronArmorSet = StorageHelper.isArmorEquippedAll(mod, ironArmorSet);
+        final boolean hasDiamondToolSet = mod.getItemStorage().hasItem(diamondToolSet);
+        final boolean hasDiamondArmorSet = StorageHelper.isArmorEquippedAll(mod, diamondArmorSet);
+        final boolean hasNetheriteToolSet = mod.getItemStorage().hasItem(netheriteToolSet);
+        final boolean hasNetheriteArmorSet = StorageHelper.isArmorEquippedAll(mod, netheriteArmorSet);
 
+
+        // FIXME: If you lose lets say a waterbucket after getting a DiamondToolSet, its never checked again so it will never obtain another. This concept is also true for beds, shields, etc..
+
+        if (!hasNetheriteToolSet) {
+            if (!hasDiamondToolSet) {
+                if (!hasIronToolSet) {
+                    if (!hasStoneToolSet) {
+                        if (!hasWoodToolSet) {
+                            getToolSet = TaskCatalogue.getSquashedItemTask(woodToolTargets);
+                        } else {
+                            getToolSet = TaskCatalogue.getSquashedItemTask(stoneToolTargets);
+                        }
+                    } else if (taskUnfinished(mod, equipShield)) { // AFTER stone tool set Get shield and bed before iron toolset, i think it's very important.
+                        return equipShield;
+                    } else if (taskUnfinished(mod, getBed)) { // AFTER shield get a bed
+                        return getBed;
+                    } else {
+                        getToolSet = TaskCatalogue.getSquashedItemTask(ironToolTargets);
+                    }
+                } else if (taskUnfinished(mod, getWaterBucket)) { // AFTER iron tool Get water bucket for falls.
+                    return getWaterBucket;
+                } else if (!hasIronArmorSet) { // AFTER water bucket get iron armor.
+                    equipArmorSet = new EquipArmorTask(ironArmorSet);
+                } else {
+                    getToolSet = TaskCatalogue.getSquashedItemTask(diamondToolSet);
+                }
+            } else if (!hasDiamondArmorSet) {
+                equipArmorSet = new EquipArmorTask(diamondArmorSet);
+            } else {
+                getToolSet = TaskCatalogue.getSquashedItemTask(netheriteToolSet);
+            }
+        } else if (!hasNetheriteArmorSet) {
+            equipArmorSet = new EquipArmorTask(netheriteArmorSet);
+        }
+
+
+        // Priority
         if (mod.IsNight()) {
             setDebugState("Sleeping through night");
             return sleepThroughNight;
-        }
-        if (isTaskNotFinished(mod, getToolSet)) {
-            setDebugState(debugStateName);
-            return getToolSet;
-        }
-        if (isTaskNotFinished(mod, equipShield)) {
-            setDebugState(debugStateName);
-            return equipShield;
-        }
-        if (isTaskNotFinished(mod, equipArmorSet)) {
-            setDebugState(debugStateName);
-            return equipArmorSet;
-        }
-        if (isTaskNotFinished(mod, getBed)) {
-            setDebugState(debugStateName);
-            return getBed;
-        }
-        if (isTaskNotFinished(mod, getFood)) {
-            setDebugState(debugStateName);
+        } else if (taskUnfinished(mod, getFood)) {
+            setDebugState("Getting food");
             return getFood;
-        }
-
-        if (!hasWoodToolSet) {
-            debugStateName = "Getting wood tool set";
-            getToolSet = TaskCatalogue.getSquashedItemTask(woodToolSet);
+        } else if (getToolSet != null && taskUnfinished(mod, getToolSet)) {
+            setDebugState("Getting a toolset");
             return getToolSet;
-        }
-        if (!hasStoneToolSet) {
-            debugStateName = "Getting stone tool set";
-            getToolSet = TaskCatalogue.getSquashedItemTask(stoneToolSet);
-            return getToolSet;
-        }
-
-        if (!hasBed) {
-            debugStateName = "Getting bed";
-            return getBed;
-        }
-        if (!mod.getFoodChain().hasFood()) {
-            debugStateName = "Getting food";
-            return getFood;
-        }
-
-        if (!hasIronToolSet && !hasDiamondToolSet && !hasNetheriteToolSet) {
-            debugStateName = "Getting iron tool set";
-            getToolSet = TaskCatalogue.getSquashedItemTask(ironToolSet);
-            return getToolSet;
-        }
-
-        if (!hasShield) {
-            debugStateName = "Getting shield";
-            return equipShield;
-        }
-
-        if (!hasIronArmorSet && !hasDiamondArmorSet && !hasNetheriteArmorSet) {
-            debugStateName = "Getting and equipping iron armor set";
-            equipArmorSet = new EquipArmorTask(ironArmorSet);
+        } else if (equipArmorSet != null && taskUnfinished(mod, equipArmorSet)) {
+            setDebugState("Getting an armor set");
             return equipArmorSet;
         }
 
-        if (!hasDiamondToolSet && !hasNetheriteToolSet) {
-            debugStateName = "Getting diamond tool set";
-            getToolSet = TaskCatalogue.getSquashedItemTask(diamondToolSet);
-            return getToolSet;
-        }
-        if (!hasDiamondArmorSet && !hasNetheriteArmorSet) {
-            debugStateName = "Getting and equipping diamond armor set";
-            equipArmorSet = new EquipArmorTask(diamondArmorSet);
-            return equipArmorSet;
+        if (WorldHelper.getCurrentDimension() != Dimension.OVERWORLD) {
+            setDebugState("Returning to overworld");
+            return new DefaultGoToDimensionTask(Dimension.OVERWORLD);
         }
 
-        if (!hasNetheriteArmorSet) {
-            debugStateName = "Getting and equipping netherite armor set";
-            equipArmorSet = new EquipArmorTask(netheriteArmorSet);
-            return equipArmorSet;
-        }
-
-        if (player.isPresent()) {
-            setDebugState("Following player");
-            return new GetToEntityTask(player.get(), 2);
-        }
-        setDebugState("Wandering until a player is found");
+        setDebugState("All tasks done; wandering indefinitely.");
         return new TimeoutWanderTask();
     }
 

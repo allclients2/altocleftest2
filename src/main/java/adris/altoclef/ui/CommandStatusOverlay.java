@@ -76,10 +76,10 @@ public class CommandStatusOverlay {
         }
 
         for (int i = 0; i < tasks.size(); ++i) {
-            if (i == 1) {
+            if (i == 2) { // So we can see the second top task..
                 x += addX * 2;
                 renderer.draw("... " + (tasks.size() - maxLines) + " other task(s) ...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
-            } else if (i == 0 || i > tasks.size() - maxLines) {
+            } else if (i <= 1 || i > tasks.size() - maxLines - 1) {
                 renderTask(tasks.get(i), renderer, x, y, matrix, vertexConsumers, layerType);
             } else {
                 continue;

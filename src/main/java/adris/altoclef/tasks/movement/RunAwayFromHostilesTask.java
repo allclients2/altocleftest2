@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import adris.altoclef.util.helpers.BaritoneHelper;
@@ -85,7 +86,9 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
                 }
                 stream = stream.filter(hostile -> !mod.getPlayer().canSee(hostile)); // Only run away from mobs we can see..
                 runAwayStream = stream;
-                return stream.collect(Collectors.toList());
+                final List<Entity> entities = stream.collect(Collectors.toList());
+                Debug.logMessage("entities: " + entities);
+                return entities;
             }
         }
     }

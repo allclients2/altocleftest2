@@ -3,6 +3,7 @@ package adris.altoclef.tasks.resources;
 import adris.altoclef.AltoClef;
 import adris.altoclef.TaskCatalogue;
 import adris.altoclef.multiversion.ItemVer;
+import adris.altoclef.tasks.container.SmeltInFurnaceTask;
 import adris.altoclef.tasks.container.SmeltInSmokerTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
@@ -19,6 +20,7 @@ import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.passive.*;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.screen.SmokerScreenHandler;
 
@@ -36,7 +38,7 @@ public class CollectMeatTask extends Task {
     };
     private final double unitsNeeded;
     private final TimerGame checkNewOptionsTimer = new TimerGame(10);
-    private SmeltInSmokerTask smeltTask = null;
+    private ResourceTask smeltTask = null;
     private Task currentResourceTask = null;
 
     public CollectMeatTask(double unitsNeeded) {
@@ -105,8 +107,11 @@ public class CollectMeatTask extends Task {
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
                     int toSmelt = rawCount + mod.getItemStorage().getItemCount(cookable.getCooked());
-                    smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
-                    smeltTask.ignoreMaterials();
+                    if (mod.getItemStorage().hasItem(Items.SMOKER)) {
+                        smeltTask = new SmeltInSmokerTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+                    } else {
+                        smeltTask = new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(cookable.cookedFood, toSmelt), new ItemTarget(cookable.rawFood, rawCount)));
+                    }
                     return smeltTask;
                 }
             }

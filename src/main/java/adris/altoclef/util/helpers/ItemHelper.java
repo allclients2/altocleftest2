@@ -2,6 +2,7 @@ package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.multiversion.ItemVer;
+import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.WoodType;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -19,6 +20,7 @@ import net.minecraft.registry.tag.TagKey;
 import net.minecraft.util.DyeColor;
 
 import java.util.*;
+import java.util.stream.Stream;
 
 /**
  * Helper functions and definitions for useful groupings of items
@@ -264,6 +266,48 @@ public class ItemHelper {
             put(type, new WoodItems(prefix, planks, log, strippedLog, strippedWood, wood, sign, hangingSign, door, button, stairs, slab, fence, fenceGate, boat, sapling, leaves, pressurePlate, trapdoor));
         }
     };
+    
+    public static final Item[] woodToolSet = new Item[]{
+            Items.WOODEN_SWORD,
+            Items.WOODEN_PICKAXE,
+            Items.WOODEN_AXE,
+            Items.WOODEN_SHOVEL
+    };
+    public static final Item[] stoneToolSet = new Item[]{
+            Items.STONE_SWORD,
+            Items.STONE_PICKAXE,
+            Items.STONE_AXE,
+            Items.STONE_SHOVEL
+    };
+    public static final Item[] ironToolSet = new Item[]{
+            Items.IRON_SWORD,
+            Items.IRON_PICKAXE,
+            Items.IRON_AXE,
+            Items.IRON_SHOVEL
+    };
+    public static final Item[] diamondToolSet = new Item[]{
+            Items.DIAMOND_SWORD,
+            Items.DIAMOND_PICKAXE,
+            Items.DIAMOND_AXE,
+            Items.DIAMOND_SHOVEL
+    };
+    public static final Item[] netheriteToolSet = new Item[]{
+            Items.NETHERITE_SWORD,
+            Items.NETHERITE_PICKAXE,
+            Items.NETHERITE_AXE,
+            Items.NETHERITE_SHOVEL
+    };
+    
+    public static final Item[] ironArmorSet = new Item[]{
+            Items.IRON_HELMET, Items.IRON_CHESTPLATE, Items.IRON_LEGGINGS, Items.IRON_BOOTS
+    };
+    public static final Item[] diamondArmorSet = new Item[]{
+            Items.DIAMOND_HELMET, Items.DIAMOND_CHESTPLATE, Items.DIAMOND_LEGGINGS, Items.DIAMOND_BOOTS
+    };
+    public static final Item[] netheriteArmorSet = new Item[]{
+            Items.NETHERITE_HELMET, Items.NETHERITE_CHESTPLATE, Items.NETHERITE_LEGGINGS, Items.NETHERITE_BOOTS
+    };
+    
     public static final HashMap<Item, Item> cookableFoodMap = new HashMap<>() {
         {
             put(Items.PORKCHOP, Items.COOKED_PORKCHOP);
@@ -390,6 +434,32 @@ public class ItemHelper {
         }
         return name;
     }
+
+    /*
+    public static ItemTarget[] toItemTargets(Item... items) {
+        final int itemCount = items.length;
+        final ItemTarget[] itemTargetArray = new ItemTarget[itemCount];
+        for (int index = 0; index < itemCount; ++index) {
+            itemTargetArray[index] = new ItemTarget(items[index]);
+        }
+        return itemTargetArray;
+    }
+    */
+
+    public static ItemTarget[] toItemTargets(Item... items) {
+        return Arrays.stream(items)
+                .map(ItemTarget::new)
+                .toArray(ItemTarget[]::new);
+    }
+
+    public static ItemTarget[] toItemTarget(Item item, int count) {
+        // Create a new array of ItemTargets with a length of 1.
+        ItemTarget[] itemTargets = {new ItemTarget(item, count)};
+
+        // Return the array of ItemTargets.
+        return itemTargets;
+    }
+
 
     public static boolean areShearsEffective(Block b) {
         return

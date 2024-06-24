@@ -15,6 +15,7 @@ import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.CraftingRecipe;
 import adris.altoclef.util.ItemTarget;
 import adris.altoclef.util.RecipeTarget;
+import adris.altoclef.util.SmeltTarget;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.helpers.WorldHelper;
 import adris.altoclef.util.slots.Slot;
@@ -66,7 +67,7 @@ public class CollectFoodTask extends Task {
 
     private final double unitsNeeded;
     private final TimerGame checkNewOptionsTimer = new TimerGame(10);
-    private final SmeltInSmokerTask smeltTask = null;
+    private SmeltInSmokerTask smeltTask = null;
     private Task currentResourceTask = null;
 
     public CollectFoodTask(double unitsNeeded) {
@@ -190,7 +191,7 @@ public class CollectFoodTask extends Task {
             }
             // Convert raw foods -> cooked foods
 
-            /*for (CookableFoodTarget cookable : COOKABLE_FOODS) {
+            for (CookableFoodTarget cookable : COOKABLE_FOODS) {
                 int rawCount = mod.getItemStorage().getItemCount(cookable.getRaw());
                 if (rawCount > 0) {
                     //Debug.logMessage("STARTING COOK OF " + cookable.getRaw().getTranslationKey());
@@ -199,7 +200,7 @@ public class CollectFoodTask extends Task {
                     smeltTask.ignoreMaterials();
                     return smeltTask;
                 }
-            }*/
+            }
         } else {
             // Pick up food items from ground
             for (Item item : ITEMS_TO_PICK_UP) {
@@ -297,7 +298,7 @@ public class CollectFoodTask extends Task {
         return new TimeoutWanderTask();
     }
 
-    static void blackListChickenJockeys(AltoClef mod) {
+    protected static void blackListChickenJockeys(AltoClef mod) {
         if (mod.getEntityTracker().entityFound(ChickenEntity.class)) {
             Optional<Entity> chickens = mod.getEntityTracker().getClosestEntity(ChickenEntity.class);
             if (chickens.isPresent()) {
