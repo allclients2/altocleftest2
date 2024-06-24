@@ -561,47 +561,35 @@ public class BeatMinecraftTask extends Task {
         gatherResources.add(new ActionPriorityTask(a -> {
             Pair<Task, Double> pair = new Pair<>(null, Double.NEGATIVE_INFINITY);
 
-            int smeltedIronCount = getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON);
-            if (smeltedIronCount + mod.getItemStorage().getItemCount(Items.RAW_IRON) < 3)
-                return pair;
+            boolean hasSufficientPickaxe = mod.getItemStorage().hasItem(Items.IRON_PICKAXE,Items.DIAMOND_PICKAXE);
 
-            //FIXME hardcoded value (11) for iron count
-            if (getCountWithCraftedFromOre(mod, Items.RAW_IRON) - mod.getItemStorage().getItemCount(Items.RAW_IRON) >= 11) {
-                return pair;
+            int neededIron = 11;
+            if (mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL)) {
+                neededIron--;
             }
+            if (hasItem(mod,Items.SHIELD)) {
+                neededIron--;
+            }
+            if (hasSufficientPickaxe) {
+                neededIron -= 3;
+            }
+
+            neededIron -= Math.min(mod.getItemStorage().getItemCount(Items.BUCKET,Items.WATER_BUCKET,Items.LAVA_BUCKET),2) *3;
+
 
             int count = mod.getItemStorage().getItemCount(Items.RAW_IRON);
             int includedCount = count + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
 
-            //exactly for one coal
-            if (count >= 8) {
-                includedCount = 8 + mod.getItemStorage().getItemCount(Items.IRON_INGOT);
+            if (!hasSufficientPickaxe || !hasItem(mod,Items.SHIELD) || includedCount >= neededIron) {
+                int toSmelt = count-mod.getItemStorage().getItemCount(Items.IRON_INGOT);
+                if (toSmelt <= 0) return pair;
 
-                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
-                pair.setRight(450d);
-
+                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, toSmelt), new ItemTarget(Items.RAW_IRON, includedCount))));
+                pair.setRight(350d);
                 return pair;
             }
 
-            pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, includedCount))));
 
-            //for getting iron pickaxe
-            if (!mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE) && count >= 3) {
-                pair.setRight(460d);
-                return pair;
-            }
-
-            // if we have pickaxe, shield and one bucket dont smelt until we have 4 iron (3 for bucket, 1 for flint and steel)
-            //FIXME hardcoded value (11; 4) + hardcoded items
-            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.BUCKET, Items.WATER_BUCKET) && count < 4)
-                return pair;
-
-            // if we have all the items we need, do not smelt any more iron
-            if (hasItem(mod, Items.SHIELD) && mod.getItemStorage().hasItem(Items.IRON_PICKAXE, Items.DIAMOND_PICKAXE)
-                    && mod.getItemStorage().getItemCount(Items.BUCKET, Items.WATER_BUCKET, Items.LAVA_BUCKET) >= 2 && mod.getItemStorage().hasItem(Items.FLINT_AND_STEEL))
-                return pair;
-
-            pair.setRight(count * 25d);
 
             return pair;
         }, a -> mod.getItemStorage().hasItem(Items.RAW_IRON), true, false, false));
