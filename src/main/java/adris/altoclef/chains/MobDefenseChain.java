@@ -427,7 +427,7 @@ public class MobDefenseChain extends SingleTaskChain {
                     float damage = Player.getMaxHealth() - Player.getHealth();
                     int armor = Player.getArmor();
                     float weaponDamage = BestWeapon.WeaponItem == null ? 0 : (1 + BestDamage);
-                    canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + (shield));
+                    canDealWith = (int) Math.ceil(((double) armor / 4) + (weaponDamage * 2.15) + shield);
                     canDealWith -= (int) Math.floor(damage * 0.125);
                     if (mod.getPlayer().isSubmergedInWater()) {
                         canDealWith -= 1;

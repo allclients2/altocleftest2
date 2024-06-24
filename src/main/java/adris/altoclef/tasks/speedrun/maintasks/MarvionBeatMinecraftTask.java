@@ -172,6 +172,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Retrieves the BeatMinecraftConfig instance, creating a new one if it doesn't exist.
+     *
      * @return the BeatMinecraftConfig instance
      */
     public static BeatMinecraftConfig getConfig() {
@@ -183,6 +184,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Retrieves the frame blocks surrounding the end portal center.
+     *
      * @param endPortalCenter the center position of the end portal
      * @return the list of frame blocks
      */
@@ -237,7 +239,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Converts an Item and count into an array of ItemTargets.
      *
-     * @param item The item to convert
+     * @param item  The item to convert
      * @param count The count of the item
      * @return An array of ItemTargets
      */
@@ -275,6 +277,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Check if the end portal frame at the specified position is filled with an eye of ender.
+     *
      * @param mod the AltoClef mod
      * @param pos the position of the end portal frame
      * @return true if the end portal frame is filled with an eye of ender, false otherwise
@@ -299,7 +302,8 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Check if the task should be forced for the given alto clef mod.
-     * @param mod the alto clef mod
+     *
+     * @param mod  the alto clef mod
      * @param task the task to check
      * @return true if the task should be forced, false otherwise
      */
@@ -403,7 +407,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Check if the item is present in the item storage or if it has been dropped in the end.
      *
-     * @param mod the AltoClef object
+     * @param mod  the AltoClef object
      * @param item the Item object
      * @return true if the item is present in the item storage or if it has been dropped in the end, false otherwise
      * @throws IllegalArgumentException if mod or item is null
@@ -487,7 +491,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * This method is called when the task is interrupted
      *
-     * @param mod The AltoClef mod instance
+     * @param mod           The AltoClef mod instance
      * @param interruptTask The task that is interrupting the current task
      */
     @Override
@@ -501,6 +505,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Checks if the given task is equal to this MarvionBeatMinecraftTask.
+     *
      * @param other the task to compare
      * @return true if the tasks are equal, false otherwise
      */
@@ -523,7 +528,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Checks if the end portal is found at the specified center position.
      *
-     * @param mod The AltoClef mod instance
+     * @param mod             The AltoClef mod instance
      * @param endPortalCenter The center position of the end portal
      * @return true if the end portal is found, false otherwise
      */
@@ -547,7 +552,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Check if the end portal is already opened and the center position is provided
      *
-     * @param mod The AltoClef mod instance
+     * @param mod             The AltoClef mod instance
      * @param endPortalCenter The center position of the end portal
      * @return Whether the end portal is opened at the provided center position
      */
@@ -564,7 +569,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Checks if the bed spawn location is near the end portal.
      *
-     * @param mod the AltoClef mod
+     * @param mod             the AltoClef mod
      * @param endPortalCenter the BlockPos of the end portal center
      * @return true if the bed spawn location is near the end portal, false otherwise
      */
@@ -690,6 +695,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Adds warning messages for missing configuration settings.
+     *
      * @param mod The AltoClef mod instance.
      */
     private void addThrowawayItemsWarning(AltoClef mod) {
@@ -1600,7 +1606,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Retrieves a task related to collecting blaze rods.
      *
-     * @param mod The AltoClef mod instance
+     * @param mod   The AltoClef mod instance
      * @param count The count of blaze rods to collect
      * @return The task related to collecting blaze rods
      */
@@ -1621,7 +1627,8 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * This method retrieves a task for obtaining Ender Pearls.
-     * @param mod the AltoClef mod instance
+     *
+     * @param mod   the AltoClef mod instance
      * @param count the number of Ender Pearls to obtain
      * @return the task for obtaining Ender Pearls
      */
@@ -1765,6 +1772,7 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Perform a simple search for the end portal.
+     *
      * @param mod The AltoClef mod instance
      * @return The average position of the end portal frames, or null if not found
      */
@@ -1787,7 +1795,7 @@ public class MarvionBeatMinecraftTask extends Task {
     /**
      * Get the count of filled portal frames around the end portal center.
      *
-     * @param mod the AltoClef mod
+     * @param mod             the AltoClef mod
      * @param endPortalCenter the center of the end portal
      * @return the count of filled portal frames, or 0 if the end portal is not found or the frame blocks are not loaded
      */
@@ -1817,7 +1825,8 @@ public class MarvionBeatMinecraftTask extends Task {
 
     /**
      * Checks if a chest at the specified position can be looted from a portal
-     * @param mod The game mod
+     *
+     * @param mod      The game mod
      * @param blockPos The position of the chest
      * @return true if the chest is lootable, false otherwise
      */
