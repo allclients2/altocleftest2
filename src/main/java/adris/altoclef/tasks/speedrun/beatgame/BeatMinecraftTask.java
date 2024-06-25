@@ -2356,7 +2356,7 @@ public class BeatMinecraftTask extends Task {
                     if (biomePos != null) {
                         setDebugState("Going to biome");
 
-                        return new GetWithinRangeOfBlockTask(biomePos, 30);
+                        return new GetWithinRangeOfBlockTask(biomePos, 20);
                     } else {
                         gettingPearls = true;
                         setDebugState("Getting Ender Pearls");
