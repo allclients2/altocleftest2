@@ -33,7 +33,7 @@ import java.util.function.Predicate;
 // the "midpoint" between two spots of obsidian and anything else
 // Then, when pillaring, make sure we move to one of those areas (so we can move further out without
 // risking hitting an obsidian tower)
-public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
+public class WaitForDragonAndPearlTask extends Task {
 
     // How far to travel away from the portal, in XZ
     private static final double XZ_RADIUS = 30;
@@ -57,7 +57,6 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
 
     private boolean _hasPillar = false;
 
-    @Override
     public void setExitPortalTop(BlockPos top) {
         BlockPos actualTarget = top.down();
         if (!actualTarget.equals(targetToPearl)) {
@@ -66,7 +65,6 @@ public class WaitForDragonAndPearlTask extends Task implements IDragonWaiter {
         }
     }
 
-    @Override
     public void setPerchState(boolean perching) {
         dragonIsPerching = perching;
     }

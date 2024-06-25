@@ -97,7 +97,7 @@ public class BeatMinecraftTask extends Task {
     private final PlaceBedAndSetSpawnTask setBedSpawnTask = new PlaceBedAndSetSpawnTask();
     private final Task getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task sleepThroughNightTask = new SleepThroughNightTask();
-    private final Task killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
+    private final Task killDragonBedStratsTask = new KillEnderDragonWithBedsTask();
     // End specific dragon breath avoidance
     private final DragonBreathTracker dragonBreathTracker = new DragonBreathTracker();
     private final TimerGame timer1 = new TimerGame(5);
