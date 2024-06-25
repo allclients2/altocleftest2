@@ -250,29 +250,13 @@ public class BeatMinecraftTask extends Task {
      * @param endPortalCenter the center position of the end portal
      * @return a list of block positions representing the frame blocks
      */
-    private static List<BlockPos> getFrameBlocks(BlockPos endPortalCenter) {
+    private static List<BlockPos> getFrameBlocks(AltoClef mod,BlockPos endPortalCenter) {
         List<BlockPos> frameBlocks = new ArrayList<>();
 
-        if (endPortalCenter != null) {
-            int[][] frameOffsets = {
-                    {2, 0, 1},
-                    {2, 0, 0},
-                    {2, 0, -1},
-                    {-2, 0, 1},
-                    {-2, 0, 0},
-                    {-2, 0, -1},
-                    {1, 0, 2},
-                    {0, 0, 2},
-                    {-1, 0, 2},
-                    {1, 0, -2},
-                    {0, 0, -2},
-                    {-1, 0, -2}
-            };
-
-            for (int[] offset : frameOffsets) {
-                BlockPos frameBlock = endPortalCenter.add(offset[0], offset[1], offset[2]);
-
-                frameBlocks.add(frameBlock);
+        for (BlockPos pos : mod.getBlockScanner().getKnownLocations(Blocks.END_PORTAL_FRAME)) {
+            // distance is arbitrary for now, dont think this can run into any edge cases in a normal mc world
+            if (pos.isWithinDistance(endPortalCenter, 20)) {
+                frameBlocks.add(pos);
             }
         }
 
@@ -941,7 +925,7 @@ public class BeatMinecraftTask extends Task {
         }
         return true;
 
-     /*   if (endPortalOpened(mod, endPortalCenter)) {
+        /*if (endPortalOpened(mod, endPortalCenter)) {
             Debug.logInternal("End portal is already opened");
             return true;
           }
@@ -1588,6 +1572,7 @@ public class BeatMinecraftTask extends Task {
 
         // Do we need more eyes?
         boolean needsEyes = !endPortalOpened(mod, endPortalCenterLocation) && WorldHelper.getCurrentDimension() != Dimension.END;
+
         int filledPortalFrames = getFilledPortalFrames(mod, endPortalCenterLocation);
         int eyesNeededMin = needsEyes ? config.minimumEyes - filledPortalFrames : 0;
         int eyesNeeded = needsEyes ? config.targetEyes - filledPortalFrames : 0;
@@ -1977,6 +1962,8 @@ public class BeatMinecraftTask extends Task {
      * @param mod The AltoClef instance.
      * @return The position of the end portal frame, or null if not enough frames are found.
      */
+
+    // FIXME note that this doesnt work correctly and only returns a postion that is WITHIN the end portal, not its center -MiranCZ
     private BlockPos doSimpleSearchForEndPortal(AltoClef mod) {
         List<BlockPos> frames = mod.getBlockScanner().getKnownLocations(Blocks.END_PORTAL_FRAME);
 
@@ -1998,21 +1985,18 @@ public class BeatMinecraftTask extends Task {
 
     /**
      * Returns the number of filled portal frames around the end portal center.
-     * If the end portal is found, it returns the constant END_PORTAL_FRAME_COUNT.
-     * Otherwise, it checks each frame block around the end portal center and counts the filled frames.
-     * The count is cached for subsequent calls.
      *
      * @param mod             The AltoClef mod instance.
      * @param endPortalCenter The center position of the end portal.
      * @return The number of filled portal frames.
      */
     private int getFilledPortalFrames(AltoClef mod, BlockPos endPortalCenter) {
-        if (endPortalFound(mod, endPortalCenter)) {
-            return END_PORTAL_FRAME_COUNT;
+        if (endPortalCenter == null) {
+            return 0;
         }
 
         // Get all the frame blocks around the end portal center.
-        List<BlockPos> frameBlocks = getFrameBlocks(endPortalCenter);
+        List<BlockPos> frameBlocks = getFrameBlocks(mod,endPortalCenter);
 
         // Check if all the frame blocks are loaded.
         if (frameBlocks.stream().allMatch(blockPos -> mod.getChunkTracker().isChunkLoaded(blockPos))) {
