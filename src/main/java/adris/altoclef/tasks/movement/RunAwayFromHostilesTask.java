@@ -87,7 +87,6 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
                 stream = stream.filter(hostile -> !mod.getPlayer().canSee(hostile)); // Only run away from mobs we can see..
                 runAwayStream = stream;
                 final List<Entity> entities = stream.collect(Collectors.toList());
-                Debug.logMessage("entities: " + entities);
                 return entities;
             }
         }

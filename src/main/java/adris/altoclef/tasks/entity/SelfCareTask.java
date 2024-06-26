@@ -27,7 +27,7 @@ public class SelfCareTask extends Task {
     private static final Item[] netheriteArmorSet = ItemHelper.netheriteArmorSet;
 
     private static final Task getBed = TaskCatalogue.getItemTask("bed", 1);
-    private static final Task getFood = new CollectFoodTask(35);
+    private static final Task getFood = new CollectFoodTask(65);
     private static final Task sleepThroughNight = new SleepThroughNightTask();
     private static final Task equipShield = new EquipArmorTask(Items.SHIELD);
     private static final Task getWaterBucket = new EquipArmorTask(Items.SHIELD);
