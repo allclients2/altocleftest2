@@ -86,10 +86,6 @@ public class PlaceObsidianBucketTask extends Task {
         // Calculate the position above the current position
         BlockPos waterTarget = _pos.up();
 
-        // Logging statement for debugging
-        Debug.logInternal("blockPos: " + blockPos);
-        Debug.logInternal("waterTarget: " + waterTarget);
-
         // Check if the block position is either the same as the current position or the position above it
         return blockPos.equals(_pos) || blockPos.equals(waterTarget);
     }
