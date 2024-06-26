@@ -554,7 +554,7 @@ public class BeatMinecraftTask extends Task {
                 int toSmelt = Math.min(includedCount, neededIron);
                 if (toSmelt <= 0) return pair;
 
-                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, includedCount), new ItemTarget(Items.RAW_IRON, toSmelt))));
+                pair.setLeft(new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.IRON_INGOT, toSmelt), new ItemTarget(Items.RAW_IRON, toSmelt))));
                 pair.setRight(350d);
                 return pair;
             }
