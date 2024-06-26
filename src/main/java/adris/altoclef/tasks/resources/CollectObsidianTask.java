@@ -66,7 +66,7 @@ public class CollectObsidianTask extends ResourceTask {
     protected void onResourceStart(AltoClef mod) {
         mod.getBehaviour().push();
 
-        mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
+        //mod.getBehaviour().setRayTracingFluidHandling(RaycastContext.FluidHandling.SOURCE_ONLY);
 
         // Avoid placing on the lava block we're trying to mine.
         mod.getBehaviour().avoidBlockPlacing(pos -> {

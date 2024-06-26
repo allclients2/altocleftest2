@@ -93,8 +93,7 @@ public class KillAura {
                     entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
                     entities.get().getClass() != WitherEntity.class
                     && (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
-                    && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)
-                    && mod.getClientBaritone().getPathingBehavior().isSafeToCancel()) {
+                    && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
                 LookHelper.lookAt(mod, entities.get().getEyePos());
                 ItemStack shieldSlot = StorageHelper.getItemStackInSlot(PlayerSlot.OFFHAND_SLOT);
                 if (shieldSlot.getItem() != Items.SHIELD) {
@@ -199,8 +198,8 @@ public class KillAura {
 
     public void startShielding(AltoClef mod) {
         shielding = true;
-        mod.getClientBaritone().getPathingBehavior().requestPause();
-        mod.getExtraBaritoneSettings().setInteractionPaused(true);
+        //mod.getClientBaritone().getPathingBehavior().requestPause();
+        //mod.getExtraBaritoneSettings().setInteractionPaused(true);
         if (!mod.getPlayer().isBlocking()) {
             ItemStack handItem = StorageHelper.getItemStackInSlot(PlayerSlot.getEquipSlot());
             if (ItemVer.isFood(handItem)) {
@@ -234,7 +233,7 @@ public class KillAura {
             mod.getInputControls().release(Input.SNEAK);
             mod.getInputControls().release(Input.CLICK_RIGHT);
             mod.getInputControls().release(Input.JUMP);
-            mod.getExtraBaritoneSettings().setInteractionPaused(false);
+            //mod.getExtraBaritoneSettings().setInteractionPaused(false);
             shielding = false;
         }
     }

@@ -10,6 +10,9 @@ import adris.altoclef.util.helpers.ItemHelper;
 import adris.altoclef.util.helpers.StorageHelper;
 import adris.altoclef.util.slots.PlayerSlot;
 import adris.altoclef.util.slots.Slot;
+import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.slot.SlotActionType;
@@ -26,12 +29,15 @@ public class CraftInInventoryTask extends ResourceTask {
     private final boolean _collect;
     private final boolean _ignoreUncataloguedSlots;
     private boolean _fullCheckFailed = false;
+    private Screen invScreen;
+    private MinecraftClient client = MinecraftClient.getInstance();
 
     public CraftInInventoryTask(RecipeTarget target, boolean collect, boolean ignoreUncataloguedSlots) {
         super(new ItemTarget(target.getOutputItem(), target.getTargetCount()));
         _target = target;
         _collect = collect;
         _ignoreUncataloguedSlots = ignoreUncataloguedSlots;
+        invScreen = new InventoryScreen(AltoClef.INSTANCE.getPlayer());
     }
 
     public CraftInInventoryTask(RecipeTarget target) {
@@ -47,6 +53,7 @@ public class CraftInInventoryTask extends ResourceTask {
     protected void onResourceStart(AltoClef mod) {
         _fullCheckFailed = false;
         ItemStack cursorStack = StorageHelper.getItemStackInCursorSlot();
+        if(mod.getModSettings().shouldOpenInvDuringCrafting() && mod.getPlayer() != null && (client.currentScreen == null || !client.currentScreen.equals(invScreen))) client.setScreen(invScreen);
         if (!cursorStack.isEmpty() && !StorageHelper.isBigCraftingOpen()) {
             Optional<Slot> moveTo = mod.getItemStorage().getSlotThatCanFitInPlayerInventory(cursorStack, false);
             moveTo.ifPresent(slot -> mod.getSlotHandler().clickSlot(slot, 0, SlotActionType.PICKUP));

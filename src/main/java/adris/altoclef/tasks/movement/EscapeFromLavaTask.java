@@ -219,6 +219,8 @@ public class EscapeFromLavaTask extends CustomBaritoneGoalTask {
         mod.getInputControls().release(Input.SPRINT);
         mod.getInputControls().release(Input.CLICK_RIGHT);
 
+        mod.getBehaviour().setBlockPlacePenalty(mod.PlacementPenalty);
+
         // remove our custom place avoider
         synchronized (mod.getExtraBaritoneSettings().getPlaceMutex()) {
             mod.getExtraBaritoneSettings().getPlaceAvoiders().remove(avoidPlacingRiskyBlock);
