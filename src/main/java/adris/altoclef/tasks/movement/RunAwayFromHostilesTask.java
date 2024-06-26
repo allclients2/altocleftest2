@@ -35,6 +35,7 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         mod.getClientBaritoneSettings().blockPlacementPenalty.value = 35.0; // Make sure later paths don't fall for it.
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         _checker.reset();
+        _wander = false;
     }
 
     @Override
@@ -42,11 +43,6 @@ public class RunAwayFromHostilesTask extends CustomBaritoneGoalTask {
         // We want to run away NOW
         mod.getClientBaritone().getPathingBehavior().forceCancel();
         return new GoalRunAwayFromHostiles(mod, distanceToRun);
-    }
-
-    @Override
-    protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getClientBaritone().getPathingBehavior().forceCancel();
     }
 
     @Override

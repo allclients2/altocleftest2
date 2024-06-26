@@ -54,7 +54,7 @@ public abstract class GoalRunAwayFromEntities implements Goal {
         double costSum = 0;
         List<Entity> entities = getEntities(mod);
         synchronized (BaritoneHelper.MINECRAFT_LOCK) {
-            int max = 10; // If we have 100 players, this will never calculate.
+            int max = 20; // If we have 100 players, this will never calculate.
             int counter = 0;
             if (!entities.isEmpty()) {
                 for (Entity entity : entities) {

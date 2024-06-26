@@ -17,7 +17,7 @@ import net.minecraft.util.math.BlockPos;
 public abstract class CustomBaritoneGoalTask extends Task implements ITaskRequiresGrounded {
     private final Task _wanderTask = new TimeoutWanderTask(5, true);
     private final MovementProgressChecker stuckCheck = new MovementProgressChecker();
-    private final boolean _wander;
+    protected boolean _wander;
     protected MovementProgressChecker _checker = new MovementProgressChecker();
     protected Goal _cachedGoal = null;
     private final Block[] annoyingBlocks = AltoClef.INSTANCE.getModSettings().getAnnoyingBlocks();

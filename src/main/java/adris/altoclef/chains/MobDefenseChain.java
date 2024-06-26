@@ -9,8 +9,8 @@ import java.util.Optional;
 import adris.altoclef.control.LookAtPos;
 import adris.altoclef.multiversion.ItemVer;
 import adris.altoclef.tasks.construction.ProjectileProtectionWallTask;
-import adris.altoclef.tasks.movement.DodgeProjectilesTask;
-import adris.altoclef.tasks.movement.RunAwayFromPositionTask;
+import adris.altoclef.tasks.movement.*;
+import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.baritone.GoalRunAwayFromEntities;
 import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.item.*;
@@ -22,8 +22,6 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.control.KillAura;
 import adris.altoclef.tasks.entity.KillEntitiesTask;
-import adris.altoclef.tasks.movement.CustomBaritoneGoalTask;
-import adris.altoclef.tasks.movement.RunAwayFromHostilesTask;
 import adris.altoclef.tasks.speedrun.DragonBreathTracker;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.baritone.CachedProjectile;
@@ -60,6 +58,7 @@ import adris.altoclef.util.Weapons;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 
 // TODO: Optimise shielding against spiders and skeletons
@@ -79,12 +78,20 @@ public class MobDefenseChain extends SingleTaskChain {
     private boolean wasPuttingOutFire = false;
     private CustomBaritoneGoalTask runAwayTask;
     private double prevHealth = 20;
+    private List<Entity> dealWithSupply;
+    private Supplier<List<Entity>> dealWithSupplier = this::dealWithSupplyGet;
+
+    //FIXME: Think some lag is occurring because of this new runAwayEntities task
 
     private double dangerKeepDistanceAdjusted = DANGER_KEEP_DISTANCE;
-
     private boolean evadingHostilesLastTick = false;
-
     private float cachedLastPriority;
+
+    private RunAwayFromEntitiesTask runAwayHostilesCustom;
+
+    public List<Entity> dealWithSupplyGet() {
+        return dealWithSupply;
+    }
 
     public MobDefenseChain(TaskRunner runner) {
         super(runner);
@@ -126,6 +133,16 @@ public class MobDefenseChain extends SingleTaskChain {
     public float getPriority(AltoClef mod) {
         cachedLastPriority = StepDefense(mod);
         prevHealth = mod.getPlayer().getHealth();
+
+        if (runAwayHostilesCustom == null) {
+            runAwayHostilesCustom = new RunAwayFromEntitiesTask(dealWithSupplier, SAFE_KEEP_DISTANCE * 1.1, 1) {
+                @Override
+                protected boolean isEqual(Task other) {
+                    return other instanceof RunAwayFromEntitiesTask;
+                }
+            };
+        }
+
         return cachedLastPriority;
     }
 
@@ -439,7 +456,7 @@ public class MobDefenseChain extends SingleTaskChain {
                 // System.out.println("entityscore: " + entityscore);
 
                 // Distance we fight or we run from
-                final double distanceDefense = dangerKeepDistanceAdjusted * (RangedPresent.get() ? 3.2 : 1.15);
+                final double distanceDefense = dangerKeepDistanceAdjusted * (RangedPresent.get() ? 2.35 : 1.15);
 
                 // This is self-defense, so only defend if in range.
                 if (closestOpponent.getPos().isInRange(mod.getPlayer().getPos(), distanceDefense)) {
@@ -456,17 +473,11 @@ public class MobDefenseChain extends SingleTaskChain {
                     } else {
                         // We can't deal with it; Flight.
                         evadingHostilesLastTick = true;
-                        if (!mod.getEntityTracker().getHostiles().isEmpty()) {
-                            runAwayTask = new RunAwayFromHostilesTask(distanceDefense, true);
-                        } else {
-                            BlockPos[] entityDistances = new BlockPos[toDealWith.size()];
-                            int index = 0;
-                            for (Entity entity : toDealWith) {
-                                BlockPos distance = entity.getBlockPos();
-                                entityDistances[index++] = distance;
-                            }
-                            runAwayTask = new RunAwayFromPositionTask(distanceDefense, entityDistances);
-                        }
+
+                        dealWithSupply = toDealWith;
+                        runAwayTask = runAwayHostilesCustom;
+                        runAwayHostilesCustom.updateDistance(distanceDefense);
+
                         setTask(runAwayTask);
                         doForceField(mod); // To protect ourselves as we escape.
                         return 75;
