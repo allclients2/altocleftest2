@@ -88,6 +88,9 @@ public class ContainerSubTracker extends Tracker {
     public void onServerTick() {
         if (MinecraftClient.getInstance().player == null)
             return;
+        if (!mod.getTaskRunner().isActive())
+            return;
+
         // If we haven't registered interacting with a block, try the currently "looking at" block
         if (containerOpen && lastBlockPosInteraction == null && lastBlockInteraction == null) {
             if (MinecraftClient.getInstance().crosshairTarget instanceof BlockHitResult bhit) {
