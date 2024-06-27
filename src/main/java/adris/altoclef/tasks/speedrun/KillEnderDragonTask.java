@@ -8,6 +8,7 @@ import adris.altoclef.tasks.entity.DoToClosestEntityTask;
 import adris.altoclef.tasks.misc.EquipArmorTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.PickupDroppedItemTask;
+import adris.altoclef.tasks.resources.CollectBlockByOneTask;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;
@@ -52,7 +53,7 @@ public class KillEnderDragonTask extends Task {
     private static final String[] DIAMOND_ARMORS = new String[]{"diamond_chestplate", "diamond_leggings", "diamond_helmet", "diamond_boots"};
     // Don't accidentally anger endermen lol
     private final TimerGame lookDownTimer = new TimerGame(0.5);
-    private final Task collectBuildMaterialsTask = new MineAndCollectTask(new ItemTarget(Items.END_STONE, 100), new Block[]{Blocks.END_STONE}, MiningRequirement.WOOD);
+    private final Task collectBuildMaterialsTask = new CollectBlockByOneTask.CollectEndStoneTask(100);
     private final PunkEnderDragonTask punkTask = new PunkEnderDragonTask();
     private BlockPos exitPortalTop;
 
