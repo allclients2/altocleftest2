@@ -99,7 +99,7 @@ public abstract class AbstractDoToEntityTask extends Task implements ITaskRequir
             }
 
             // If we don't specify a maintain distance, default to within 1 block of our reach.
-            double maintainDistance = this.maintainDistance >= 0 ? this.maintainDistance : playerReach - 1;
+            double maintainDistance = this.maintainDistance >= 0 ? this.maintainDistance : playerReach - 0.2;
 
             boolean tooClose = sqDist < maintainDistance * maintainDistance;
 

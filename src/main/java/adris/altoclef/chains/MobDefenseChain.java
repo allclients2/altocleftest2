@@ -135,7 +135,7 @@ public class MobDefenseChain extends SingleTaskChain {
         prevHealth = mod.getPlayer().getHealth();
 
         if (runAwayHostilesCustom == null) {
-            runAwayHostilesCustom = new RunAwayFromEntitiesTask(dealWithSupplier, SAFE_KEEP_DISTANCE * 1.1, 1) {
+            runAwayHostilesCustom = new RunAwayFromEntitiesTask(dealWithSupplier, SAFE_KEEP_DISTANCE * 1.5, 1) {
                 @Override
                 protected boolean isEqual(Task other) {
                     return other instanceof RunAwayFromEntitiesTask;
@@ -476,7 +476,7 @@ public class MobDefenseChain extends SingleTaskChain {
 
                         dealWithSupply = toDealWith;
                         runAwayTask = runAwayHostilesCustom;
-                        runAwayHostilesCustom.updateDistance(distanceDefense);
+                        runAwayHostilesCustom.updateDistance(distanceDefense * 1.5);
 
                         setTask(runAwayTask);
                         doForceField(mod); // To protect ourselves as we escape.
