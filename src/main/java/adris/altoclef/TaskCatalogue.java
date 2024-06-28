@@ -207,7 +207,7 @@ public class TaskCatalogue {
                 // Don't mine individual planks either!! Handled internally.
                 woodCatalogue.dontMineIfPresent();
             }
-            simple("stripped_logs", ItemHelper.STRIPPED_LOGS, CollectStrippedLogTask::new).dontMineIfPresent();
+            simple("stripped_logs", ItemHelper.STRIPPED_LOG, CollectStrippedLogTask::new).dontMineIfPresent();
             for (CataloguedResource woodCatalogue : woodTasks("stripped_logs", wood -> wood.strippedLog,
                     (wood, count) -> new CollectStrippedLogTask(wood.strippedLog, count))) {
                 woodCatalogue.dontMineIfPresent();

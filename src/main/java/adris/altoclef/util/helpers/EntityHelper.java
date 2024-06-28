@@ -1,6 +1,8 @@
 package adris.altoclef.util.helpers;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.multiversion.DamageSourcesVer;
+import adris.altoclef.multiversion.LivingEntityVer;
 import adris.altoclef.multiversion.MethodWrapper;
 import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.entity.DamageUtil;
@@ -8,14 +10,11 @@ import net.minecraft.entity.Entity;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.entity.damage.DamageTypes;
 import net.minecraft.entity.effect.StatusEffects;
 import net.minecraft.entity.mob.*;
-import net.minecraft.entity.passive.IronGolemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
-import net.minecraft.registry.tag.DamageTypeTags;
 
 /**
  * Helper functions to interpret entity state
@@ -55,7 +54,7 @@ public class EntityHelper {
                 return pillager.isAngryAt(mod.getPlayer());
             }
             if (mob instanceof HoglinEntity hoglin) {
-                return hoglin.isInAttackRange(mod.getPlayer()); // Assuming they always mad
+                return LivingEntityVer.isInAttackRange(mob, mod.getPlayer()); // Assuming they always mad
             }
             if (mob instanceof RavagerEntity ravager) {
                 return ravager.isAngryAt(mod.getPlayer());
@@ -73,8 +72,8 @@ public class EntityHelper {
 
     public static boolean isTradingPiglin(Entity entity) {
         if (entity instanceof PiglinEntity pig) {
-            if (pig.getHandItems() != null) {
-                for (ItemStack stack : pig.getHandItems()) {
+            if (LivingEntityVer.getItemsEquipped(pig) != null) {
+                for (ItemStack stack : LivingEntityVer.getItemsEquipped(pig)) {
                     if (stack.getItem().equals(Items.GOLD_INGOT)) {
                         // We're trading with this one, ignore it.
                         return true;
@@ -96,14 +95,14 @@ public class EntityHelper {
             return 0;
 
         // Armor Base
-        if (!source.isIn(DamageTypeTags.BYPASSES_ARMOR)) {
+        if (!DamageSourcesVer.bypassesArmor(source)) {
             damageAmount = MethodWrapper.getDamageLeft(damageAmount,source,player.getArmor(),player.getAttributeValue(EntityAttributes.GENERIC_ARMOR_TOUGHNESS));
         }
 
         // Enchantments & Potions
-        if (!source.isIn(DamageTypeTags.BYPASSES_SHIELD)) {
+        if (!DamageSourcesVer.bypassesShield(source)) {
             int k;
-            if (player.hasStatusEffect(StatusEffects.RESISTANCE) && source.isOf(DamageTypes.OUT_OF_WORLD)) {
+            if (player.hasStatusEffect(StatusEffects.RESISTANCE) && DamageSourcesVer.isVoidDamage(source)) {
                 //noinspection ConstantConditions
                 k = (player.getStatusEffect(StatusEffects.RESISTANCE).getAmplifier() + 1) * 5;
                 int j = 25 - k;

@@ -1,3 +1,4 @@
+//#if MC<11901
 package adris.altoclef.mixins;
 
 import adris.altoclef.eventbus.EventBus;
@@ -24,3 +25,4 @@ public final class ChatInputMixin {
         }
     }
 }
+//#endif

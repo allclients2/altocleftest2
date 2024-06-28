@@ -1,5 +1,6 @@
 package adris.altoclef;
 
+import adris.altoclef.multiversion.RegistriesVer;
 import adris.altoclef.tasks.inventory.CraftGenericManuallyTask;
 import adris.altoclef.tasks.construction.PlaceBlockNearbyTask;
 import adris.altoclef.tasks.construction.PlaceStructureBlockTask;
@@ -30,12 +31,12 @@ import net.minecraft.entity.mob.GhastEntity;
 import net.minecraft.entity.mob.ZombieEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.EmptyChunk;
 
 import java.io.*;
+import java.lang.reflect.Field;
 import java.util.List;
 
 /**
@@ -248,8 +249,7 @@ public class Playground {
                     int total = 0;
                     File f = new File(fname);
                     FileWriter fw = new FileWriter(f);
-                    for (Identifier id : Registries.ITEM.getIds()) {
-                        Item item = Registries.ITEM.get(id);
+                    for (Item item : RegistriesVer.itemsRegistry()) {
                         if (!TaskCatalogue.isObtainable(item)) {
                             ++unobtainable;
                             fw.write(item.getTranslationKey() + "\n");

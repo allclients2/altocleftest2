@@ -36,6 +36,7 @@ version = "${project.name}-${project.mod_version}"
 group = project.maven_group
 
 def mappingsVersions = [
+        11802: "1.18.2+build.4",
         12001: "1.20.1+build.10",
         12002: "1.20.2+build.4",
         12004: "1.20.4+build.3",
@@ -44,6 +45,7 @@ def mappingsVersions = [
 ]
 
 def fabricApiVersions = [
+        11802: "0.77.0+1.18.2",
         12001: "0.92.2+1.20.1",
         12002: "0.91.2+1.20.2",
         12004: "0.96.3+1.20.4",
@@ -52,6 +54,7 @@ def fabricApiVersions = [
 ]
 
 def baritoneVersions = [
+        11802: "1.18.2",
         12001: "1.20.1-beta1",
         12002: "1.20.2-beta1",
         12004: "1.20.4-beta1",
@@ -60,6 +63,7 @@ def baritoneVersions = [
 ]
 
 def baritoneApiPaths = [
+        11802: "baritone-unoptimized",
         12001: "baritone-unoptimized",
         12002: "baritone-unoptimized-fabric",
         12004: "baritone-unoptimized-fabric",
@@ -68,6 +72,7 @@ def baritoneApiPaths = [
 ]
 
 def baritonePaths = [
+        11802: "baritone-unoptimized-fabric",
         12001: "baritone-unoptimized",
         12002: "baritone-unoptimized",
         12004: "baritone-unoptimized-fabric",
@@ -85,6 +90,10 @@ repositories {
     maven {
         name = 'babbaj-repo'
         url = 'https://babbaj.github.io/maven/'
+    }
+    maven {
+        name = "gaucho-matrero-repo"
+        url = "https://gaucho-matrero.github.io/maven/"
     }
     flatDir {
         dirs '../baritone/dist'

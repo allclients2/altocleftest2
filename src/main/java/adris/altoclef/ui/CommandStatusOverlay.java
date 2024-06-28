@@ -1,13 +1,18 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.AltoClef;
-import adris.altoclef.Debug;
+import adris.altoclef.multiversion.DrawText;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.render.VertexConsumerProvider;
 import net.minecraft.client.util.math.MatrixStack;
+
+//#if MC>=12001
 import org.joml.Matrix4f;
+//#else
+//$$ import net.minecraft.util.math.Matrix4f;
+//#endif
 
 import java.awt.*;
 import java.time.Instant;
@@ -35,12 +40,12 @@ public class CommandStatusOverlay {
         drawTaskChain(MinecraftClient.getInstance().textRenderer, 10, 6,
                 matrixstack.peek().getPositionMatrix(),
                 MinecraftClient.getInstance().getBufferBuilders().getOutlineVertexConsumers(),
-                TextRenderer.TextLayerType.SEE_THROUGH, 6, tasks, mod);
+                true, 6, tasks, mod);
 
         matrixstack.pop();
     }
 
-    private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType, int maxLines, List<Task> tasks, AltoClef mod) {
+    private void drawTaskChain(TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, boolean seeThrough, int maxLines, List<Task> tasks, AltoClef mod) {
         int whiteColor = 0xFFFFFFFF;
 
         matrix.scale(0.86F, 0.86F, 0.86F);
@@ -52,12 +57,12 @@ public class CommandStatusOverlay {
         String headerInfo = mod.getTaskRunner().statusReport;
         String realTime = DATE_TIME_FORMATTER.format(Instant.ofEpochMilli((long) (mod.getUserTaskChain().taskStopwatch.time())));
 
-        renderer.draw(headerInfo + ((mod.getModSettings().shouldShowTimer() && mod.getUserTaskChain().isActive()) ? (", timer: " + realTime) : ""), x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        DrawText.draw(renderer, headerInfo + ((mod.getModSettings().shouldShowTimer() && mod.getUserTaskChain().isActive()) ? (", timer: " + realTime) : ""), x, y, Color.LIGHT_GRAY.getRGB(), true, matrix, vertexConsumers, seeThrough, 0, 255);
         y += addY;
 
         if (tasks.isEmpty()) {
             if (mod.getTaskRunner().isActive()) {
-                renderer.draw(" (no task running) ", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
+                DrawText.draw(renderer, " (no task running) ", x, y, whiteColor, true, matrix, vertexConsumers, seeThrough, 0, 255);
             }
             if (lastTime + 10000 < Instant.now().toEpochMilli() && mod.getModSettings().shouldShowTimer()) {//if it doesn't run any task in 10 secs
                 timeRunning = Instant.now().toEpochMilli();//reset the timer
@@ -68,7 +73,7 @@ public class CommandStatusOverlay {
 
         if (tasks.size() <= maxLines) {
             for (Task task : tasks) {
-                renderTask(task, renderer, x, y, matrix, vertexConsumers, layerType);
+                renderTask(task, renderer, x, y, matrix, vertexConsumers, seeThrough);
 
                 x += addX;
                 y += addY;
@@ -80,9 +85,9 @@ public class CommandStatusOverlay {
         for (int i = 0; i < tasks.size(); ++i) {
             if (i == 2) { // So we can see the second top task..
                 x += addX * 2;
-                renderer.draw("... " + (tasks.size() - maxLines) + " other task(s) ...", x, y, whiteColor, true, matrix, vertexConsumers, layerType, 0, 255);
+                DrawText.draw(renderer, "... " + (tasks.size() - maxLines) + " other task(s) ...", x, y, whiteColor, true, matrix, vertexConsumers, seeThrough, 0, 255);
             } else if (i <= 1 || i > (tasks.size() - maxLines + 1)) {
-                renderTask(tasks.get(i), renderer, x, y, matrix, vertexConsumers, layerType);
+                renderTask(tasks.get(i), renderer, x, y, matrix, vertexConsumers, seeThrough);
             } else {
                 continue;
             }
@@ -95,11 +100,11 @@ public class CommandStatusOverlay {
     }
 
 
-    private void renderTask(Task task, TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, TextRenderer.TextLayerType layerType) {
+    private void renderTask(Task task, TextRenderer renderer, float x, float y, Matrix4f matrix, VertexConsumerProvider vertexConsumers, boolean seeThrough) {
         String taskName = task.getClass().getSimpleName() + " ";
-        renderer.draw(taskName, x, y, new Color(128, 128, 128).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        DrawText.draw(renderer, taskName, x, y, new Color(128, 128, 128).getRGB(), true, matrix, vertexConsumers, seeThrough, 0, 255);
 
-        renderer.draw(task.toString(), x + renderer.getWidth(taskName), y, new Color(255, 255, 255).getRGB(), true, matrix, vertexConsumers, layerType, 0, 255);
+        DrawText.draw(renderer, task.toString(), x + renderer.getWidth(taskName), y, new Color(255, 255, 255).getRGB(), true, matrix, vertexConsumers, seeThrough, 0, 255);
 
     }
 

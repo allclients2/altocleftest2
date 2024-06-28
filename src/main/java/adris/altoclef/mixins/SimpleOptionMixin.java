@@ -1,3 +1,4 @@
+//#if MC>=12001
 package adris.altoclef.mixins;
 
 import net.minecraft.client.MinecraftClient;
@@ -13,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 import java.util.Objects;
 import java.util.Optional;
+
 
 @Mixin(SimpleOption.class)
 public class SimpleOptionMixin<T> {
@@ -31,3 +33,4 @@ public class SimpleOptionMixin<T> {
     }
 
 }
+//#endif

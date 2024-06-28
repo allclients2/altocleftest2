@@ -3,6 +3,7 @@ package adris.altoclef.chains;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.mixins.DeathScreenAccessor;
+import adris.altoclef.multiversion.ClientChatSend;
 import adris.altoclef.tasksystem.TaskChain;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.time.TimerGame;
@@ -94,9 +95,9 @@ public class DeathMenuChain extends TaskChain {
                                 AltoClef.getCommandExecutor().execute(command, () -> {
                                 }, Throwable::printStackTrace);
                             } else if (command.startsWith("/")) {
-                                MinecraftClient.getInstance().player.networkHandler.sendChatCommand(command.substring(1));
+                                ClientChatSend.sendCommand(mod, command.substring(1));
                             } else {
-                                MinecraftClient.getInstance().player.networkHandler.sendChatMessage(command);
+                                ClientChatSend.sendChatMessage(mod, command);
                             }
                         }
                     }

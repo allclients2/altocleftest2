@@ -29,7 +29,7 @@ public class CollectStrippedLogTask extends ResourceTask {
     }
 
     public CollectStrippedLogTask(int count) {
-        this(ItemHelper.STRIPPED_LOGS, ItemHelper.STRIPPABLE_LOGS, count);
+        this(ItemHelper.STRIPPED_LOG, ItemHelper.LOG, count);
     }
 
     public CollectStrippedLogTask(Item strippedLogs, Item strippableLogs, int count) {

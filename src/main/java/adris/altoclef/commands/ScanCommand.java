@@ -7,11 +7,17 @@ import adris.altoclef.commandsystem.Arg;
 import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
+import adris.altoclef.multiversion.RegistriesVer;
 import adris.altoclef.util.BlockScanner;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
+import net.minecraft.item.Item;
+import net.minecraft.util.Identifier;
+import net.minecraft.util.math.BlockPos;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 public class ScanCommand extends Command {
 
@@ -21,30 +27,31 @@ public class ScanCommand extends Command {
 
     @Override
     protected void call(AltoClef mod, ArgParser parser) throws CommandException {
-        String blockStr = parser.get(String.class);
-
-        Field[] declaredFields = Blocks.class.getDeclaredFields();
+        final String blockName = parser.get(String.class);
         Block block = null;
 
-        for (Field field : declaredFields) {
-            field.setAccessible(true);
-            try {
-                if (field.getName().equalsIgnoreCase(blockStr)) {
-                    block = (Block) field.get(Blocks.class);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
+        for (Item item : RegistriesVer.itemsRegistry()) {
+            final String blockKey = ItemHelper.trimItemName(blockName);
+            final Identifier identifier = new Identifier(blockKey);
+            if (item.getName().equals(identifier)) {
+                block = RegistriesVer.blockRegistry().get(identifier);
             }
-            field.setAccessible(false);
         }
 
         if (block == null) {
-            Debug.logWarning("Block named: " + blockStr + " not found :((");
+            Debug.logWarning("Block specified: \"" + blockName + "\" is not valid.");
             return;
         }
 
         BlockScanner blockScanner = mod.getBlockScanner();
-        Debug.logInternal(blockScanner.getNearestBlock(block,mod.getPlayer().getPos()) + "");
+
+        Optional<BlockPos> scannedBlockPos = blockScanner.getNearestBlock(block, mod.getPlayer().getPos());
+
+        if (scannedBlockPos.isPresent()) {
+            Debug.logInternal("Found! Closest Block Location: " +  scannedBlockPos.get());
+        } else {
+            Debug.logInternal("No Blocks Found.");
+        }
     }
 
 }
