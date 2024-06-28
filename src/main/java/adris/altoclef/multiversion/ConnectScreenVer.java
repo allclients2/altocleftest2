@@ -13,8 +13,10 @@ public class ConnectScreenVer {
     private static void connect(Screen screen, MinecraftClient client, ServerAddress address, ServerInfo info, boolean quickPlay) {
         //#if MC >= 12005
         ConnectScreen.connect(screen, client, address, info, quickPlay,null);
-        //#else
+        //#elseif MC >= 12001
         //$$ ConnectScreen.connect(screen, client, address, info, quickPlay);
+        //#else
+        //$$ ConnectScreen.connect(screen, client, address, info);
         //#endif
     }
 

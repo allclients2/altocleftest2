@@ -50,7 +50,7 @@ public abstract class LookAtPos {
         // Don't interrupt if building or killing.
         Task currentTask = mod.getUserTaskChain().getCurrentTask();
         if (currentTask != null) {
-            if (currentTask.getClass() == DestroyBlockTask.class || mod.getController().getBlockBreakingProgress() > 0) {
+            if (currentTask.getClass() == DestroyBlockTask.class || mod.getController().isBreakingBlock()) {
                 return false;
             } else if (currentTask.getClass() == PlaceBlockTask.class || mod.getPlayer().isBlocking()) {
                 return false;

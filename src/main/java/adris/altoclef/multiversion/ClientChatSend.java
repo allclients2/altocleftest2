@@ -11,7 +11,7 @@ public class ClientChatSend {
         //#if MC >= 11901
         Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).sendChatMessage(message);
         //#else
-        //$$ return mod.getPlayer().sendChatMessage(message);
+        //$$ mod.getPlayer().sendChatMessage(message);
         //#endif
     }
 
@@ -19,7 +19,7 @@ public class ClientChatSend {
         //#if MC >= 11901
         Objects.requireNonNull(MinecraftClient.getInstance().getNetworkHandler()).sendChatCommand(command);
         //#else
-        //$$ return mod.getPlayer().sendChatMessage(command); // Don't know what else.
+        //$$ mod.getPlayer().sendChatMessage(command); // Don't know what else.
         //#endif
     }
 

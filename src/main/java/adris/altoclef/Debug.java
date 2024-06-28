@@ -41,9 +41,13 @@ public class Debug {
         if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().player != null) {
             if (usePrefix) {
                 MutableText message2 = message.copy();
+                //#if MC>=12001
                 MutableText prefix = Text.literal("§2§l§o" + getLogPrefix() + "§r");
                 prefix.append(message2); //Add message 2 AFTER prefix (append)
                 message = prefix;
+                //#else
+                //$$ message = Text.of("§2§l§o" + getLogPrefix() + "§r" + message2);
+                //#endif
             }
             MinecraftClient.getInstance().player.sendMessage(message, false);
 
