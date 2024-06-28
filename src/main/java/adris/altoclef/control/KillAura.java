@@ -13,10 +13,7 @@ import baritone.api.Settings;
 import baritone.api.utils.input.Input;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.boss.WitherEntity;
-import net.minecraft.entity.mob.CreeperEntity;
-import net.minecraft.entity.mob.HoglinEntity;
-import net.minecraft.entity.mob.WardenEntity;
-import net.minecraft.entity.mob.ZoglinEntity;
+import net.minecraft.entity.mob.*;
 import net.minecraft.entity.projectile.FireballEntity;
 import net.minecraft.entity.projectile.thrown.PotionEntity;
 import net.minecraft.item.Item;
@@ -89,9 +86,7 @@ public class KillAura {
                 !mod.getMLGBucketChain().isChorusFruiting()) {
             PlayerSlot offhandSlot = PlayerSlot.OFFHAND_SLOT;
             Item offhandItem = StorageHelper.getItemStackInSlot(offhandSlot).getItem();
-            if (entities.get().getClass() != CreeperEntity.class && entities.get().getClass() != HoglinEntity.class &&
-                    entities.get().getClass() != ZoglinEntity.class && entities.get().getClass() != WardenEntity.class &&
-                    entities.get().getClass() != WitherEntity.class
+            if (!(entities.get() instanceof HostileEntity)
                     && (mod.getItemStorage().hasItem(Items.SHIELD) || mod.getItemStorage().hasItemInOffhand(Items.SHIELD))
                     && !mod.getPlayer().getItemCooldownManager().isCoolingDown(offhandItem)) {
                 LookHelper.lookAt(mod, entities.get().getEyePos());

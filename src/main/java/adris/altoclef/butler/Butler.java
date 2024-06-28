@@ -51,11 +51,8 @@ public class Butler {
             boolean debug = ButlerConfig.getInstance().whisperFormatDebug;
             String message = evt.messageContent();
             String sender = evt.senderName();
-            MessageType messageType = evt.messageType();
             String receiver = mod.getPlayer().getName().getString();
-            if (sender != null && !Objects.equals(sender, receiver) && messageType.chat().style().isItalic()
-                    && messageType.chat().style().getColor() != null
-                    && Objects.equals(messageType.chat().style().getColor().getName(), "gray")) {
+            if (!Objects.equals(sender, receiver)) {
                 String wholeMessage = sender + " " + receiver + " " + message;
                 if (debug) {
                     Debug.logMessage("RECEIVED WHISPER: \"" + wholeMessage + "\".");

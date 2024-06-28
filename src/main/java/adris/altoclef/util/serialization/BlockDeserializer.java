@@ -1,6 +1,7 @@
 package adris.altoclef.util.serialization;
 
 import adris.altoclef.Debug;
+import adris.altoclef.multiversion.RegistriesVer;
 import adris.altoclef.util.helpers.ItemHelper;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
@@ -10,7 +11,6 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import net.minecraft.block.Block;
 import net.minecraft.item.Item;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.Identifier;
 
 import java.io.IOException;
@@ -41,8 +41,8 @@ public class BlockDeserializer extends StdDeserializer<Object> {
             String blockKey = p.getText();
             blockKey = ItemHelper.trimItemName(blockKey);
             Identifier identifier = new Identifier(blockKey);
-            if (Registries.BLOCK.containsId(identifier)) {
-                block = Registries.BLOCK.get(identifier);
+            if (RegistriesVer.blockRegistry().containsId(identifier)) {
+                block = RegistriesVer.blockRegistry().get(identifier);
             } else {
                 Debug.logWarning("Invalid block name:" + blockKey + " at " + p.getCurrentLocation().toString());
             }
