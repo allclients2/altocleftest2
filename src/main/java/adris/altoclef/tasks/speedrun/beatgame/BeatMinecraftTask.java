@@ -565,7 +565,7 @@ public class BeatMinecraftTask extends Task {
 
         gatherResources.add(new ActionPriorityTask(
                 a -> new SmeltInFurnaceTask(new SmeltTarget(new ItemTarget(Items.GOLD_INGOT, 5), new ItemTarget(Items.RAW_GOLD, 5))),
-                () -> 140, a -> itemStorage.getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT) >= 5,
+                () -> 140, a -> itemStorage.getItemCount(Items.RAW_GOLD, Items.GOLD_INGOT) >= 5 && !itemStorage.hasItem(Items.GOLDEN_HELMET),
                 true, true, false
         ));
 
