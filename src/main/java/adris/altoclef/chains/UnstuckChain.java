@@ -2,6 +2,7 @@ package adris.altoclef.chains;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
+import adris.altoclef.tasks.movement.GetOutOfWaterTask;
 import adris.altoclef.tasks.movement.SafeRandomShimmyTask;
 import adris.altoclef.tasksystem.TaskRunner;
 import adris.altoclef.util.helpers.LookHelper;
@@ -38,7 +39,7 @@ public class UnstuckChain extends SingleTaskChain {
 
 
     private void checkStuckInWater(AltoClef mod) {
-        if (posHistory.size() < 12) return;
+        if (posHistory.size() < 100) return;
 
         // is not in water
         if (!mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos()).getBlock().equals(Blocks.WATER)
@@ -56,8 +57,6 @@ public class UnstuckChain extends SingleTaskChain {
             return;
         }
 
-        if (posHistory.size() < 100) return;
-
         Vec3d pos1 = posHistory.get(0);
         for (int i = 1; i < 100; i++) {
             Vec3d pos2 = posHistory.get(i);
@@ -66,35 +65,8 @@ public class UnstuckChain extends SingleTaskChain {
             }
         }
 
-        isProbablyStuck = true;
-
-        mod.getInputControls().tryPress(Input.JUMP);
-
-        boolean hasBlockBelow = false;
-        for (int i = 0; i < 3; i++) {
-            if (mod.getWorld().getBlockState(mod.getPlayer().getSteppingPos().down(i)).getBlock() != Blocks.WATER) {
-                hasBlockBelow = true;
-            }
-        }
-
-        if (hasBlockBelow) {
-            if (mod.getPlayer().isOnGround()) {
-                setTask(new SafeRandomShimmyTask());
-                if (!startedShimmying) {
-                    startedShimmying = true;
-                    shimmyTaskTimer.reset();
-                }
-                return;
-            }
-
-            mod.getSlotHandler().forceEquipItem(mod.getClientBaritoneSettings().acceptableThrowawayItems.value.toArray(new Item[0]));
-            LookHelper.lookAt(mod, mod.getPlayer().getSteppingPos().down());
-            mod.getInputControls().tryPress(Input.CLICK_RIGHT);
-        } else {
-            mod.getInputControls().tryPress(Input.MOVE_FORWARD);
-            mod.getInputControls().tryPress(Input.CLICK_LEFT);
-            LookHelper.lookAt(mod, new Rotation(0, 0));
-        }
+        posHistory.clear();
+        setTask(new GetOutOfWaterTask());
     }
 
     private void checkStuckInPowderedSnow(AltoClef mod) {
@@ -160,6 +132,10 @@ public class UnstuckChain extends SingleTaskChain {
 
     @Override
     public float getPriority(AltoClef mod) {
+        if (mainTask instanceof GetOutOfWaterTask && mainTask.isActive()) {
+            return 55;
+        }
+
         isProbablyStuck = false;
 
         if (!AltoClef.inGame() || MinecraftClient.getInstance().isPaused() || !mod.getUserTaskChain().isActive())
