@@ -3,6 +3,7 @@ package adris.altoclef.tasks.movement;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
+import adris.altoclef.util.Dimension;
 import adris.altoclef.util.helpers.*;
 import adris.altoclef.util.serialization.ItemDeserializer;
 import adris.altoclef.util.serialization.ItemSerializer;
@@ -187,7 +188,7 @@ public class MLGBucketTask extends Task {
             setDebugState("Performing MLG");
             LookHelper.lookAt(mod, reachable.get());
             // Try water by default
-            boolean hasClutch = (!mod.getWorld().getDimension().ultrawarm() && mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET));
+            boolean hasClutch = (WorldHelper.getCurrentDimension() != Dimension.NETHER && mod.getSlotHandler().forceEquipItem(Items.WATER_BUCKET));
             if (!hasClutch) {
                 // Go through our "clutch" items and see if any fit
                 if (!_config.clutchItems.isEmpty()) {
@@ -421,7 +422,7 @@ public class MLGBucketTask extends Task {
     }
 
     private boolean hasClutchItem(AltoClef mod) {
-        if (!mod.getWorld().getDimension().ultrawarm() && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
+        if (WorldHelper.getCurrentDimension() != Dimension.NETHER && mod.getItemStorage().hasItem(Items.WATER_BUCKET)) {
             return true;
         }
         return _config.clutchItems.stream().anyMatch(item -> mod.getItemStorage().hasItem(item));

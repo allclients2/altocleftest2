@@ -47,7 +47,11 @@ public class AltoClefTickChart {
     // DD is 0xDD which is 211, out of the max 255 (0xFF), for all channels. 211 / 255 = 0.827 * 100 = 82.7%
     // This means 0xFFDDDDDD color is fully opaque, and about 82.7% in all channels, making it bright white.
 
-    public void render(AltoClef mod,DrawContext context, int x, int width) {
+    //#if MC>=11904
+    public void render(AltoClef mod, DrawContext context, int x, int width) {
+    //#else
+    //$$ public void render(AltoClef mod, DrawableHelper context, MatrixStack matrices, int x, int width) {
+    //#endif
         if (InGameHudVer.shouldShowDebugHud() || !mod.getTaskRunner().isActive()) return;
 
         int height = context.getScaledWindowHeight();

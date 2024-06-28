@@ -22,9 +22,11 @@ import adris.altoclef.trackers.storage.ItemStorageTracker;
 import adris.altoclef.ui.CommandStatusOverlay;
 import adris.altoclef.ui.MessagePriority;
 import adris.altoclef.ui.MessageSender;
+import adris.altoclef.util.WindowUtil;
 import adris.altoclef.util.helpers.EntityHelper;
 import adris.altoclef.ui.AltoClefTickChart;
 import adris.altoclef.util.helpers.InputHelper;
+import net.minecraft.client.util.math.MatrixStack;
 import baritone.Baritone;
 import baritone.altoclef.AltoClefSettings;
 import baritone.api.BaritoneAPI;
@@ -41,6 +43,7 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
+
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -72,6 +75,7 @@ public class AltoClef implements ModInitializer {
     private SimpleChunkTracker chunkTracker;
     private MiscBlockTracker miscBlockTracker;
     private CraftingRecipeTracker craftingRecipeTracker;
+
     // Renderers
     private CommandStatusOverlay commandStatusOverlay;
     private AltoClefTickChart altoClefTickChart;
@@ -190,7 +194,11 @@ public class AltoClef implements ModInitializer {
         });
 
         // Render
+        //#if MC>=11904
         EventBus.subscribe(ClientRenderEvent.class, evt -> onClientRenderOverlay(evt.context));
+        //#else
+        //$$ EventBus.subscribe(ClientRenderEvent.class, evt -> onClientRenderOverlay(evt.context, evt.matrices));
+        //#endif
 
         // Playground
         Playground.IDLE_TEST_INIT_FUNCTION(this);
@@ -232,6 +240,7 @@ public class AltoClef implements ModInitializer {
 
     /// GETTERS AND SETTERS
 
+    //#if MC>=11904
     private void onClientRenderOverlay(DrawContext context) {
         if (settings.shouldShowTaskChain()) {
             commandStatusOverlay.render(this, context.getMatrices());
@@ -241,6 +250,17 @@ public class AltoClef implements ModInitializer {
             altoClefTickChart.render(this, context, 1, context.getScaledWindowWidth() / 2 - 124);
         }
     }
+    //#else
+    //$$ private void onClientRenderOverlay(DrawableHelper context, MatrixStack matrices) {
+    //$$     if (settings.shouldShowTaskChain()) {
+    //$$         commandStatusOverlay.render(this, matrices);
+    //$$     }
+    //$$
+    //$$     if (settings.shouldShowDebugTickMs()) {
+    //$$         altoClefTickChart.render(this, context, matrices, 1, WindowUtil.getScaledWindowWidth() / 2 - 124);
+    //$$     }
+    //$$ }
+    //#endif
 
     // Settings
     public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
@@ -270,8 +290,12 @@ public class AltoClef implements ModInitializer {
                 Blocks.CAVE_VINES_PLANT, Blocks.TWISTING_VINES, Blocks.TWISTING_VINES_PLANT, Blocks.SWEET_BERRY_BUSH,
                 Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
                 Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
-                Blocks.AMETHYST_CLUSTER, Blocks.SCULK, Blocks.SCULK_VEIN,
-                Blocks.ROSE_BUSH, Blocks.PEONY
+                Blocks.AMETHYST_CLUSTER,
+                Blocks.ROSE_BUSH, Blocks.PEONY,
+
+                //#if MC>=11900
+                Blocks.SCULK, Blocks.SCULK_VEIN
+                //#endif
         ));
 
         // Let baritone move items to hotbar to use them

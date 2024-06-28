@@ -111,7 +111,11 @@ public class CraftingRecipeTracker extends Tracker{
             if (craftingRecipe instanceof SpecialCraftingRecipe) continue;
 
             // the arguments shouldn't be used, we can just pass null
+            //#if MC>=11903
             ItemStack result = new ItemStack(craftingRecipe.getResult(null).getItem(), craftingRecipe.getResult(null).getCount());
+            //#else
+            //$$  ItemStack result = new ItemStack(craftingRecipe.getOutput().getItem(), craftingRecipe.getOutput().getCount());
+            //#endif
 
             Item[][] altoclefRecipeItems = getShapedCraftingRecipe(craftingRecipe.getIngredients());
 

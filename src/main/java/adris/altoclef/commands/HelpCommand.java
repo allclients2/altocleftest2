@@ -76,3 +76,59 @@ public class HelpCommand extends Command {
         finish();
     }
 }
+
+public class CommandFormatter {
+
+    public static MutableText formatCommandDescription(Command command, Mod mod) {
+        // Extract command details
+        String description = command.getDescription();
+        String names = String.join("/", command.getName());
+        String name = command.getName();
+
+        // Create short description text
+        MutableText shortDescText = new LiteralText(" - " + truncate(description, 45 - name.length()));
+        shortDescText.setStyle(shortDescText.getStyle().withColor(Formatting.GRAY));
+
+        // Create names text
+        MutableText namesText = new LiteralText(names);
+        namesText.setStyle(namesText.getStyle().withColor(Formatting.WHITE));
+
+        // Create hover text
+        MutableText hoverText = new LiteralText("");
+        hoverText.setStyle(hoverText.getStyle().withColor(Formatting.GRAY));
+        hoverText.append(namesText);
+        hoverText.append("\n" + description);
+        hoverText.append("\nUsage: " + mod.getModSettings().getCommandPrefix() + command.getHelpRepresentation());
+
+        // Create click command
+        String clickCommand = mod.getModSettings().getCommandPrefix() + command.getName();
+
+        // Create the final message text
+        MutableText message = new LiteralText(""); // Indentation
+        message.append(name);
+        message.setStyle(message.getStyle().withColor(Formatting.WHITE));
+        message.append(" ");
+        message.append(shortDescText);
+        message.setStyle(message.getStyle()
+                .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverText))
+                .withClickEvent(new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, clickCommand)));
+
+        return message;
+    }
+
+    private static String truncate(String str, int maxLength) {
+        return str.length() > maxLength ? str.substring(0, maxLength) + "..." : str;
+    }
+
+    public static void main(String[] args) {
+        // Example usage
+        Command command = new Command("example", "This is an example command description.", "example");
+        Mod mod = new Mod();
+        MutableText message = formatCommandDescription(command, mod);
+        // Print or log the message
+        System.out.println(message.getString());
+    }
+}
+
+
+
