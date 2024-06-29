@@ -8,7 +8,6 @@ import adris.altoclef.commandsystem.ArgParser;
 import adris.altoclef.commandsystem.Command;
 import adris.altoclef.commandsystem.CommandException;
 import adris.altoclef.multiversion.RegistriesVer;
-import adris.altoclef.util.BlockScanner;
 import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.block.Block;
 import net.minecraft.block.Blocks;
@@ -43,7 +42,7 @@ public class ScanCommand extends Command {
             return;
         }
 
-        BlockScanner blockScanner = mod.getBlockScanner();
+        adris.altoclef.commands.BlockScanner blockScanner = mod.getBlockScanner();
 
         Optional<BlockPos> scannedBlockPos = blockScanner.getNearestBlock(block, mod.getPlayer().getPos());
 

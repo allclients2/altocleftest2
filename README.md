@@ -36,12 +36,12 @@ or this [Video explanation](https://youtu.be/q5OmcinQ2ck?t=387)
 ## Download
 
 **Note:** After installing, please move/delete your old baritone configurations if you have any. Preexisting baritone
-configurations will interfere with alto clef and introduce bugs. This will be fixed in the future.
+configurations will interfere with altoclef and introduce bugs. This will be fixed in the future.
 
 [Check releases](https://github.com/MiranCZ/altoclef/releases)
 
 ## [Usage Guide](usage.md)
 
-## [TODOs/Future Features](TODO.md)
+## [TODO's/Future Features](TODO.md)
 
 ## [Development Guide](develop.md)

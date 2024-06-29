@@ -3,6 +3,7 @@ package adris.altoclef.tasks.speedrun.maintasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.multiversion.BaritoneVer;
 import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.block.InteractWithBlockTask;
@@ -110,7 +111,7 @@ public class BeatMinecraftTask extends Task {
     private final PlaceBedAndSetSpawnTask setBedSpawnTask = new PlaceBedAndSetSpawnTask();
     private final Task getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task sleepThroughNightTask = new SleepThroughNightTask();
-    private final Task killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
+    private final Task killDragonBedStratsTask = new KillEnderDragonWithBedsTask();
     // End specific dragon breath avoidance
     private final DragonBreathTracker dragonBreathTracker = new DragonBreathTracker();
     private final TimerGame timer1 = new TimerGame(5);
@@ -977,10 +978,10 @@ public class BeatMinecraftTask extends Task {
      */
     private boolean endPortalOpened(AltoClef mod, BlockPos endPortalCenter) {
         if (endPortalOpened && endPortalCenter != null) {
-            BlockScanner blockTracker = mod.getBlockScanner();
+            BlockScanner blockScanner = mod.getBlockScanner();
 
-            if (blockTracker != null) {
-                boolean isValid = blockTracker.isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
+            if (blockScanner != null) {
+                boolean isValid = blockScanner.isBlockAtPosition(endPortalCenter, Blocks.END_PORTAL);
 
                 Debug.logInternal("End Portal is " + (isValid ? "valid" : "invalid"));
                 return isValid;

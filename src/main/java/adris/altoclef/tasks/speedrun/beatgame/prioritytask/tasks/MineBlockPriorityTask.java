@@ -2,7 +2,6 @@ package adris.altoclef.tasks.speedrun.beatgame.prioritytask.tasks;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.tasks.resources.MineAndCollectTask;
-import adris.altoclef.tasks.speedrun.maintasks.BeatMinecraftTask;
 import adris.altoclef.tasks.speedrun.beatgame.prioritytask.prioritycalculators.DistancePriorityCalculator;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.ItemTarget;

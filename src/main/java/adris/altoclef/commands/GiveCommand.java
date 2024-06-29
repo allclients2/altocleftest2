@@ -52,7 +52,7 @@ public class GiveCommand extends Command {
             Debug.logMessage("USER: " + username + " : ITEM: " + item + " x " + count);
             mod.runUserTask(new GiveItemToPlayerTask(username, target), this::finish);
         } else {
-            Debug.logInternal("Item not found or task does not exist for item: " + item);
+            Debug.logMessage("Item not found or task does not exist for item: " + item);
             finish();
         }
     }

@@ -86,7 +86,7 @@ public class GiveItemToPlayerTask extends Task {
             }
 
             if (!targetPos.isInRange(mod.getPlayer().getPos(), 4)) {
-                Debug.logInternal("Finished giving items.");
+                Debug.logMessage("Finished giving items.");
                 stop(mod);
                 return null;
             }
