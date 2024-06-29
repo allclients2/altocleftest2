@@ -86,8 +86,8 @@ public class PlayerInteractionFixChain extends TaskChain {
                             )
                         ) {
                             Debug.logMessage("Found better tool in inventory, equipping.");
-                            Debug.logMessage(BreakingPos + " BREAKPOS");
-                            Debug.logMessage(LastBreakingPosition + " LASTBREAKPOS");
+                            //Debug.logMessage(BreakingPos + " BREAKPOS");
+                            //Debug.logMessage(LastBreakingPosition + " LASTBREAKPOS");
 
                             LastBreakingPosition = BreakingPos; //To prevent fighting of tool equipping
                             ItemStack bestToolItemStack = StorageHelper.getItemStackInSlot(bestToolSlot.get());
