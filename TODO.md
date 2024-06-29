@@ -5,7 +5,6 @@
 - Allow any bed color when crafting beds from wool.
 - Add cherry blossom wood as a valid wood type or something? It doesn't seem to work properly atm.
 - Maybe add some sort of system that finds and uses seed of the current world?
-- Check the minecraft version for the preprocessor's if-statements. (Frequently not checked whilst adding 1.18.2 support)
 - Add Farming?
 
 ### Common death causes
@@ -16,3 +15,9 @@
 
 ### Debug
 - Fix Obsidian task lagging so badly..
+
+
+### Chores
+- Check the minecraft version for the preprocessor's if-statements. (Frequently not checked whilst adding 1.18.2 support)
+- Get rid of the baritone settings from BotBehavior class (Possibly move it into its own class)
+- Revamp config systeme
