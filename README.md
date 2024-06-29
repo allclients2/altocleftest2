@@ -13,9 +13,7 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 **Join the [Discord Server](https://discord.gg/JdFP4Kqdqc)** for discussions/updates/goofs & gaffs
 
 ## About this fork
-This fork aims to optimize `MarvionBeatMinecraftTask` (I will just refer to it as `BeatMinecraftTask`) from [Marvion's fork](https://github.com/MarvionKirito/altoclef) by trying to fix a lot of cases where the bot gets stuck and improving some of the tasks.
-
-You can look at the [changelog](changelog.md) if you are interested.
+This fork aims to improve AltoClef by fixing a lot of bugs and optimizing some things. The main focus is optimizing the `MarvionBeatMinecraftTask` (I will just refer to it as `BeatMinecraftTask`) from [Marvion's fork](https://github.com/MarvionKirito/altoclef).
 
 Because I rewrote a good portion of the `BeatMinecraftTask` a lot of the config settings don't work. Although I plan to implement configs in the future of course.  
 
@@ -27,6 +25,7 @@ Thanks to that, the mod is currently available on **fabric** for the following v
 - 1.20.1
 - 1.20.2
 - 1.20.4
+- 1.20.5
 - 1.20.6
 
 *note: All of the versions use the "same release" of Altoclef, altough some of them use older versions of baritone.* 
