@@ -431,8 +431,8 @@ public class BranchMiningTask extends Task implements ITaskRequiresGrounded {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         mod.getClientBaritone().getBuilderProcess().onLostControl();
-        mod.getClientBaritoneSettings().costHeuristic.value = mod.DefaultCostHeuristic;
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty;
+        mod.getClientBaritoneSettings().costHeuristic.reset();
+        mod.getClientBaritoneSettings().blockPlacementPenalty.reset();
     }
 
     @Override

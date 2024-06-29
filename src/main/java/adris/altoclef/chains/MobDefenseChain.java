@@ -232,7 +232,6 @@ public class MobDefenseChain extends SingleTaskChain {
         }
 
         int avoidanceRadius = (int) (dangerKeepDistanceAdjusted + 1);
-        mod.HostileAvoidanceRadius = avoidanceRadius;
         mod.getClientBaritoneSettings().mobAvoidanceRadius.value = avoidanceRadius;
 
         //Variables to update on step

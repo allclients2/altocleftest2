@@ -1,8 +1,10 @@
 package adris.altoclef.mixins;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.eventbus.EventBus;
 import adris.altoclef.eventbus.events.ChatMessageEvent;
 import com.mojang.authlib.GameProfile;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.nbt.NbtElement;
 import net.minecraft.nbt.NbtHelper;
 
@@ -17,17 +19,18 @@ import net.minecraft.client.network.message.MessageHandler;
 import net.minecraft.network.message.SignedMessage;
 //#else
 //$$ import net.minecraft.network.MessageType;
-//$$ import net.minecraft.client.gui.ClientChatListener;
+//$$ import net.minecraft.client.gui.hud.ChatHudListener;
 //$$ import net.minecraft.text.Text;
 //$$ import java.util.UUID;
 //#endif
 
 //#if MC >= 12001
 @Mixin(MessageHandler.class)
-//#else
-//$$ @Mixin(ClientChatListener.class)
-//#endif
 public final class ChatReadMixin {
+//#else
+//$$ @Mixin(ChatHudListener.class)
+//$$ public class ChatReadMixin {
+//#endif
 
     //#if MC >= 12001
     @Inject(
@@ -44,6 +47,7 @@ public final class ChatReadMixin {
     //$$          at = @At("HEAD")
     //$$  )
     //$$  private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
+    //$$      if (senderUuid == null || AltoClef.INSTANCE.getPlayer() == null || senderUuid == AltoClef.INSTANCE.getPlayer().getUuid()) return;
     //$$      ChatMessageEvent evt = new ChatMessageEvent(message.getString(), new GameProfile(senderUuid, null));
     //$$      EventBus.publish(evt);
     //$$ }

@@ -262,13 +262,6 @@ public class AltoClef implements ModInitializer {
     //$$ }
     //#endif
 
-    // Settings
-    public final double DefaultCostHeuristic = getClientBaritoneSettings().costHeuristic.defaultValue; // Kind of like the path finding (Optimized to Computation) Ratio
-    public final double AvoidBreakingMultiplier = getClientBaritoneSettings().avoidBreakingMultiplier.defaultValue; // should avoid Breaking blocks
-    public final double PlacementPenalty = getClientBaritoneSettings().blockPlacementPenalty.defaultValue; // should avoid placing blocks
-
-    public int HostileAvoidanceRadius = 10; //avoid mobs, this will be adjusted by the mob defense chain.
-
     private void initializeBaritoneSettings() {
 
         //FIXME: I don't actually know which version this was added
@@ -317,7 +310,7 @@ public class AltoClef implements ModInitializer {
 
         // Custom avoidance setting i added
         // getExtraBaritoneSettings().setShouldAvoidPredicate(Optional.of(entity -> EntityHelper.isProbablyHostileToPlayer(this, entity)));
-        getClientBaritoneSettings().mobAvoidanceRadius.value = HostileAvoidanceRadius;
+        getClientBaritoneSettings().mobAvoidanceRadius.reset();
         getClientBaritoneSettings().mobAvoidanceCoefficient.value = 7.5;
         getClientBaritoneSettings().avoidance.value = true;
 
@@ -330,11 +323,6 @@ public class AltoClef implements ModInitializer {
         //$$    getClientBaritoneSettings().randomLooking.value = 0.2; //randomly look to convince
         //$$    getClientBaritoneSettings().randomLooking113.value = 0.03;
         //#endif
-
-        getClientBaritoneSettings().costHeuristic.value = DefaultCostHeuristic;
-        getClientBaritoneSettings().avoidBreakingMultiplier.value = AvoidBreakingMultiplier;
-        getClientBaritoneSettings().blockPlacementPenalty.value = PlacementPenalty;
-        // Default is 3.563 (In decompiled)
 
         // Give baritone more time to calculate paths. Sometimes they can be really far away.
         // Was: 2000L

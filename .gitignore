@@ -122,6 +122,7 @@ run12001/
 run12002/
 run12004/
 run12006/
+run11802/
 
 # Avoid ignoring Gradle wrapper jar file (.jar files are usually ignored)
 !gradle-wrapper.jar

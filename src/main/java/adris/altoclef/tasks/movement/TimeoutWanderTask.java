@@ -227,7 +227,7 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
     protected void onStop(AltoClef mod, Task interruptTask) {
         //Reset
         mod.getClientBaritoneSettings().blockBreakAdditionalPenalty.value = 0.0;
-        mod.getClientBaritoneSettings().blockPlacementPenalty.value = mod.PlacementPenalty;
+        mod.getClientBaritoneSettings().blockPlacementPenalty.reset();
 
 
         mod.getClientBaritone().getPathingBehavior().forceCancel();
