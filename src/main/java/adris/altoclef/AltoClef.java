@@ -251,13 +251,13 @@ public class AltoClef implements ModInitializer {
         }
     }
     //#else
-    //$$ private void onClientRenderOverlay(DrawableHelper context, MatrixStack matrices) {
+    //$$ private void onClientRenderOverlay(DrawableHelper helper, MatrixStack matrices) {
     //$$     if (settings.shouldShowTaskChain()) {
     //$$         commandStatusOverlay.render(this, matrices);
     //$$     }
     //$$
     //$$     if (settings.shouldShowDebugTickMs()) {
-    //$$         altoClefTickChart.render(this, context, matrices, 1, WindowUtil.getScaledWindowWidth() / 2 - 124);
+    //$$         altoClefTickChart.render(this, helper, matrices, 1, WindowUtil.getScaledWindowWidth() / 2 - 124);
     //$$     }
     //$$ }
     //#endif

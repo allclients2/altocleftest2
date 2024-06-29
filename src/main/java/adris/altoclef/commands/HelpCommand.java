@@ -8,6 +8,8 @@ import adris.altoclef.ui.MessagePriority;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 
+import static adris.altoclef.multiversion.LiteralTextVer.constructLiteralText;
+
 public class HelpCommand extends Command {
 
     public HelpCommand() {
@@ -24,14 +26,6 @@ public class HelpCommand extends Command {
         } else {
             return str.substring(0, maxLength - 2) + "..";
         }
-    }
-
-    private static MutableText constructLiteralText(String content) {
-        //#if MC>=11900
-        return Text.literal(content);
-        //#else
-        //$$ return new LiteralText(content);
-        //#endif
     }
 
     @Override

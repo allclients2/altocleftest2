@@ -9,6 +9,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 import net.minecraft.util.math.ColorHelper;
+import net.minecraft.util.math.MathHelper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,12 +142,27 @@ public class AltoClefTickChart {
         return getColor(ms/maxMs, 0xFF00FF00, 0xFFFFC800, 0xFFFF0000);
     }
 
-    protected int getColor(double value, int minColor, int medianColor, int maxColor) {
-        if (value < 0.5) { // Hopefully this lerp works...
-            return (int) lerp((float)((value) / (0.5)), minColor, medianColor);
-        }
-        return (int) lerp((float)((value - 0.5) / 0.5), medianColor, maxColor);
+    public static int lerpColor(float delta, int start, int end) {
+        //FIXME: Check version.
+        //#if MC>=12001
+        return ColorHelper.Argb.lerp(delta, start, end);
+        //#else
+        //$$ int i = (int) MathHelper.lerp(delta, ColorHelper.Argb.getAlpha(start), ColorHelper.Argb.getAlpha(end));
+        //$$ int j = (int) MathHelper.lerp(delta, ColorHelper.Argb.getRed(start), ColorHelper.Argb.getRed(end));
+        //$$ int k = (int) MathHelper.lerp(delta, ColorHelper.Argb.getGreen(start), ColorHelper.Argb.getGreen(end));
+        //$$ int l = (int) MathHelper.lerp(delta, ColorHelper.Argb.getBlue(start), ColorHelper.Argb.getBlue(end));
+        //$$ return ColorHelper.Argb.getArgb(i, j, k, l);
+        //#endif
     }
+
+
+    protected int getColor(double value, int minColor, int medianColor, int maxColor) {
+        if (value < 0.5) {
+            return lerpColor((float)((value) / (0.5)), minColor, medianColor);
+        }
+        return lerpColor((float)((value - 0.5) / 0.5), medianColor, maxColor);
+    }
+
 
     private static double nanosToMillis(double nanos) {
         return nanos / 1_000_000.0;
