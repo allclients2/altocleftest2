@@ -16,14 +16,14 @@ public class CollectBlockByOneTask extends ResourceTask {
     private final Item item;
     private final Block[] blocks;
     private final MiningRequirement requirement;
-    private final int _count;
+    private final int count;
 
     public CollectBlockByOneTask(Item item, Block[] blocks, MiningRequirement requirement, int targetCount) {
-        super(Items.COBBLED_DEEPSLATE, targetCount);
+        super(item, targetCount);
         this.item = item;
         this.blocks = blocks;
         this.requirement = requirement;
-        _count = targetCount;
+        count = targetCount;
     }
 
     @Override
@@ -49,14 +49,14 @@ public class CollectBlockByOneTask extends ResourceTask {
     @Override
     protected boolean isEqualResource(ResourceTask other) {
         if (other instanceof CollectBlockByOneTask task) {
-            return task._count == _count && task.item.equals(item) && Arrays.stream(task.blocks).allMatch(block -> Arrays.stream(blocks).toList().contains(block));
+            return task.count == count && task.item.equals(item) && Arrays.stream(task.blocks).allMatch(block -> Arrays.stream(blocks).toList().contains(block));
         }
         return false;
     }
 
     @Override
     protected String toDebugStringName() {
-        return "Collect Cobbled Deepslate";
+        return "Collect "+item;
     }
 
 
