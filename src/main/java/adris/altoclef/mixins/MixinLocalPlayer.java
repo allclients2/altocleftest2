@@ -20,7 +20,7 @@ public abstract class MixinLocalPlayer extends AbstractClientPlayerEntity {
     public MixinLocalPlayer(ClientWorld world, GameProfile profile, PlayerPublicKey publicKey) {
         super(world, profile);
     }
-    //else
+    //#else
     //$$ public MixinLocalPlayer(ClientWorld world, GameProfile profile) {
     //$$      super(world, profile);
     //$$ }

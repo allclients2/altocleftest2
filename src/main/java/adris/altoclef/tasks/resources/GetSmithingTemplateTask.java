@@ -1,3 +1,4 @@
+//#if MC>=12000
 package adris.altoclef.tasks.resources;
 
 import adris.altoclef.AltoClef;
@@ -85,3 +86,4 @@ public class GetSmithingTemplateTask extends ResourceTask {
         return false;
     }
 }
+//#endif

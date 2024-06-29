@@ -34,8 +34,14 @@ public class JankCraftingRecipeMapping {
                 for (WrappedRecipeEntry recipe : recipes.values()) {
                     assert world != null;
                     Recipe<?> value = recipe.value();
+
+                    //#if MC>=12000
                     Item output = value.getResult(world.getRegistryManager()).getItem();
-                    recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);
+                    //#else
+                    //$$ Item output = value.getOutput().getItem();
+                    //#endif
+
+                    recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);                    recipeMapping.computeIfAbsent(output, k -> new ArrayList<>()).add(recipe);
                 }
             }
         }

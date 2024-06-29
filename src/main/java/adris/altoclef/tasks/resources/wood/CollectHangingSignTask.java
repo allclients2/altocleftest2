@@ -1,3 +1,4 @@
+//#if MC>=12000
 package adris.altoclef.tasks.resources.wood;
 
 import adris.altoclef.TaskCatalogue;
@@ -29,3 +30,4 @@ public class CollectHangingSignTask extends CraftWithMatchingStrippedLogsTask {
         return CraftingRecipe.newShapedRecipe(new ItemTarget[]{chain, null, chain, s, s, s, s, s, s}, 6);
     }
 }
+//#endif

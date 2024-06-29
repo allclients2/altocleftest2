@@ -3,6 +3,7 @@ package adris.altoclef.tasks.speedrun.maintasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.multiversion.ViewDistanceVer;
 import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.DestroyBlockTask;
@@ -497,7 +498,11 @@ public class MarvionBeatMinecraftTask extends Task {
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
         // Disable walking on end portal
+
+        //FIXME: Check version.
+        //#if MC>= 12000
         mod.getExtraBaritoneSettings().canWalkOnEndPortal(false);
+        //#endif
 
         // Pop the top behaviour from the stack
         mod.getBehaviour().pop();
@@ -989,7 +994,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                     if (_timer1.elapsed()) {
                         if (config.renderDistanceManipulation) {
-                            getInstance().options.getViewDistance().setValue(12);
+                            ViewDistanceVer.setViewDistance(12);
                         }
                         _timer1.reset();
                     }
@@ -1002,14 +1007,12 @@ public class MarvionBeatMinecraftTask extends Task {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 if (_timer3.getDuration() >= 30) {
                     if (config.renderDistanceManipulation) {
-                        getInstance().options.getViewDistance().setValue(12);
-                        getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                        ViewDistanceVer.setViewDistance(12);
                     }
                 }
                 if (_timer3.elapsed()) {
                     if (config.renderDistanceManipulation) {
-                        getInstance().options.getViewDistance().setValue(32);
-                        getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                        ViewDistanceVer.setViewDistance(32);
                     }
                     _timer3.reset();
                 }
@@ -1022,8 +1025,7 @@ public class MarvionBeatMinecraftTask extends Task {
             if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                 if (_timer1.elapsed()) {
                     if (config.renderDistanceManipulation) {
-                        getInstance().options.getViewDistance().setValue(2);
-                        getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                        ViewDistanceVer.setViewDistance(2);
                     }
                     _timer1.reset();
                 }
@@ -1034,8 +1036,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     config.renderDistanceManipulation) {
                 if (_timer1.elapsed()) {
                     if (config.renderDistanceManipulation) {
-                        getInstance().options.getViewDistance().setValue(12);
-                        getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                        ViewDistanceVer.setViewDistance(12);
                     }
                     _timer1.reset();
                 }
@@ -1206,8 +1207,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 return null;
             }
             if (config.renderDistanceManipulation) {
-                getInstance().options.getViewDistance().setValue(12);
-                getInstance().options.getEntityDistanceScaling().setValue(1.0);
+                ViewDistanceVer.setViewDistance(12);
             }
             // If we have bed, do bed strats, otherwise punk normally.
             updateCachedEndItems(mod);
@@ -1252,9 +1252,14 @@ public class MarvionBeatMinecraftTask extends Task {
                 setDebugState("WOOHOO");
                 dragonIsDead = true;
                 enteringEndPortal = true;
+
+                //FIXME: Check version.
+                //#if MC>= 12000
                 if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
                     mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
                 }
+                //#endif
+
                 return new DoToClosestBlockTask(
                         blockPos -> new GetToBlockTask(blockPos.up()),
                         Blocks.END_PORTAL
@@ -1347,8 +1352,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (config.renderDistanceManipulation && mod.getItemStorage().hasItem(ItemHelper.BED)) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
-                            getInstance().options.getViewDistance().setValue(2);
-                            getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                            ViewDistanceVer.setViewDistance(2);
                             _timer1.reset();
                         }
                     }
@@ -1384,8 +1388,7 @@ public class MarvionBeatMinecraftTask extends Task {
                 if (config.renderDistanceManipulation) {
                     if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                         if (_timer1.elapsed()) {
-                            getInstance().options.getViewDistance().setValue(2);
-                            getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                            ViewDistanceVer.setViewDistance(2);
                             _timer1.reset();
                         }
                     }
@@ -1478,9 +1481,12 @@ public class MarvionBeatMinecraftTask extends Task {
                         // We're as ready as we'll ever be, hop into the portal!
                         setDebugState("Entering End");
                         enteringEndPortal = true;
+                        //FIXME: Check version.
+                        //#if MC>= 12000
                         if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
                             mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
                         }
+                        //#endif
                         return new DoToClosestBlockTask(
                                 blockPos -> new GetToBlockTask(blockPos.up()),
                                 Blocks.END_PORTAL
@@ -1503,8 +1509,7 @@ public class MarvionBeatMinecraftTask extends Task {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
                                 if (config.renderDistanceManipulation) {
-                                    getInstance().options.getViewDistance().setValue(32);
-                                    getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                                    ViewDistanceVer.setViewDistance(32);
                                 }
                                 _timer1.reset();
                             }
@@ -1897,8 +1902,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
-                                MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                                MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                                ViewDistanceVer.setViewDistance(2);
                                 _timer1.reset();
                             }
                         }
@@ -1924,8 +1928,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     setDebugState("Getting pork chop just for fun.");
                     if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
-                            MinecraftClient.getInstance().options.getViewDistance().setValue(32);
-                            MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                            ViewDistanceVer.setViewDistance(32);
                         }
                     }
                     return _getPorkchopTask;
@@ -1948,8 +1951,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
-                                MinecraftClient.getInstance().options.getViewDistance().setValue(2);
-                                MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(0.5);
+                                ViewDistanceVer.setViewDistance(2);
                                 _timer1.reset();
                             }
                         }
@@ -2038,8 +2040,7 @@ public class MarvionBeatMinecraftTask extends Task {
                     if (config.renderDistanceManipulation) {
                         if (!mod.getClientBaritone().getExploreProcess().isActive()) {
                             if (_timer1.elapsed()) {
-                                MinecraftClient.getInstance().options.getViewDistance().setValue(32);
-                                MinecraftClient.getInstance().options.getEntityDistanceScaling().setValue(5.0);
+                                ViewDistanceVer.setViewDistance(32);
                                 _timer1.reset();
                             }
                         }

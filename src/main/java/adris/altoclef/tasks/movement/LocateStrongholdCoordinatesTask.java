@@ -53,7 +53,15 @@ public class LocateStrongholdCoordinatesTask extends Task {
         Vec3d d2 = direction2;
         // Solved for s1 + d1 * t1 = s2 + d2 * t2
         double t2 = ((d1.z * s2.x) - (d1.z * s1.x) - (d1.x * s2.z) + (d1.x * s1.z)) / ((d1.x * d2.z) - (d1.z * d2.x));
+
+
+        //FIXME: Don't know which version.
+        //#if MC>=12000
         BlockPos blockPos = BlockPos.ofFloored(start2.add(direction2.multiply(t2)));
+        //#else
+        //$$ BlockPos blockPos = new BlockPos(start2.add(direction2.multiply(t2)));
+        //#endif
+
         return new Vec3i(blockPos.getX(), 0, blockPos.getZ());
     }
 
@@ -172,8 +180,13 @@ public class LocateStrongholdCoordinatesTask extends Task {
                 assert MinecraftClient.getInstance().interactionManager != null;
                 if (_throwTimer.elapsed()) {
                     if (LookHelper.tryAvoidingInteractable(mod)) {
+
+                        //#if MC>=11901
                         MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), Hand.MAIN_HAND);
-                        //MinecraftClient.getInstance().options.keyUse.setPressed(true);
+                        //#else
+                        //$$ MinecraftClient.getInstance().interactionManager.interactItem(mod.getPlayer(), mod.getWorld(), Hand.MAIN_HAND);
+                        //#endif
+
                         _throwTimer.reset();
                     }
                 } else {

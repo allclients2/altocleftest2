@@ -220,10 +220,17 @@ public class PlaceBlockNearbyTask extends Task {
             if (mouseOver == null || mouseOver.getType() != HitResult.Type.BLOCK) {
                 return false;
             }
-            Hand hand = Hand.MAIN_HAND;
+
+            final Hand hand = Hand.MAIN_HAND;
             assert MinecraftClient.getInstance().interactionManager != null;
-            if (MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), hand, (BlockHitResult) mouseOver) == ActionResult.SUCCESS &&
-                    mod.getPlayer().isSneaking()) {
+
+            //#if MC >= 12001
+            final ActionResult interactionTest = MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), hand, (BlockHitResult) mouseOver);
+            //#else
+            //$$ final ActionResult interactionTest = MinecraftClient.getInstance().interactionManager.interactBlock(mod.getPlayer(), mod.getWorld(), hand, (BlockHitResult) mouseOver);
+            //#endif
+
+            if (interactionTest == ActionResult.SUCCESS && mod.getPlayer().isSneaking()) {
                 mod.getPlayer().swingHand(hand);
                 _justPlaced = targetPlace;
                 Debug.logMessage("PRESSED");

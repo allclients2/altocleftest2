@@ -1,10 +1,12 @@
 package adris.altoclef.tasks.speedrun.beatgame;
 
 import adris.altoclef.tasks.speedrun.BeatMinecraftConfig;
+import adris.altoclef.util.helpers.ItemHelper;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -16,27 +18,9 @@ public class UselessItems {
 
     public UselessItems(BeatMinecraftConfig config)  {
         List<Item> uselessItemList = new ArrayList<>(List.of(
-                //sapling
-                Items.OAK_SAPLING,
-                Items.SPRUCE_SAPLING,
-                Items.BIRCH_SAPLING,
-                Items.JUNGLE_SAPLING,
-                Items.ACACIA_SAPLING,
-                Items.DARK_OAK_SAPLING,
-                Items.MANGROVE_PROPAGULE,
-                Items.CHERRY_SAPLING,
-
-                // seeds
-                Items.BEETROOT_SEEDS,
-                Items.MELON_SEEDS,
-                Items.PUMPKIN_SEEDS,
-                Items.WHEAT_SEEDS,
-                Items.TORCHFLOWER_SEEDS,
-
                 // random jung, might add more things in the future
                 Items.FEATHER,
                 Items.EGG,
-                Items.PINK_PETALS,
                 Items.BONE,
                 Items.LEATHER,
                 Items.RAW_COPPER,
@@ -49,11 +33,15 @@ public class UselessItems {
                 Items.COARSE_DIRT,
                 Items.SMOOTH_STONE,
                 Items.FLOWER_POT,
-                Items.MANGROVE_ROOTS,
                 Items.POPPY,
-                Items.MUDDY_MANGROVE_ROOTS,
                 Items.SPIDER_EYE,
                 Items.PINK_TULIP,
+
+                //#if MC>=11900
+                Items.PINK_PETALS,
+                Items.MANGROVE_ROOTS,
+                Items.MUDDY_MANGROVE_ROOTS,
+                //#endif
 
                 Items.SPRUCE_STAIRS,
                 Items.OAK_STAIRS,
@@ -72,7 +60,6 @@ public class UselessItems {
                 Items.MOSS_CARPET,
 
                 Items.IRON_NUGGET,
-                Items.SHORT_GRASS,
                 Items.COBBLESTONE_WALL,
                 Items.COBBLESTONE_STAIRS,
                 Items.COBBLESTONE_SLAB,
@@ -93,8 +80,6 @@ public class UselessItems {
                 Items.OAK_PRESSURE_PLATE,
                 Items.JUNGLE_DOOR,
                 Items.CHISELED_SANDSTONE,
-                Items.MUD,
-                Items.MANGROVE_LEAVES,
                 Items.SMOOTH_SANDSTONE_SLAB,
                 Items.SANDSTONE_WALL,
                 Items.PRISMARINE_CRYSTALS,
@@ -116,6 +101,17 @@ public class UselessItems {
                 Items.RABBIT_HIDE,
                 Items.RABBIT_FOOT,
 
+                //#if MC>=11903
+                Items.GRASS_BLOCK,
+                //#else
+                //$$ Items.GRASS,
+                //#endif
+
+                //#if MC>=11900
+                Items.MUD,
+                Items.MANGROVE_LEAVES,
+                //#endif
+
                 // nether stuff
                 Items.SOUL_SAND,
                 Items.SOUL_SOIL,
@@ -123,6 +119,11 @@ public class UselessItems {
                 Items.NETHER_BRICK_FENCE
         ));
 
+        // Saplings
+        uselessItemList.addAll(Arrays.asList(ItemHelper.SAPLINGS));
+
+        // Saplings
+        uselessItemList.addAll(Arrays.asList(ItemHelper.seeds));
 
         if (!config.barterPearlsInsteadOfEndermanHunt) {
             uselessItemList.add(Items.GOLD_NUGGET);

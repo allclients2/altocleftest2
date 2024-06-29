@@ -29,6 +29,7 @@ import net.minecraft.block.TrapdoorBlock;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.mob.SkeletonEntity;
+import net.minecraft.item.ItemPlacementContext;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
@@ -195,7 +196,11 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         boolean wasSneaking = mod.getPlayer().input.sneaking;
         mod.getPlayer().input.sneaking = false;
 
+        //#if MC>=11901
         ActionResult result = mod.getController().interactBlock(mod.getPlayer(), hand, blockHitResult);
+        //#else
+        //$$ ActionResult result = mod.getController().interactBlock(mod.getPlayer(), mod.getWorld(), hand, blockHitResult);
+        //#endif
 
         if (result.shouldSwingHand()) {
             mod.getPlayer().swingHand(hand);
@@ -211,7 +216,8 @@ public class ProjectileProtectionWallTask extends Task implements ITaskRequiresG
         if (!World.isValid(blockPos)) return false;
 
         // Check if current block is replaceable
-        if (!mod.getWorld().getBlockState(blockPos).isReplaceable()) return false;
+        //TODO: Reimplement? for 1.18.2. (couldn't find how to replace because dum)
+        //if (!mod.getWorld().getBlockState(blockPos).isReplaceable()) return false;
 
         // Check if intersects entities
         return !checkEntities || mod.getWorld().canPlace(Blocks.OBSIDIAN.getDefaultState(), blockPos, ShapeContext.absent());

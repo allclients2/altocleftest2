@@ -26,7 +26,7 @@ public class DamageSourcesVer {
         //#if MC >= 12001
         return source.isIn(DamageTypeTags.BYPASSES_SHIELD);
         //#else
-        //$$ source.isUnblockable(); //I guess?? See: https://maven.fabricmc.net/docs/yarn-1.18.2+build.4/net/minecraft/entity/damage/DamageSource.html#isUnblockable()
+        //$$ return source.isUnblockable(); //I guess?? See: https://maven.fabricmc.net/docs/yarn-1.18.2+build.4/net/minecraft/entity/damage/DamageSource.html#isUnblockable()
         //#endif
     }
 
@@ -34,7 +34,7 @@ public class DamageSourcesVer {
         //#if MC >= 12001
         return source.isIn(DamageTypeTags.BYPASSES_ARMOR);
         //#else
-        //$$ source.bypassesArmor();
+        //$$ return source.bypassesArmor();
         //#endif
     }
 }

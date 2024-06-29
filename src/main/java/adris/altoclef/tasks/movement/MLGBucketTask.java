@@ -30,6 +30,8 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.RaycastContext;
 
+import net.minecraft.entity.damage.DamageSource;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -108,7 +110,12 @@ public class MLGBucketTask extends Task {
         double baseFallDamage = MathHelper.ceil(totalFallDistance - 3.0F);
         // Be a bit conservative, assume MORE damage
         assert world != null;
+
+        //#if MC>=11904
         return EntityHelper.calculateResultingPlayerDamage(player, world.getDamageSources().fall(), baseFallDamage);
+        //#else
+        //$$ return EntityHelper.calculateResultingPlayerDamage(player, DamageSource.FALL, baseFallDamage);
+        //#endif
     }
 
     private static void moveLeftRight(AltoClef mod, int delta) {
