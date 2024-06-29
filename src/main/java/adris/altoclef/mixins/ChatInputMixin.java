@@ -1,4 +1,3 @@
-//#if MC>=11901
 package adris.altoclef.mixins;
 
 import adris.altoclef.eventbus.EventBus;
@@ -8,10 +7,17 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import net.minecraft.client.network.ClientPlayerEntity;
 
-
+//FIXME: Check version
+//#if MC>=12001
 @Mixin(ClientPlayNetworkHandler.class)
+//#else
+//$$ @Mixin(ClientPlayerEntity.class)
+//#endif
 public final class ChatInputMixin {
+
+
     @Inject(
             method = "sendChatMessage",
             at = @At("HEAD"),
@@ -24,5 +30,5 @@ public final class ChatInputMixin {
             ci.cancel();
         }
     }
+
 }
-//#endif

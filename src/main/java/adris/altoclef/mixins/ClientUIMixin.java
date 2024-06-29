@@ -35,7 +35,7 @@ public final class ClientUIMixin {
     //$$            method = "render",
     //$$            at = @At("TAIL")
     //$$    )
-    //$$    private void render(MatrixStack matrices, float tickDelta) {
+    //$$    private void clientRender(MatrixStack matrices, float tickDelta, CallbackInfo ci) {
     //$$        EventBus.publish(new ClientRenderEvent(this, matrices, tickDelta));
     //$$    }
     //#endif
