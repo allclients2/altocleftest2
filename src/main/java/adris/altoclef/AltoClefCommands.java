@@ -35,6 +35,8 @@ public class AltoClefCommands {
                 new GamerCommand(),
                 new MarvionCommand(),
                 new DummyTaskCommand(),
+                new FollowCommand(),
+                new GiveCommand(),
                 new ScanCommand()
         );
     }
