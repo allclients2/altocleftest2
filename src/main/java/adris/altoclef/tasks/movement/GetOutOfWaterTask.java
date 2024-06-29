@@ -1,6 +1,7 @@
 package adris.altoclef.tasks.movement;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Debug;
 import adris.altoclef.tasksystem.Task;
 import adris.altoclef.util.helpers.LookHelper;
 import adris.altoclef.util.helpers.StorageHelper;
@@ -27,7 +28,7 @@ public class GetOutOfWaterTask extends CustomBaritoneGoalTask{
     protected Task onTick(AltoClef mod) {
         // get on the surface first
         if (mod.getPlayer().getAir() < mod.getPlayer().getMaxAir() || mod.getPlayer().isSubmergedInWater()) {
-            return null;
+            return super.onTick(mod);
         }
 
         boolean hasBlockBelow = false;
@@ -36,8 +37,9 @@ public class GetOutOfWaterTask extends CustomBaritoneGoalTask{
                 hasBlockBelow = true;
             }
         }
+        boolean hasAirAbove = mod.getWorld().getBlockState(mod.getPlayer().getBlockPos().up(2)).getBlock().equals(Blocks.AIR);
 
-        if (hasBlockBelow && StorageHelper.getNumberOfThrowawayBlocks(mod) > 0) {
+        if (hasAirAbove && hasBlockBelow && StorageHelper.getNumberOfThrowawayBlocks(mod) > 0) {
             mod.getInputControls().tryPress(Input.JUMP);
             if (mod.getPlayer().isOnGround()) {
 
