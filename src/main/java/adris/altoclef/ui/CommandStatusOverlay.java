@@ -1,6 +1,9 @@
 package adris.altoclef.ui;
 
 import adris.altoclef.AltoClef;
+import adris.altoclef.Settings;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ConfigReloadEvent;
 import adris.altoclef.multiversion.DrawText;
 import adris.altoclef.tasksystem.Task;
 import net.minecraft.client.MinecraftClient;
@@ -22,10 +25,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Collections;
 import java.util.List;
 
+// Might make this abstract....
 public class CommandStatusOverlay {
 
-    private static final float overlayScale = 0.88F;
+    private static float overlayScale;
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("HH:mm:ss.SSS").withZone(ZoneId.from(ZoneOffset.of("+00:00"))); // The date formatter
+
+    public CommandStatusOverlay(AltoClef mod) {
+        overlayScale = mod.getModSettings().getScreenOverlayScale();
+        EventBus.subscribe(ConfigReloadEvent.class, configReloadEvent -> overlayScale = configReloadEvent.mod().getModSettings().getScreenOverlayScale());
+    }
 
     public void render(AltoClef mod, MatrixStack matrixstack) {
         List<Task> tasks = Collections.emptyList();

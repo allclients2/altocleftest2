@@ -4,6 +4,7 @@ import adris.altoclef.AltoClef;
 import adris.altoclef.multiversion.DrawContextVer;
 import adris.altoclef.multiversion.InGameHudVer;
 import adris.altoclef.util.WindowUtil;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
@@ -23,33 +24,12 @@ import static net.minecraft.util.math.MathHelper.lerp;
 public class AltoClefTickChart {
 
 
-    protected final TextRenderer textRenderer;
+    protected final TextRenderer textRenderer = MinecraftClient.getInstance().textRenderer;
     protected final List<Long> list = new ArrayList<>();
-
-    public AltoClefTickChart(TextRenderer textRenderer) {
-        this.textRenderer = textRenderer;
-    }
-
 
     public void pushTickNanos(long nanoTime) {
         list.add(nanoTime);
     }
-
-
-    //  Minecraft Colors used here are in a 8-digit hexadecimal format of ARGB (Alpha, Red, Green, Blue)
-
-    // Example with 0xFFDDDDDD
-    // Can be Separated to 5 sections: 0x FF DD DD DD
-
-    //    0x: Indicates this is a hexadecimal
-    //    FF: is the Alpha channel (opacity)
-    //    DD: is the Red channel
-    //    DD: is the Green channel
-    //    DD: is the Blue channel
-
-    // FF is 255 of the max 255 for 2 hexadecimal digits, this is used in the Alpha channel.
-    // DD is 0xDD which is 211, out of the max 255 (0xFF), for all channels. 211 / 255 = 0.827 * 100 = 82.7%
-    // This means 0xFFDDDDDD color is fully opaque, and about 82.7% in all channels, making it bright white.
 
     //#if MC>=11903
     public void render(AltoClef mod, DrawContext context, int x, int width) {

@@ -5,7 +5,8 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.util.math.MatrixStack;
 
-public class DrawContextVer {
+// Must be recreated every render event!
+public final class DrawContextVer {
 
     //  Minecraft Colors used here are in a 8-digit hexadecimal format of ARGB (Alpha, Red, Green, Blue)
 

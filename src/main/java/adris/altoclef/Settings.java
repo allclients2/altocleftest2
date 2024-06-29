@@ -222,6 +222,11 @@ public class Settings implements IFailableConfigFile {
     private boolean dodgeProjectiles = true;
 
     /**
+     * Scale of the screen taskchain overlay
+     */
+    private float screenOverlayScale = 0.88F;
+
+    /**
      * Skeletons and large groups of mobs are a huge pain.
      * <p>
      * With this set to true, the bot may either
@@ -514,6 +519,10 @@ public class Settings implements IFailableConfigFile {
 
     public boolean shouldHideAllWarningLogs() {
         return hideAllWarningLogs;
+    }
+
+    public float getScreenOverlayScale() {
+        return screenOverlayScale;
     }
 
     public String getCommandPrefix() {

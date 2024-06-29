@@ -1,6 +1,9 @@
 package adris.altoclef.util.helpers;
 
+import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
+import adris.altoclef.eventbus.EventBus;
+import adris.altoclef.eventbus.events.ConfigReloadEvent;
 import adris.altoclef.util.serialization.*;
 import com.fasterxml.jackson.core.util.DefaultIndenter;
 import com.fasterxml.jackson.core.util.DefaultPrettyPrinter;
@@ -25,7 +28,7 @@ import java.util.function.Supplier;
  */
 public class ConfigHelper {
 
-    private static final String ALTO_FOLDER = "altoclef";
+    private static final String ALTO_FOLDER = "config";
     // For reloading
     private static final HashMap<String, Runnable> _loadedConfigs = new HashMap<>();
 
@@ -47,8 +50,14 @@ public class ConfigHelper {
      * Reloads all configurations.
      */
     public static void reloadAllConfigs() {
-        for (Runnable config : _loadedConfigs.values()) {
-            config.run();
+        final AltoClef mod = AltoClef.INSTANCE;
+        if (mod != null) {
+            for (Runnable config : _loadedConfigs.values()) {
+                config.run();
+            }
+            EventBus.publish(ConfigReloadEvent.class);
+        } else {
+            Debug.logInternal("Attempt to reload altoclef config while Altoclef Instance is null! This may fail to reload or potentially load configuration data!");
         }
     }
 

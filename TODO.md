@@ -21,4 +21,3 @@
 ### Chores
 - Check the minecraft version for the preprocessor's if-statements. (Frequently not checked whilst adding 1.18.2 support)
 - Get rid of the baritone settings from BotBehavior class (Possibly move it into its own class)
-- Revamp config system

@@ -143,10 +143,6 @@ public class AltoClef implements ModInitializer {
         miscBlockTracker = new MiscBlockTracker(this);
         craftingRecipeTracker = new CraftingRecipeTracker(trackerManager);
 
-        // Renderers
-        commandStatusOverlay = new CommandStatusOverlay();
-        altoClefTickChart = new AltoClefTickChart(MinecraftClient.getInstance().textRenderer);
-
         // Misc managers
         messageSender = new MessageSender();
         inputControls = new InputControls();
@@ -191,6 +187,10 @@ public class AltoClef implements ModInitializer {
             onClientTick();
             altoClefTickChart.pushTickNanos(System.nanoTime()-nanos);
         });
+
+        // Renderers (require settings initialized)
+        commandStatusOverlay = new CommandStatusOverlay(this);
+        altoClefTickChart = new AltoClefTickChart();
 
         // Render
         //#if MC>=11904
