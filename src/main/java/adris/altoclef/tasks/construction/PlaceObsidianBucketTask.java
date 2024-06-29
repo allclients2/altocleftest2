@@ -3,7 +3,7 @@ package adris.altoclef.tasks.construction;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
-import adris.altoclef.util.BlockScanner;
+import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.movement.GetToBlockTask;
 import adris.altoclef.tasks.movement.TimeoutWanderTask;
@@ -244,17 +244,17 @@ public class PlaceObsidianBucketTask extends Task {
     @Override
     public boolean isFinished(AltoClef mod) {
         // Get the BlockTracker instance from the mod
-        BlockScanner blockTracker = mod.getBlockScanner();
+        BlockScanner blockScanner = mod.getBlockScanner();
 
         // Get the position of the block to check
         BlockPos pos = _pos;
 
         // Check if the block at the specified position is obsidian
-        boolean isObsidian = blockTracker.isBlockAtPosition(pos, Blocks.OBSIDIAN);
+        boolean isObsidian = blockScanner.isBlockAtPosition(pos, Blocks.OBSIDIAN);
         Debug.logInternal("isObsidian: " + isObsidian);
 
         // Check if there is no water block above the specified position
-        boolean isNotWaterAbove = !blockTracker.isBlockAtPosition(pos.up(), Blocks.WATER);
+        boolean isNotWaterAbove = !blockScanner.isBlockAtPosition(pos.up(), Blocks.WATER);
         Debug.logInternal("isNotWaterAbove: " + isNotWaterAbove);
 
         // The task is considered finished if the block is obsidian and there is no water above

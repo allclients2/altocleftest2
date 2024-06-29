@@ -131,7 +131,7 @@ public class MarvionBeatMinecraftTask extends Task {
     private final Task _goToNetherTask = new DefaultGoToDimensionTask(Dimension.NETHER); // To keep the portal build cache.
     private final Task _getOneBedTask = TaskCatalogue.getItemTask("bed", 1);
     private final Task _sleepThroughNightTask = new SleepThroughNightTask();
-    private final Task _killDragonBedStratsTask = new KillEnderDragonWithBedsTask(new WaitForDragonAndPearlTask());
+    private final Task _killDragonBedStratsTask = new KillEnderDragonWithBedsTask();
     // End specific dragon breath avoidance
     private final DragonBreathTracker _dragonBreathTracker = new DragonBreathTracker();
     private final TimerGame _timer1 = new TimerGame(5);

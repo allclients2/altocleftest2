@@ -3,8 +3,8 @@ package adris.altoclef;
 
 import adris.altoclef.butler.Butler;
 import adris.altoclef.chains.*;
+import adris.altoclef.commands.BlockScanner;
 import adris.altoclef.control.LookAtPos;
-import adris.altoclef.util.BlockScanner;
 import adris.altoclef.commandsystem.CommandExecutor;
 import adris.altoclef.control.InputControls;
 import adris.altoclef.control.PlayerExtraController;
@@ -43,7 +43,6 @@ import net.minecraft.item.BlockItem;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
 import org.lwjgl.glfw.GLFW;
-
 
 import java.util.*;
 import java.util.function.Consumer;

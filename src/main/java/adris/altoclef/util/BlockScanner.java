@@ -1,4 +1,4 @@
-package adris.altoclef.util;
+package adris.altoclef.commands;
 
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
@@ -12,9 +12,7 @@ import adris.altoclef.util.time.TimerGame;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientChunkManager;
 import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.util.math.Vec3d;
@@ -26,22 +24,25 @@ import java.util.function.Predicate;
 
 public class BlockScanner {
 
-    private static boolean LOG = false;
+    private static final boolean LOG = false;
     private static final int RESCAN_TICK_DELAY = 4 * 20;
     private static final int CACHED_POSITIONS_PER_BLOCK = 40;
 
 
     private final AltoClef mod;
-    private final HashMap<ChunkPos, Long> scannedChunks = new HashMap<>();
     private final TimerGame rescanTimer = new TimerGame(1);
-    private final HashMap<Block, HashSet<BlockPos>> cachedCloseBlocks = new HashMap<>();
-    private final HashMap<Block, HashSet<BlockPos>> newBlocks = new HashMap<>();
+
+    private final HashMap<Block, HashSet<BlockPos>> trackedBlocks = new HashMap<>();
+    private final HashMap<Block, HashSet<BlockPos>> scannedBlocks = new HashMap<>();
+    private final HashMap<ChunkPos, Long> scannedChunks = new HashMap<>();
     private final WorldLocateBlacklist blacklist = new WorldLocateBlacklist();
-    private HashMap<Block, HashSet<BlockPos>> cachedBlocks = new HashMap<>();
-    private boolean scanning = false;
-    private boolean forceStop = false;
+    // used while scanning
+    private HashMap<Block, HashSet<BlockPos>> cachedScannedBlocks = new HashMap<>();
     private Dimension scanDimension = Dimension.OVERWORLD;
     private World scanWorld = null;
+
+    private boolean scanning = false;
+    private boolean forceStop = false;
 
 
     public BlockScanner(AltoClef mod) {
@@ -57,13 +58,13 @@ public class BlockScanner {
             return;
         }
 
-        if (cachedCloseBlocks.containsKey(block)) {
-            cachedCloseBlocks.get(block).add(pos);
+        if (trackedBlocks.containsKey(block)) {
+            trackedBlocks.get(block).add(pos);
         } else {
             HashSet<BlockPos> set = new HashSet<>();
             set.add(pos);
 
-            cachedCloseBlocks.put(block, set);
+            trackedBlocks.put(block, set);
         }
     }
 
@@ -86,9 +87,9 @@ public class BlockScanner {
         List<BlockPos> locations = new LinkedList<>();
 
         for (Block block : blocks) {
-            if (!cachedCloseBlocks.containsKey(block)) continue;
+            if (!trackedBlocks.containsKey(block)) continue;
 
-            locations.addAll(cachedCloseBlocks.get(block));
+            locations.addAll(trackedBlocks.get(block));
         }
         locations.removeIf(this::isUnreachable);
 
@@ -122,9 +123,9 @@ public class BlockScanner {
 
     public boolean anyFound(Predicate<BlockPos> isValidTest, Block... blocks) {
         for (Block block : blocks) {
-            if (!cachedCloseBlocks.containsKey(block)) continue;
+            if (!trackedBlocks.containsKey(block)) continue;
 
-            for (BlockPos pos : cachedCloseBlocks.get(block)) {
+            for (BlockPos pos : trackedBlocks.get(block)) {
                 if (isValidTest.test(pos) && mod.getWorld().getBlockState(pos).getBlock().equals(block) && !this.isUnreachable(pos))
                     return true;
             }
@@ -173,11 +174,11 @@ public class BlockScanner {
         BlockPos pos = null;
         double nearest = Double.POSITIVE_INFINITY;
 
-        if (!cachedCloseBlocks.containsKey(block)) {
+        if (!trackedBlocks.containsKey(block)) {
             return Optional.empty();
         }
 
-        for (BlockPos p : cachedCloseBlocks.get(block)) {
+        for (BlockPos p : trackedBlocks.get(block)) {
             //ensure the block is there (can change upon rescan)
             if (!mod.getWorld().getBlockState(p).getBlock().equals(block)) continue;
             if (!isValidTest.test(p) || isUnreachable(p)) continue;
@@ -244,8 +245,8 @@ public class BlockScanner {
     }
 
     public void reset() {
-        cachedCloseBlocks.clear();
-        newBlocks.clear();
+        trackedBlocks.clear();
+        scannedBlocks.clear();
         scannedChunks.clear();
         rescanTimer.forceElapse();
         blacklist.clear();
@@ -260,20 +261,21 @@ public class BlockScanner {
 
         if (scanDimension != WorldHelper.getCurrentDimension() || mod.getWorld() != scanWorld) {
             if (LOG) {
-                Debug.logInternal("BlockScanner: new dimension or world detected, resetting data!");
+                Debug.logMessage("BlockScanner: new dimension or world detected, resetting data!");
             }
             reset();
             scanWorld = mod.getWorld();
             scanDimension = WorldHelper.getCurrentDimension();
+            return;
         }
 
-        cachedBlocks = new HashMap<>(newBlocks.size());
-        for (Map.Entry<Block, HashSet<BlockPos>> entry : newBlocks.entrySet()) {
-            cachedBlocks.put(entry.getKey(), (HashSet<BlockPos>) entry.getValue().clone());
+        cachedScannedBlocks = new HashMap<>(scannedBlocks.size());
+        for (Map.Entry<Block, HashSet<BlockPos>> entry : scannedBlocks.entrySet()) {
+            cachedScannedBlocks.put(entry.getKey(), (HashSet<BlockPos>) entry.getValue().clone());
         }
 
         if (LOG) {
-            Debug.logInternal("Updating BlockScanner.. size: " + cachedCloseBlocks.size() + " : " + cachedBlocks.size());
+            Debug.logMessage("Updating BlockScanner.. size: " + trackedBlocks.size() + " : " + cachedScannedBlocks.size());
         }
 
         scanning = true;
@@ -282,89 +284,90 @@ public class BlockScanner {
             try {
                 rescan(Integer.MAX_VALUE, Integer.MAX_VALUE);
             } catch (Exception e) {
-                scanning = false;
-                rescanTimer.reset();
                 e.printStackTrace();
+            } finally {
+                rescanTimer.reset();
+                scanning = false;
             }
         }).start();
     }
 
     private void scanCloseBlocks() {
-        for (Map.Entry<Block, HashSet<BlockPos>> entry : cachedBlocks.entrySet()) {
-            Block block = entry.getKey();
-            HashSet<BlockPos> blockPositions = entry.getValue();
+        for (Map.Entry<Block, HashSet<BlockPos>> entry : cachedScannedBlocks.entrySet()) {
+            if (!trackedBlocks.containsKey(entry.getKey())) {
+                trackedBlocks.put(entry.getKey(), new HashSet<>());
+            }
+            trackedBlocks.get(entry.getKey()).clear();
 
-            cachedCloseBlocks.computeIfAbsent(block, k -> new HashSet<>()).clear();
-            cachedCloseBlocks.get(block).addAll(blockPositions);
+            trackedBlocks.get(entry.getKey()).addAll(entry.getValue());
         }
 
-        final BlockPos pos = mod.getPlayer().getBlockPos();
-        final World world = mod.getPlayer().getWorld();
+        HashMap<Block, HashSet<BlockPos>> map = new HashMap<>();
 
-        final int startX = pos.getX() - 8;
-        final int endX = pos.getX() + 8;
-        final int startY = pos.getY() - 8;
-        final int endY = pos.getY() + 8;
-        final int startZ = pos.getZ() - 8;
-        final int endZ = pos.getZ() + 8;
+        BlockPos pos = mod.getPlayer().getBlockPos();
+        World world = mod.getPlayer().getWorld();
 
-        BlockPos.Mutable p = new BlockPos.Mutable();
-
-        for (int x = startX; x <= endX; x++) {
-            for (int y = startY; y <= endY; y++) {
-                for (int z = startZ; z <= endZ; z++) {
-                    p.set(x, y, z);
+        for (int x = pos.getX() - 8; x <= pos.getX() + 8; x++) {
+            for (int y = pos.getY() - 8; y < pos.getY() + 8; y++) {
+                for (int z = pos.getZ() - 8; z <= pos.getZ() + 8; z++) {
+                    BlockPos p = new BlockPos(x, y, z);
                     BlockState state = world.getBlockState(p);
-                    if (state.isAir()) continue;
+                    if (world.getBlockState(p).isAir()) continue;
 
                     Block block = state.getBlock();
-                    cachedCloseBlocks.computeIfAbsent(block, k -> new HashSet<>()).add(p.toImmutable());
+
+                    if (map.containsKey(block)) {
+                        map.get(block).add(p);
+                    } else {
+                        HashSet<BlockPos> set = new HashSet<>();
+                        set.add(p);
+                        map.put(block, set);
+                    }
                 }
             }
+        }
+
+        for (Map.Entry<Block, HashSet<BlockPos>> entry : map.entrySet()) {
+            getFirstFewPositions(entry.getValue(),mod.getPlayer().getPos());
+
+            if (!trackedBlocks.containsKey(entry.getKey())) {
+                trackedBlocks.put(entry.getKey(), new HashSet<>());
+            }
+
+            trackedBlocks.get(entry.getKey()).addAll(entry.getValue());
         }
     }
 
     private void rescan(int maxCount, int cutOffRadius) {
-        final long ms = System.currentTimeMillis();
+        long ms = System.currentTimeMillis();
 
-        final World world = mod.getWorld();
-        final PlayerEntity player = mod.getPlayer();
-        final ChunkPos playerChunkPos = player.getChunkPos();
-        final Vec3d playerPos = player.getPos();
-        final ClientChunkManager chunkManager = mod.getWorld().getChunkManager();
+        ChunkPos playerChunkPos = mod.getPlayer().getChunkPos();
+        Vec3d playerPos = mod.getPlayer().getPos();
 
-
-        final HashSet<ChunkPos> visited = new HashSet<>();
-        final Queue<Node> queue = new ArrayDeque<>();
+        HashSet<ChunkPos> visited = new HashSet<>();
+        Queue<Node> queue = new ArrayDeque<>();
         queue.add(new Node(playerChunkPos, 0));
 
         while (!queue.isEmpty() && visited.size() < maxCount && !forceStop) {
-            final Node node = queue.poll();
-            final ChunkPos nodePos = node.pos;
+            Node node = queue.poll();
 
-            if (node.distance > cutOffRadius || visited.contains(nodePos) || !chunkManager.isChunkLoaded(nodePos.x, nodePos.z)) {
+            if (node.distance > cutOffRadius || visited.contains(node.pos) || !mod.getWorld().getChunkManager().isChunkLoaded(node.pos.x, node.pos.z))
                 continue;
-            }
 
-            final boolean isPriorityChunk = getChunkDist(nodePos, playerChunkPos) <= 2;
-            final long currentTime = world.getTime();
-            final Long lastScanTime = scannedChunks.get(nodePos);
-            final boolean shouldRescan = lastScanTime == null || currentTime - lastScanTime >= RESCAN_TICK_DELAY;
-
-            if (!isPriorityChunk && lastScanTime != null && !shouldRescan) {
+            boolean isPriorityChunk = getChunkDist(node.pos, playerChunkPos) <= 2;
+            if (!isPriorityChunk && scannedChunks.containsKey(node.pos) && mod.getWorld().getTime() - scannedChunks.get(node.pos) < RESCAN_TICK_DELAY)
                 continue;
-            }
 
-            visited.add(nodePos);
-            scanChunk(nodePos, playerChunkPos);
+            visited.add(node.pos);
+            scanChunk(node.pos, playerChunkPos);
 
-            queue.add(new Node(new ChunkPos(nodePos.x + 1, nodePos.z + 1), node.distance + 1));
-            queue.add(new Node(new ChunkPos(nodePos.x - 1, nodePos.z + 1), node.distance + 1));
-            queue.add(new Node(new ChunkPos(nodePos.x - 1, nodePos.z - 1), node.distance + 1));
-            queue.add(new Node(new ChunkPos(nodePos.x + 1, nodePos.z - 1), node.distance + 1));
+            queue.add(new Node(new ChunkPos(node.pos.x + 1, node.pos.z + 1), node.distance + 1));
+            queue.add(new Node(new ChunkPos(node.pos.x - 1, node.pos.z + 1), node.distance + 1));
+            queue.add(new Node(new ChunkPos(node.pos.x - 1, node.pos.z - 1), node.distance + 1));
+            queue.add(new Node(new ChunkPos(node.pos.x + 1, node.pos.z - 1), node.distance + 1));
         }
-
         if (forceStop) {
+            // reset again, might have changed some values from the time forceStop was called
             reset();
             forceStop = false;
             return;
@@ -372,25 +375,24 @@ public class BlockScanner {
 
         for (Iterator<ChunkPos> iterator = scannedChunks.keySet().iterator(); iterator.hasNext(); ) {
             ChunkPos pos = iterator.next();
-            final int distance = getChunkDist(pos, playerChunkPos);
+            int distance = getChunkDist(pos, playerChunkPos);
 
             if (distance > cutOffRadius) {
                 iterator.remove();
             }
         }
 
-        for (HashSet<BlockPos> set : newBlocks.values()) {
-            if (set.size() >= CACHED_POSITIONS_PER_BLOCK) {
-                getFirstFewPositions(set, playerPos);
+        for (HashSet<BlockPos> set : scannedBlocks.values()) {
+            if (set.size() < CACHED_POSITIONS_PER_BLOCK) {
+                continue;
             }
+
+            getFirstFewPositions(set, playerPos);
         }
 
         if (LOG) {
-            Debug.logInternal("Rescanned in: " + (System.currentTimeMillis() - ms) + " ms; visited: " + visited.size() + " chunks");
+            Debug.logMessage("Rescanned in: " + (System.currentTimeMillis() - ms) + " ms; visited: " + visited.size() + " chunks");
         }
-
-        rescanTimer.reset();
-        scanning = false;
     }
 
     private int getChunkDist(ChunkPos pos1, ChunkPos pos2) {
@@ -412,7 +414,7 @@ public class BlockScanner {
 
         set.clear();
 
-        for (int i = 0; i < CACHED_POSITIONS_PER_BLOCK; i++) {
+        for (int i = 0; i < CACHED_POSITIONS_PER_BLOCK && !queue.isEmpty(); i++) {
             set.add(queue.poll());
         }
     }
@@ -423,40 +425,32 @@ public class BlockScanner {
      * @param chunkPos position of the scanned chunk
      */
     private void scanChunk(ChunkPos chunkPos, ChunkPos playerChunkPos) {
-        final World world = mod.getWorld();
-        final WorldChunk chunk = mod.getWorld().getChunk(chunkPos.x, chunkPos.z);
+        World world = mod.getWorld();
+        WorldChunk chunk = mod.getWorld().getChunk(chunkPos.x, chunkPos.z);
         scannedChunks.put(chunkPos, world.getTime());
 
-        final boolean isPriorityChunk = getChunkDist(chunkPos, playerChunkPos) <= 2;
+        boolean isPriorityChunk = getChunkDist(chunkPos, playerChunkPos) <= 2;
 
-        final int startX = chunkPos.getStartX();
-        final int endX = chunkPos.getEndX();
-        final int startZ = chunkPos.getStartZ();
-        final int endZ = chunkPos.getEndZ();
-        final int bottomY = world.getBottomY();
-        final int topY = world.getTopY();
+        for (int x = chunkPos.getStartX(); x <= chunkPos.getEndX(); x++) {
+            for (int y = world.getBottomY(); y < world.getTopY(); y++) {
+                for (int z = chunkPos.getStartZ(); z <= chunkPos.getEndZ(); z++) {
+                    BlockPos p = new BlockPos(x, y, z);
+                    if (this.isUnreachable(p) || world.isOutOfHeightLimit(p)) continue;
 
-        BlockPos.Mutable pos = new BlockPos.Mutable();
-
-        for (int x = startX; x <= endX; x++) {
-            for (int y = bottomY; y < topY; y++) {
-                for (int z = startZ; z <= endZ; z++) {
-                    pos.set(x, y, z);
-                    if (this.isUnreachable(pos) || world.isOutOfHeightLimit(pos)) continue;
-
-                    BlockState state = chunk.getBlockState(pos);
+                    BlockState state = chunk.getBlockState(p);
                     if (state.isAir()) continue;
 
                     Block block = state.getBlock();
-                    HashSet<BlockPos> set = newBlocks.get(block);
+                    if (scannedBlocks.containsKey(block)) {
+                        HashSet<BlockPos> set = scannedBlocks.get(block);
 
-                    if (set != null) {
                         if ((set.size() > CACHED_POSITIONS_PER_BLOCK * 750 && !isPriorityChunk)) continue;
-                        set.add(pos.toImmutable());
+
+                        set.add(p);
                     } else {
-                        set = new HashSet<>();
-                        set.add(pos.toImmutable());
-                        newBlocks.put(block, set);
+                        HashSet<BlockPos> set = new HashSet<>();
+                        set.add(p);
+                        scannedBlocks.put(block, set);
                     }
                 }
             }

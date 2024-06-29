@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class KillEnderDragonWithBedsTask extends Task {
-    private final Task whenNotPerchingTask;
+    private final WaitForDragonAndPearlTask whenNotPerchingTask;
     TimerGame placeBedTimer = new TimerGame(0.6);
     TimerGame waiTimer = new TimerGame(0.3);
     TimerGame waitBeforePlaceTimer = new TimerGame(0.5);
@@ -38,8 +38,8 @@ public class KillEnderDragonWithBedsTask extends Task {
     private Task placeObsidianTask = null;
     private boolean dragonDead = false;
 
-    public KillEnderDragonWithBedsTask(IDragonWaiter notPerchingOverride) {
-        whenNotPerchingTask = (Task) notPerchingOverride;
+    public KillEnderDragonWithBedsTask() {
+        whenNotPerchingTask = new WaitForDragonAndPearlTask();
     }
 
     public static BlockPos locateExitPortalTop(AltoClef mod) {
@@ -52,7 +52,7 @@ public class KillEnderDragonWithBedsTask extends Task {
     @Override
     protected void onStart(AltoClef mod) {
         // do not block our view
-        mod.getBehaviour().avoidBlockPlacing((pos)->pos.getZ()==0&&Math.abs(pos.getX())<5);
+        mod.getBehaviour().avoidBlockPlacing((pos) -> pos.getZ() == 0 && Math.abs(pos.getX()) < 5);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         if (endPortalTop == null) {
             endPortalTop = locateExitPortalTop(mod);
             if (endPortalTop != null) {
-                ((IDragonWaiter) whenNotPerchingTask).setExitPortalTop(endPortalTop);
+                whenNotPerchingTask.setExitPortalTop(endPortalTop);
             }
         }
 
@@ -118,33 +118,32 @@ public class KillEnderDragonWithBedsTask extends Task {
             }
         }
         List<EnderDragonEntity> dragons = mod.getEntityTracker().getTrackedEntities(EnderDragonEntity.class);
-        if (!dragons.isEmpty()) {
-            for (EnderDragonEntity dragon : dragons) {
-                Phase dragonPhase = dragon.getPhaseManager().getCurrent();
+        for (EnderDragonEntity dragon : dragons) {
+            Phase dragonPhase = dragon.getPhaseManager().getCurrent();
 
-                if (dragonPhase.getType() == PhaseType.DYING) {
-                    Debug.logMessage("Dragon is dead.");
-                    if (mod.getPlayer().getPitch() != -90) {
-                        mod.getPlayer().setPitch(-90);
-                    }
-                    dragonDead = true;
-                    return null;
+            if (dragonPhase.getType() == PhaseType.DYING) {
+                Debug.logMessage("Dragon is dead.");
+                if (mod.getPlayer().getPitch() != -90) {
+                    mod.getPlayer().setPitch(-90);
                 }
+                dragonDead = true;
+                return null;
+            }
 
-                boolean perching = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering() || dragonPhase.getType() == PhaseType.LANDING_APPROACH;
-                if (dragon.getY() < endPortalTop.getY() + 2) {
-                    // Dragon is already perched.
-                    perching = false;
-                }
-                ((IDragonWaiter) whenNotPerchingTask).setPerchState(perching);
-                // When the dragon is not perching...
-                if (whenNotPerchingTask.isActive() && !whenNotPerchingTask.isFinished(mod)) {
-                    setDebugState("Dragon not perching, performing special behavior...");
-                    return whenNotPerchingTask;
-                }
-                if (perching) {
-                    return performOneCycle(mod, dragon);
-                }
+            boolean perching = dragonPhase.getType() == PhaseType.LANDING || dragonPhase.isSittingOrHovering() || dragonPhase.getType() == PhaseType.LANDING_APPROACH;
+            if (dragon.getY() < endPortalTop.getY() + 2) {
+                // Dragon is already perched.
+                perching = false;
+            }
+            Debug.logMessage(dragonPhase.getType() + " : " + dragonPhase.isSittingOrHovering());
+            whenNotPerchingTask.setPerchState(perching);
+            // When the dragon is not perching...
+            if (whenNotPerchingTask.isActive() && !whenNotPerchingTask.isFinished(mod)) {
+                setDebugState("Dragon not perching, performing special behavior...");
+                return whenNotPerchingTask;
+            }
+            if (perching) {
+                return performOneCycle(mod, dragon);
             }
         }
         mod.getFoodChain().shouldStop(false);
@@ -173,7 +172,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         }
 
         if (dir == null) {
-            Debug.logInternal("no obisidan? :(");
+            Debug.logMessage("no obisidan? :(");
             return null;
         }
 
@@ -181,15 +180,15 @@ public class KillEnderDragonWithBedsTask extends Task {
         BlockPos targetBlock = endPortalTop.down(3).offset(offsetDir, 3).offset(dir);
 
         double d = distanceIgnoreY(WorldHelper.toVec3d(targetBlock), mod.getPlayer().getPos());
-        if (d > 0.7 || mod.getPlayer().getBlockPos().down().getY() > endPortalTop.getY()-4) {
-            Debug.logInternal(d + "");
+        if (d > 0.7 || mod.getPlayer().getBlockPos().down().getY() > endPortalTop.getY() - 4) {
+            Debug.logMessage(d + "");
             return new GetToBlockTask(targetBlock);
         } else if (!waited) {
             waited = true;
             waitBeforePlaceTimer.reset();
         }
         if (!waitBeforePlaceTimer.elapsed()) {
-            Debug.logInternal(waitBeforePlaceTimer.getDuration() + " waiting...");
+            Debug.logMessage(waitBeforePlaceTimer.getDuration() + " waiting...");
             return null;
         }
 
@@ -223,7 +222,7 @@ public class KillEnderDragonWithBedsTask extends Task {
         boolean tooClose = destroyDistance < 1.1;
         boolean skip = destroyDistance > 3 && dist > 4.5 && distXZ > 2.5;
 
-        Debug.logInternal(destroyDistance + " : " + dist + " : " + distXZ);
+        Debug.logMessage(destroyDistance + " : " + dist + " : " + distXZ);
 
         if ((dist < 1.5 || (prevDist < distXZ && destroyDistance < 4 && prevDist < 2.9)) || (destroyDistance < 2 && dist < 4)
                 || (destroyDistance < 1.7 && dist < 4.5) || tooClose || (destroyDistance < 2.4 && distXZ < 3.7) || (destroyDistance < 3.5 && distXZ < 2.4)) {
