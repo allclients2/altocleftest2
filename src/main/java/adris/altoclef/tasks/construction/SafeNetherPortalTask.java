@@ -41,7 +41,11 @@ public class SafeNetherPortalTask extends Task {
             mod.getClientBaritone().getInputOverrideHandler().clearAllKeys();
         }
 
+        //#if MC>=12001
         if (mod.getPlayer().getPortalCooldown() < 10) {
+        //#else
+        //$$ if (mod.getPlayer().getDefaultNetherPortalCooldown() < 10) {
+        //#endif
             if (positions != null && directions != null) {
                 BlockPos pos1 = mod.getPlayer().getSteppingPos().offset(axis, 1);
                 BlockPos pos2 = mod.getPlayer().getSteppingPos().offset(axis, -1);

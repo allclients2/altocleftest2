@@ -130,33 +130,30 @@ public class GetToEntityTask extends Task implements ITaskRequiresGrounded {
             }
             stuckCheck.reset();
         }
-        if (MinecraftClient.getInstance().getCurrentFps() > 5) { //Temporary patch (or permament idk)
-            if (_wanderTask.isActive() && !_wanderTask.isFinished(mod) && !mod.getClientBaritone().getPathingBehavior().calcFailedLastTick()) {
-                _progress.reset();
-                setDebugState("Failed to get to target, wandering for a bit.");
-                return _wanderTask;
-            }
 
-            if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
-                mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(_entity, _closeEnoughDistance));
-            }
-
-            if (mod.getPlayer().isInRange(_entity, _closeEnoughDistance)) {
-                _progress.reset();
-            }
-
-            if (!_progress.check(mod)) {
-                return _wanderTask;
-            }
-
-            if (_wanderTask.isActive() && _wanderTask.isFinished(mod)) {
-                _wanderTask.resetWander();
-            }
-
-            setDebugState("Attempting to get to entity, Distance: " + String.format("%.2f", (mod.getPlayer().getPos().distanceTo(_entity.getPos()))) + " Blocks");
-        } else {
-            setDebugState("Getting entity, and theres Lag...");
+        if (_wanderTask.isActive() && !_wanderTask.isFinished(mod) && !mod.getClientBaritone().getPathingBehavior().calcFailedLastTick()) {
+            _progress.reset();
+            setDebugState("Failed to get to target, wandering for a bit.");
+            return _wanderTask;
         }
+
+        if (!mod.getClientBaritone().getCustomGoalProcess().isActive()) {
+            mod.getClientBaritone().getCustomGoalProcess().setGoalAndPath(new GoalFollowEntity(_entity, _closeEnoughDistance));
+        }
+
+        if (mod.getPlayer().isInRange(_entity, _closeEnoughDistance)) {
+            _progress.reset();
+        }
+
+        if (!_progress.check(mod)) {
+            return _wanderTask;
+        }
+
+        if (_wanderTask.isActive() && _wanderTask.isFinished(mod)) {
+            _wanderTask.resetWander();
+        }
+
+        setDebugState("Attempting to get to entity, Distance: " + String.format("%.2f", (mod.getPlayer().getPos().distanceTo(_entity.getPos()))) + " Blocks");
         return null;
     }
 

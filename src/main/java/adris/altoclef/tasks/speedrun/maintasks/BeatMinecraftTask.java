@@ -3,6 +3,7 @@ package adris.altoclef.tasks.speedrun.maintasks;
 import adris.altoclef.AltoClef;
 import adris.altoclef.Debug;
 import adris.altoclef.TaskCatalogue;
+import adris.altoclef.multiversion.BaritoneVer;
 import adris.altoclef.tasks.block.DoToClosestBlockTask;
 import adris.altoclef.tasks.block.InteractWithBlockTask;
 import adris.altoclef.tasks.construction.*;
@@ -902,7 +903,7 @@ public class BeatMinecraftTask extends Task {
      */
     @Override
     protected void onStop(AltoClef mod, Task interruptTask) {
-        mod.getExtraBaritoneSettings().canWalkOnEndPortal(false);
+        BaritoneVer.canWalkOnEndPortal(mod, false);
 
         mod.getBehaviour().pop();
 
@@ -1329,6 +1330,7 @@ public class BeatMinecraftTask extends Task {
             blackListDangerousBlock(mod, Blocks.IRON_ORE);
         }
 
+        //#if MC >= 12000
         List<Block> ancientCityBlocks = List.of(Blocks.DEEPSLATE_BRICKS, Blocks.SCULK, Blocks.SCULK_VEIN, Blocks.SCULK_SENSOR, Blocks.SCULK_SHRIEKER, Blocks.DEEPSLATE_TILE_STAIRS, Blocks.CRACKED_DEEPSLATE_BRICKS, Blocks.SOUL_LANTERN, Blocks.DEEPSLATE_TILES, Blocks.POLISHED_DEEPSLATE);
         final int radius = 5;
         for (BlockPos pos : mod.getBlockScanner().getKnownLocations(ItemHelper.itemsToBlocks(ItemHelper.WOOL))) {
@@ -1348,6 +1350,7 @@ public class BeatMinecraftTask extends Task {
                 }
             }
         }
+        //#endif
 
         if (locateStrongholdTask.isActive() && WorldHelper.getCurrentDimension() == Dimension.OVERWORLD && !mod.getClientBaritone().getExploreProcess().isActive() && timer1.elapsed()) {
             timer1.reset();
@@ -1516,8 +1519,8 @@ public class BeatMinecraftTask extends Task {
                 setDebugState("WOOHOO");
                 dragonIsDead = true;
                 enterindEndPortal = true;
-                if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
-                    mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
+                if (!BaritoneVer.isCanWalkOnEndPortal(mod)) {
+                    BaritoneVer.canWalkOnEndPortal(mod, true);
                 }
                 return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos.up()), (pos) -> Math.abs(pos.getX()) + Math.abs(pos.getZ()) <= 1, Blocks.END_PORTAL);
             }
@@ -1711,8 +1714,8 @@ public class BeatMinecraftTask extends Task {
                 // We're as ready as we'll ever be, hop into the portal!
                 setDebugState("Entering End");
                 enterindEndPortal = true;
-                if (!mod.getExtraBaritoneSettings().isCanWalkOnEndPortal()) {
-                    mod.getExtraBaritoneSettings().canWalkOnEndPortal(true);
+                if (!BaritoneVer.isCanWalkOnEndPortal(mod)) {
+                    BaritoneVer.canWalkOnEndPortal(mod, true);
                 }
                 return new DoToClosestBlockTask(blockPos -> new GetToBlockTask(blockPos.up()), Blocks.END_PORTAL);
             } else {
@@ -2234,7 +2237,13 @@ public class BeatMinecraftTask extends Task {
                     return safeNetherPortalTask;
                 }
 
-                if (mod.getPlayer().getPortalCooldown() != 0 && safeNetherPortalTask == null) {
+                //#if MC>=12000
+                final int portalCoolDown = mod.getPlayer().getPortalCooldown();
+                //#else
+                //$$ final int portalCoolDown = mod.getPlayer().getDefaultNetherPortalCooldown();
+                //#endif
+
+                if (portalCoolDown != 0 && safeNetherPortalTask == null) {
                     safeNetherPortalTask = new SafeNetherPortalTask();
                     return safeNetherPortalTask;
                 }

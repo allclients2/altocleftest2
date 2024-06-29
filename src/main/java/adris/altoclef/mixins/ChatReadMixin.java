@@ -44,7 +44,7 @@ public final class ChatReadMixin {
     //$$          at = @At("HEAD")
     //$$  )
     //$$  private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
-    //$$      ChatMessageEvent evt = new ChatMessageEvent(message, new GameProfile(senderUuid));
+    //$$      ChatMessageEvent evt = new ChatMessageEvent(message.getString(), new GameProfile(senderUuid, null));
     //$$      EventBus.publish(evt);
     //$$ }
     //#endif

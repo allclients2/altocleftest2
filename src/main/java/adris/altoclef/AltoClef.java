@@ -270,7 +270,11 @@ public class AltoClef implements ModInitializer {
     public int HostileAvoidanceRadius = 10; //avoid mobs, this will be adjusted by the mob defense chain.
 
     private void initializeBaritoneSettings() {
+
+        //FIXME: I don't actually know which version this was added
+        //#if MC>11900
         getExtraBaritoneSettings().canWalkOnEndPortal(false);
+        //#endif
 
         getClientBaritoneSettings().freeLook.value = false;
         getClientBaritoneSettings().overshootTraverse.value = false;
@@ -291,10 +295,10 @@ public class AltoClef implements ModInitializer {
                 Blocks.WARPED_ROOTS, Blocks.VINE, Blocks.TALL_GRASS, Blocks.LARGE_FERN,
                 Blocks.SMALL_AMETHYST_BUD, Blocks.MEDIUM_AMETHYST_BUD, Blocks.LARGE_AMETHYST_BUD,
                 Blocks.AMETHYST_CLUSTER,
-                Blocks.ROSE_BUSH, Blocks.PEONY,
+                Blocks.ROSE_BUSH, Blocks.PEONY
 
                 //#if MC>=11900
-                Blocks.SCULK, Blocks.SCULK_VEIN
+                , Blocks.SCULK, Blocks.SCULK_VEIN
                 //#endif
         ));
 

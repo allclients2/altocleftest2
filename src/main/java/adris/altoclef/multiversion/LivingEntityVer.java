@@ -37,7 +37,7 @@ public class LivingEntityVer {
         //#if MC >= 12001
         return entity.isInAttackRange(victim);
         //#else
-        //return entity.isInAttackRange(victim);
+        //$$ return entity.isInRange(victim, Math.sqrt(entity.squaredAttackRange(victim)));
         //#endif
     }
 }

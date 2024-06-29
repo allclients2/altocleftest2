@@ -144,7 +144,7 @@ public class ElytraToXZTask extends Task {
                     Debug.logInternal("Falling!");
 
                     SendInput(mod, Input.JUMP); //Enable elytra
-                } else if (mod.getPlayer().groundCollision) {
+                } else if (mod.getPlayer().isOnGround()) {
                     SendInput(mod, Input.JUMP); //Jumpstart
                 }
             } else { //In Flight

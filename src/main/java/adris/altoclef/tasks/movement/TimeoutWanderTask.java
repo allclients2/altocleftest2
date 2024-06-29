@@ -245,7 +245,6 @@ public class TimeoutWanderTask extends Task implements ITaskRequiresGrounded {
         // Why the heck did I add this in?
         //if (_origin == null) return true;
 
-        if (MinecraftClient.getInstance().getCurrentFps() <= 4) return true; //Temporary lag patch
         if (Float.isInfinite(_distanceToWander)) return false;
 
         // If we fail 2 times, we may as well try the previous task again.

@@ -339,16 +339,21 @@ public class MobDefenseChain extends SingleTaskChain {
                         // Give each hostile a timer, if they're close for too long deal with them.
                         if (hostile.isInRange(Player, annoyingRange) && LookHelper.seesPlayer(hostile, Player, annoyingRange)) {
                             if (!closeAnnoyingEntities.containsKey(hostile)) {
-                                boolean wardenAttacking = hostile instanceof WardenEntity;
-                                boolean witherAttacking = hostile instanceof WitherEntity;
-                                boolean endermanAttacking = hostile instanceof EndermanEntity;
-                                boolean blazeAttacking = hostile instanceof BlazeEntity;
-                                boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
-                                boolean hoglinAttacking = hostile instanceof HoglinEntity;
-                                boolean zoglinAttacking = hostile instanceof ZoglinEntity;
-                                boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
-                                boolean vindicatorAttacking = hostile instanceof VindicatorEntity;
-                                if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking || piglinBruteAttacking || endermanAttacking || witherAttacking || wardenAttacking || vindicatorAttacking) {
+                                final boolean witherAttacking = hostile instanceof WitherEntity;
+                                final boolean endermanAttacking = hostile instanceof EndermanEntity;
+                                final boolean blazeAttacking = hostile instanceof BlazeEntity;
+                                final boolean witherSkeletonAttacking = hostile instanceof WitherSkeletonEntity;
+                                final boolean hoglinAttacking = hostile instanceof HoglinEntity;
+                                final boolean zoglinAttacking = hostile instanceof ZoglinEntity;
+                                final boolean piglinBruteAttacking = hostile instanceof PiglinBruteEntity;
+                                final boolean vindicatorAttacking = hostile instanceof VindicatorEntity;
+
+                                //#if MC>=11900
+                                final boolean wardenAttacking = hostile instanceof WardenEntity;
+                                if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking || piglinBruteAttacking || endermanAttacking || witherAttacking || vindicatorAttacking || wardenAttacking) {
+                                //#else
+                                //$$ if (blazeAttacking || witherSkeletonAttacking || hoglinAttacking || zoglinAttacking || piglinBruteAttacking || endermanAttacking || witherAttacking || vindicatorAttacking) {
+                                //#endif
 
                                     if (Player.getHealth() <= 10) {
                                         closeAnnoyingEntities.put(hostile, new TimerGame(0));
@@ -687,8 +692,14 @@ public class MobDefenseChain extends SingleTaskChain {
         // Wither skeletons are dangerous because of the wither effect. Oof kinda obvious.
         // If we merely force field them, we will run into them and get the wither effect which will kill us.
 
-        Class<?>[] dangerousMobs = new Class[]{WardenEntity.class, WitherEntity.class, WitherSkeletonEntity.class,
-                HoglinEntity.class, ZoglinEntity.class, PiglinBruteEntity.class, VindicatorEntity.class};
+        Class<?>[] dangerousMobs = new Class[]{
+                WitherEntity.class, WitherSkeletonEntity.class,
+                HoglinEntity.class, ZoglinEntity.class, PiglinBruteEntity.class, VindicatorEntity.class,
+
+                //#if MC>=11900
+                WardenEntity.class
+                //#endif
+        };
 
         double range = SAFE_KEEP_DISTANCE - 2;
 
