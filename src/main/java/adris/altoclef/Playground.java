@@ -38,6 +38,7 @@ import net.minecraft.world.chunk.EmptyChunk;
 import java.io.*;
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * For testing.
@@ -117,6 +118,9 @@ public class Playground {
             case "":
                 // None specified
                 Debug.logWarning("Please specify a test (ex. stacked, bed, terminate)");
+                break;
+            case "uuid":
+                Debug.logMessage(new UUID(0, 0).toString());
                 break;
             case "pickup":
                 mod.runUserTask(new PickupDroppedItemTask(new ItemTarget(Items.IRON_ORE, 3), true));

@@ -50,7 +50,7 @@ public final class ChatReadMixin {
     //$$          at = @At("HEAD")
     //$$  )
     //$$  private void onChatMessage(MessageType messageType, Text message, UUID senderUuid, CallbackInfo ci) {
-    //$$      if (senderUuid == null || AltoClef.INSTANCE.getPlayer() == null || senderUuid == AltoClef.INSTANCE.getPlayer().getUuid() || senderUuid == new UUID(0, 0)) return;
+    //$$      if (senderUuid == null || AltoClef.INSTANCE.getPlayer() == null || senderUuid == AltoClef.INSTANCE.getPlayer().getUuid() || senderUuid.equals(new UUID(0, 0))) return;
     //$$      Debug.logMessage("UUID:" + senderUuid);
     //$$      ChatMessageEvent evt = new ChatMessageEvent(message.getString(), new GameProfile(senderUuid, null));
     //$$      EventBus.publish(evt);
