@@ -9,7 +9,13 @@ public enum WoodType {
     JUNGLE,
     SPRUCE,
     WARPED,
+
+    //#if MC>=11900
     MANGROVE,
+    //#endif
+
+    //#if MC>=12000
     BAMBOO,
     CHERRY
+    //#endif
 }
