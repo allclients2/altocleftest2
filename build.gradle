@@ -88,14 +88,6 @@ repositories {
         artifactUrls("https://mirancz.github.io/maven/cabaletta/baritone-unoptimized/${project.name}")
     }
     maven {
-        name = "allclients2Repo"
-        url = "https://allclients2.github.io/maven/"
-    }
-    maven {
-        name = "MarvionKiritoRepo"
-        url = "https://marvionkirito.github.io/maven/"
-    }
-    maven {
         name = 'babbaj-repo'
         url = 'https://babbaj.github.io/maven/'
     }
