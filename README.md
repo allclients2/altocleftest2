@@ -8,7 +8,7 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 **Join the [Discord Server](https://discord.gg/JdFP4Kqdqc)** for discussions/updates/goofs & gaffs
 
 ## Downloads
-- ### [Click for Latest Nightly build (Recommended)](https://nightly.link/allclients2/altocleftest2/workflows/gradle/main/Artifacts.zip)
+- ### [Click for Latest Nightly Artifacts (Recommended)](https://nightly.link/allclients2/altocleftest2/workflows/gradle/main/Artifacts.zip)
 - ### [Click for Releases](https://github.com/allclients2/altocleftest2/releases)
 Releases may be more stable, but pretty Nightly builds are reliable enough...
 
