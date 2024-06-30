@@ -18,7 +18,7 @@ configurations will interfere with altoclef and introduce bugs. This will be fix
 
 
 ## About this fork
-This fork extends [Miran's fork of altoclef](https://github.com/allclients2/altocleftest2). This fork is meant to add features that I personally like, and maybe some versions I want to port
+This fork extends [Miran's fork of altoclef](https://github.com/MiranCZ/altoclef). This fork is meant to add features that I personally like, and maybe some versions I want to port
 this mod to, like 1.18.2. This is also a very experimental branch, if you experience an issue while using, feel free to create an issue on this repo!
 
 ### Supported versions:
