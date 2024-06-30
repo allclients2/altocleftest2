@@ -16,6 +16,7 @@
 
 ### Debug
 - Fix Obsidian task lagging so badly..
+- Mob defense chain takes over to ("run away" as seen by 75 priority) but then just stands there.
 
 
 ### Chores
