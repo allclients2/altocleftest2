@@ -8,6 +8,7 @@ Became [the first bot to beat Minecraft fully autonomously](https://youtu.be/baA
 **Join the [Discord Server](https://discord.gg/JdFP4Kqdqc)** for discussions/updates/goofs & gaffs
 
 ## Downloads
+#### To install: Download and extract the `Artifacts.zip` file (Links below), Within the `Artifacts` folder you extracted, open the folder with the version you need, Open `libs`, Find the `.jar` file that does *NOT* have `sources` or `all` in its name. Drag the jar into your mods folder.
 - ### [Click for Latest Nightly Artifacts (Recommended)](https://nightly.link/allclients2/altocleftest2/workflows/gradle/main/Artifacts.zip)
 - ### [Click for Releases](https://github.com/allclients2/altocleftest2/releases)
 Releases may be more stable, but pretty Nightly builds are reliable enough...
