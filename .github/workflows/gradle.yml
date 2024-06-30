@@ -28,7 +28,8 @@ jobs:
       - name: Create artifact directory structure
         run: |
           mkdir -p artifacts
-          for version in 1.20.1 1.20.2 1.20.4 1.20.6; do
+          echo "Simply click the version you need, find the jar that does ! NOT ! end in 'all' or 'sources', and drag into your mods folder. ;)" >> artifacts/README.txt
+          for version in 1.18.2 1.20.1 1.20.2 1.20.4 1.20.5 1.20.6; do
             mkdir -p artifacts/$version/devlibs
             mkdir -p artifacts/$version/libs
             cp ./versions/$version/build/devlibs/*.jar artifacts/$version/devlibs/
