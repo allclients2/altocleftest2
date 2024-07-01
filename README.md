@@ -34,7 +34,7 @@ this mod to, like 1.18.2. This is also a very experimental branch, if you experi
 *note: All the versions use the "same release" of Alto clef, although some of them may utilize older versions of baritone.* 
 
 ## Issues
-Have an issue? Report in the [issues section!](https://github.com/allclients2/altocleftest2/issues)
+Have an issue or a suggestion? Report in the [issues section!](https://github.com/allclients2/altocleftest2/issues)
 
 
 ## How it works
